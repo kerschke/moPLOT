@@ -1,0 +1,33 @@
+bref = c(
+  bibentry(
+    bibtype = "InProceedings",
+    key = "moPLOT",
+    title = "An Expedition to Multimodal Multi-Objective Optimization Landscapes",
+    author = c(
+      person("Pascal", "Kerschke"),
+      person("Lennart", "Schaepermeier")
+    ),
+    booktitle = "Proceedings of the 9th International Conference on Evolutionary Multi-Criterion Optimization (EMO)",
+    year = 2017L,
+    pages = "329--343",
+    publisher = "Springer",
+    url = "http://link.springer.com/chapter/10.1007/978-3-319-54157-0_23"
+  ),
+  bibentry(
+    bibtype = "InProceedings",
+    key = "moPLOT",
+    title = "One PLOT to Show Them All: Visualization of Efficient Sets in Multi-Objective Landscapes",
+    author = c(
+      person("Lennart", "Schaepermeier"),
+      person("Christian", "Grimme"),
+      person("Pascal", "Kerschke")
+    ),
+    booktitle = "Proceedings of the 16th International Conference on Parallel Problem Solving from Nature (PPSN XVI)",
+    year = 2020L,
+    pages = "",
+    note = "accepted for publication",
+    publisher = "Springer"
+  )
+)
+
+# vim: ft=r

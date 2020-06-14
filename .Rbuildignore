@@ -1,0 +1,10 @@
+^LICENSE$
+.github
+.gitignore
+.ignore
+.Rproj.user
+^.*\.Rproj$
+^\.Rproj\.user$
+^docs$
+^\.github$
+^man-roxygen$
