@@ -35,25 +35,50 @@
 #' @export
 computeGradientField = function(points, fn, prec.grad = 1e-6,
   prec.norm = 1e-6, prec.angle = 1e-4, parallelize = FALSE) {
+  
+  estimate.gradients = function(ind, fn, prec.grad) {
+    -estimateGradientBothDirections(fn = fn, ind = ind, prec.grad = prec.grad, check.data = FALSE)
+  }
+  
+  cat("Estimating single-objective gradients ...\n")
   if (parallelize) {
-    r = parallel::mclapply(seq_row(points), function(i) {
+    gradients.list = parallel::mclapply(seq_row(points), function(i) {
       ind = as.numeric(points[i,])
-      return(calcMOGradient(ind, fn, prec.grad, prec.norm, prec.angle))
+      return(estimate.gradients(ind, fn, prec.grad))
     })
   } else {
-    r = lapply(seq_row(points), function(i) {
+    gradients.list = lapply(seq_row(points), function(i) {
       ind = as.numeric(points[i,])
-      return(calcMOGradient(ind, fn, prec.grad, prec.norm, prec.angle))
+      return(estimate.gradients(ind, fn, prec.grad))
     })
   }
-
-  return(as.matrix(do.call(rbind, r)))
+  
+  # Convert to matrix per objective (in a list)
+  # With one row per gradient each
+  single.objective = simplify2array(gradients.list)
+  single.objective = asplit(single.objective, 1)
+  single.objective = lapply(single.objective, t)
+  
+  obj = length(single.objective)
+  
+  cat("Estimating multi-objective gradients ...\n")
+  if (obj == 2) {
+    multi.objective = getBiObjGradientGridCPP(single.objective[[1]], single.objective[[2]], prec.norm, prec.angle)
+  } else if (obj == 3) {
+    multi.objective = getTriObjGradientGridCPP(single.objective[[1]], single.objective[[2]], single.objective[[3]], prec.norm, prec.angle)
+  } else {
+    stop("Cannot cannot handle more than 3 objectives.")
+  }
+  
+  return(list(
+    multi.objective=multi.objective,
+    single.objective=single.objective
+  ))
 }
 
 #' @export
-computeGradientFieldGrid = function(grid, fn, prec.norm = 1e-6, prec.angle = 1e-4) {
+computeGradientFieldGrid = function(grid, fn, prec.norm = 1e-6, prec.angle = 1e-4, impute.boundary = TRUE) {
   obj = smoof::getNumberOfObjectives(fn)
-  # calculate dimensions of given field of points
 
   cat("Estimating single-objective gradients ...\n")
   
@@ -72,6 +97,12 @@ computeGradientFieldGrid = function(grid, fn, prec.norm = 1e-6, prec.angle = 1e-
   }
   
   cat("Finished multi-objective gradients\n")
+  
+  if (impute.boundary) {
+    cat("Imputing multi-objective gradient at boundary\n")
+    multi.objective = imputeBoundary(multi.objective, single.objective, grid$dims)
+  }
+  
   return(list(
     multi.objective=multi.objective,
     single.objective=single.objective
@@ -125,13 +156,4 @@ genericMOGradient = function(G, prec.norm = 1e-6) {
   # usage: e.g. genericMOGradient(cbind(c(1,0,0), c(0,1,0), rep(sqrt(1/3), 3)))
   G = t(normalizeMatrixRowsCPP(t(G), prec.norm))
   pracma::qpspecial(G)$d
-}
-
-calcMOGradient = function(ind, fn, prec.grad, prec.norm, prec.angle) {
-  g = -estimateGradientBothDirections(fn = fn, ind = ind, prec.grad = prec.grad, check.data = FALSE)
-  if (nrow(g) < 3) {
-    getBiObjGradientCPP(g[1,], g[2,], prec.norm, prec.angle)
-  } else {
-    getTriObjGradientCPP(g[1,], g[2,], g[3,], prec.norm, prec.angle)
-  }
 }
