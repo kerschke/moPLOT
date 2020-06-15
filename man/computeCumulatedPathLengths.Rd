@@ -7,7 +7,7 @@
 computeCumulatedPathLengths(
   centers,
   gradients,
-  local.efficient.ids,
+  local.efficient.ids = numeric(0),
   prec.vector.length = 0.001,
   prec.norm = 1e-06,
   cumulate.gradient.length = TRUE,
