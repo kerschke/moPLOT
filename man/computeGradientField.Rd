@@ -11,7 +11,9 @@ computeGradientField(
   prec.norm = 1e-06,
   prec.angle = 1e-04,
   parallelize = FALSE,
-  impute.boundary = TRUE
+  impute.boundary = TRUE,
+  lower = NULL,
+  upper = NULL
 )
 }
 \arguments{
@@ -37,6 +39,12 @@ vectors is zero. The default is \code{1e-4}.}
 Should the computation of the gradient vectors be parallelized (with \code{parallel::mclapply})?
 The default is \code{FALSE}.}
 
+\item{lower}{\link{\code{\link{numeric}(d)}}\cr
+Vector of lower bounds.}
+
+\item{upper}{\link{\code{\link{numeric}(d)}}\cr
+Vector of upper bounds.}
+
 \item{fn1}{\link{\code{\link{function}}}\cr
 The first objective used for computing the multi-objective gradient.}
 
@@ -50,12 +58,6 @@ The third objective used for computing the multi-objective gradient. If not prov
 \item{scale.step}{\link{\code{\link{numeric}(1L)}}\cr
 Scaling factor for the step size in the direction of the multi-objective gradient.
 The default is \code{0.5}.}
-
-\item{lower}{\link{\code{\link{numeric}(d)}}\cr
-Vector of lower bounds.}
-
-\item{upper}{\link{\code{\link{numeric}(d)}}\cr
-Vector of upper bounds.}
 }
 \value{
 \link{\code{\link{matrix}}}\cr

@@ -53,21 +53,17 @@ estimateGradientSingleDirection = function(fn, ind, side = NULL, prec.grad = 1e-
     assertFunction(fn, null.ok = FALSE)
   }
 
-  # retrieve p and d
+  d = length(ind)
   if (isSmoofFunction(fn)) {
-    d = getNumberOfParameters(fn)
     p = getNumberOfObjectives(fn)
-    lower = getLowerBoxConstraints(fn)
-    upper = getUpperBoxConstraints(fn)
   } else {
-    d = length(ind)
     p = length(fn(ind))
-    if (is.null(lower)) {
-      lower = -Inf
-    }
-    if (is.null(upper)) {
-      upper = Inf
-    }
+  }
+  if (is.null(lower)) {
+    lower = -Inf
+  }
+  if (is.null(upper)) {
+    upper = Inf
   }
 
   f = fn(ind)
@@ -100,20 +96,17 @@ estimateGradientSingleDirection = function(fn, ind, side = NULL, prec.grad = 1e-
 #' @export
 estimateGradientBothDirections = function(fn, ind, prec.grad = 1e-4, check.data = TRUE, lower = NULL, upper = NULL, ...) {
 
+  d = length(ind)
   if (isSmoofFunction(fn)) {
-    d = getNumberOfParameters(fn)
     p = getNumberOfObjectives(fn)
-    lower = getLowerBoxConstraints(fn)
-    upper = getUpperBoxConstraints(fn)
   } else {
-    d = length(ind)
     p = length(fn(ind))
-    if (is.null(lower)) {
-      lower = -Inf
-    }
-    if (is.null(upper)) {
-      upper = Inf
-    }
+  }
+  if (is.null(lower)) {
+    lower = -Inf
+  }
+  if (is.null(upper)) {
+    upper = Inf
   }
 
   if (check.data) {
