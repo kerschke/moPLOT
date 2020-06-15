@@ -27,7 +27,7 @@ devtools::install_github("kerschke/moPLOT")
 
 ## Quickstart
 
-To be continued ...
+Examples for the different visualizations using the current version of this package can be found in the [examples](/examples) folder.
 
 
 ## Citation
