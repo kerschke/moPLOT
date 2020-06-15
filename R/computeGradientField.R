@@ -74,7 +74,10 @@ computeGradientFieldGrid = function(grid, fn, prec.norm = 1e-6, prec.angle = 1e-
 
     mo.grad.mat = getBiObjGradientGridCPP(grad.mat.1, grad.mat.2, prec.norm, prec.angle)
     cat("Finished multiobjective gradients\n")
-    return(list(mo.grad.mat, grad.mat.1, grad.mat.2))
+    return(list(
+      multi.objective=mo.grad.mat,
+      single.objective=list(grad.mat.1, grad.mat.2)
+    ))
   }
 
   if (obj == 3) {
@@ -85,7 +88,10 @@ computeGradientFieldGrid = function(grid, fn, prec.norm = 1e-6, prec.angle = 1e-
 
     mo.grad.mat = getTriObjGradientGridCPP(grad.mat.1, grad.mat.2, grad.mat.3, prec.norm, prec.angle)
     cat("Finished multiobjective gradients\n")
-    return(list(mo.grad.mat, grad.mat.1, grad.mat.2, grad.mat.3))
+    return(list(
+      multi.objective=mo.grad.mat,
+      single.objective=list(grad.mat.1, grad.mat.2, grad.mat.3)
+    ))
   }
 
 }

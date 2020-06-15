@@ -1,5 +1,5 @@
 #' @export
-localEfficientSetSkeleton = function(grid, integration="fast", with.basins = F) {
+localEfficientSetSkeleton = function(design, gradients, divergence, integration="fast", with.basins = F) {
   less = list()
 
   cat('Finding critical points ...\n')
@@ -8,7 +8,7 @@ localEfficientSetSkeleton = function(grid, integration="fast", with.basins = F) 
   #   locallyNondominatedCPP(matrix(grid$obj.space[,i]), grid$dims, T)
   # })
 
-  critical = getCriticalPointsCellCPP(grid$mo.grad, grid$so.grad, grid$div, c(-1), grid$dims, FALSE)
+  critical = getCriticalPointsCellCPP(gradients$multi.objective, gradients$single.objective, divergence, c(-1), design$dims, FALSE)
 
   sinks = critical$sinks
 
@@ -18,9 +18,9 @@ localEfficientSetSkeleton = function(grid, integration="fast", with.basins = F) 
 
   cat('Integrating vector field ...\n')
   if (integration == "fast") {
-    integrated = computeCumulatedPathLengths(grid$dec.space, grid$mo.grad, sinks, fix.diagonals = T, prec.vector.length = 0, prec.norm = 0)
+    integrated = computeCumulatedPathLengths(design$dec.space, gradients$multi.objective, sinks, fix.diagonals = T, prec.vector.length = 0, prec.norm = 0)
   } else {
-    integrated = integrateVectorField(grid$mo.grad, grid$dims, sinks)
+    integrated = integrateVectorField(gradients$multi.objective, design$dims, sinks)
   }
 
   less$height = integrated$height
