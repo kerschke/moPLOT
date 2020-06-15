@@ -36,21 +36,19 @@
 computeGradientField = function(points, fn, prec.grad = 1e-6,
   prec.norm = 1e-6, prec.angle = 1e-4, parallelize = FALSE, impute.boundary = TRUE) {
   
-  estimate.gradients = function(ind, fn, prec.grad) {
-    -estimateGradientBothDirections(fn = fn, ind = ind, prec.grad = prec.grad, check.data = FALSE)
-  }
-  
   cat("Estimating single-objective gradients ...\n")
   
   if (parallelize) {
     gradients.list = parallel::mclapply(seq_row(points), function(i) {
       ind = as.numeric(points[i,])
-      return(estimate.gradients(ind, fn, prec.grad))
+      
+      -estimateGradientBothDirections(fn = fn, ind = ind, prec.grad = prec.grad, check.data = FALSE)
     })
   } else {
     gradients.list = lapply(seq_row(points), function(i) {
       ind = as.numeric(points[i,])
-      return(estimate.gradients(ind, fn, prec.grad))
+      
+      -estimateGradientBothDirections(fn = fn, ind = ind, prec.grad = prec.grad, check.data = FALSE)
     })
   }
   
