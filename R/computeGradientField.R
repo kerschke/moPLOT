@@ -34,13 +34,14 @@
 #' gradient.field = computeGradientField(points, fn)
 #' @export
 computeGradientField = function(points, fn, prec.grad = 1e-6,
-  prec.norm = 1e-6, prec.angle = 1e-4, parallelize = FALSE) {
+  prec.norm = 1e-6, prec.angle = 1e-4, parallelize = FALSE, impute.boundary = TRUE) {
   
   estimate.gradients = function(ind, fn, prec.grad) {
     -estimateGradientBothDirections(fn = fn, ind = ind, prec.grad = prec.grad, check.data = FALSE)
   }
   
   cat("Estimating single-objective gradients ...\n")
+  
   if (parallelize) {
     gradients.list = parallel::mclapply(seq_row(points), function(i) {
       ind = as.numeric(points[i,])
@@ -68,6 +69,14 @@ computeGradientField = function(points, fn, prec.grad = 1e-6,
     multi.objective = getTriObjGradientGridCPP(single.objective[[1]], single.objective[[2]], single.objective[[3]], prec.norm, prec.angle)
   } else {
     stop("Cannot cannot handle more than 3 objectives.")
+  }
+  
+  cat("Finished multi-objective gradients\n")
+  
+  if (impute.boundary) {
+    cat("Imputing multi-objective gradient at boundary\n")
+    dims = apply(points, 2, function(x) length(unique(x)))
+    multi.objective = imputeBoundary(multi.objective, single.objective, dims)
   }
   
   return(list(
