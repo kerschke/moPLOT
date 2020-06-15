@@ -10,7 +10,8 @@ computeGradientField(
   prec.grad = 1e-06,
   prec.norm = 1e-06,
   prec.angle = 1e-04,
-  parallelize = FALSE
+  parallelize = FALSE,
+  impute.boundary = TRUE
 )
 }
 \arguments{
