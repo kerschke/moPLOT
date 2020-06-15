@@ -5,20 +5,6 @@
 
 using namespace Rcpp;
 
-// assureBoundsCPP
-NumericVector assureBoundsCPP(NumericVector ind, NumericVector g, NumericVector lower, NumericVector upper);
-RcppExport SEXP _moPLOT_assureBoundsCPP(SEXP indSEXP, SEXP gSEXP, SEXP lowerSEXP, SEXP upperSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type ind(indSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type g(gSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type lower(lowerSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type upper(upperSEXP);
-    rcpp_result_gen = Rcpp::wrap(assureBoundsCPP(ind, g, lower, upper));
-    return rcpp_result_gen;
-END_RCPP
-}
 // compute3DcrossProductCPP
 NumericVector compute3DcrossProductCPP(NumericVector y, NumericVector z);
 RcppExport SEXP _moPLOT_compute3DcrossProductCPP(SEXP ySEXP, SEXP zSEXP) {
@@ -114,40 +100,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rotate90Right2D
-NumericVector rotate90Right2D(NumericVector v);
-RcppExport SEXP _moPLOT_rotate90Right2D(SEXP vSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(rotate90Right2D(v));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rotate90Left2D
-NumericVector rotate90Left2D(NumericVector v);
-RcppExport SEXP _moPLOT_rotate90Left2D(SEXP vSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(rotate90Left2D(v));
-    return rcpp_result_gen;
-END_RCPP
-}
-// getMODescentRange2D
-List getMODescentRange2D(NumericVector a, NumericVector b);
-RcppExport SEXP _moPLOT_getMODescentRange2D(SEXP aSEXP, SEXP bSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
-    rcpp_result_gen = Rcpp::wrap(getMODescentRange2D(a, b));
-    return rcpp_result_gen;
-END_RCPP
-}
 // getNeighbourhood
 IntegerMatrix getNeighbourhood(int d, bool include_diagonals);
 RcppExport SEXP _moPLOT_getNeighbourhood(SEXP dSEXP, SEXP include_diagonalsSEXP) {
@@ -157,18 +109,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type d(dSEXP);
     Rcpp::traits::input_parameter< bool >::type include_diagonals(include_diagonalsSEXP);
     rcpp_result_gen = Rcpp::wrap(getNeighbourhood(d, include_diagonals));
-    return rcpp_result_gen;
-END_RCPP
-}
-// dominates
-bool dominates(NumericVector a, NumericVector b);
-RcppExport SEXP _moPLOT_dominates(SEXP aSEXP, SEXP bSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
-    rcpp_result_gen = Rcpp::wrap(dominates(a, b));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -226,20 +166,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// integrateBackwards
-IntegerVector integrateBackwards(NumericMatrix gradMat, IntegerVector dims, int startID, IntegerVector stopCells);
-RcppExport SEXP _moPLOT_integrateBackwards(SEXP gradMatSEXP, SEXP dimsSEXP, SEXP startIDSEXP, SEXP stopCellsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type gradMat(gradMatSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
-    Rcpp::traits::input_parameter< int >::type startID(startIDSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type stopCells(stopCellsSEXP);
-    rcpp_result_gen = Rcpp::wrap(integrateBackwards(gradMat, dims, startID, stopCells));
-    return rcpp_result_gen;
-END_RCPP
-}
 // locallyNondominatedCPP
 IntegerVector locallyNondominatedCPP(NumericMatrix fnMat, IntegerVector dims, bool includeDiagonals);
 RcppExport SEXP _moPLOT_locallyNondominatedCPP(SEXP fnMatSEXP, SEXP dimsSEXP, SEXP includeDiagonalsSEXP) {
@@ -290,19 +216,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type precNorm(precNormSEXP);
     Rcpp::traits::input_parameter< double >::type precAngle(precAngleSEXP);
     rcpp_result_gen = Rcpp::wrap(gridBasedGradientCPP(fnVec, dims, stepSizes, precNorm, precAngle));
-    return rcpp_result_gen;
-END_RCPP
-}
-// hessian
-NumericMatrix hessian(NumericVector fnVec, IntegerVector dims, NumericVector stepSizes);
-RcppExport SEXP _moPLOT_hessian(SEXP fnVecSEXP, SEXP dimsSEXP, SEXP stepSizesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type fnVec(fnVecSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type stepSizes(stepSizesSEXP);
-    rcpp_result_gen = Rcpp::wrap(hessian(fnVec, dims, stepSizes));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -396,7 +309,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_moPLOT_assureBoundsCPP", (DL_FUNC) &_moPLOT_assureBoundsCPP, 4},
     {"_moPLOT_compute3DcrossProductCPP", (DL_FUNC) &_moPLOT_compute3DcrossProductCPP, 2},
     {"_moPLOT_computeVectorLengthCPP", (DL_FUNC) &_moPLOT_computeVectorLengthCPP, 1},
     {"_moPLOT_normalizeVectorCPP", (DL_FUNC) &_moPLOT_normalizeVectorCPP, 2},
@@ -405,21 +317,15 @@ static const R_CallMethodDef CallEntries[] = {
     {"_moPLOT_findNextCellCPP", (DL_FUNC) &_moPLOT_findNextCellCPP, 1},
     {"_moPLOT_convertIndices2CellIDCPP", (DL_FUNC) &_moPLOT_convertIndices2CellIDCPP, 2},
     {"_moPLOT_convertCellID2IndicesCPP", (DL_FUNC) &_moPLOT_convertCellID2IndicesCPP, 2},
-    {"_moPLOT_rotate90Right2D", (DL_FUNC) &_moPLOT_rotate90Right2D, 1},
-    {"_moPLOT_rotate90Left2D", (DL_FUNC) &_moPLOT_rotate90Left2D, 1},
-    {"_moPLOT_getMODescentRange2D", (DL_FUNC) &_moPLOT_getMODescentRange2D, 2},
     {"_moPLOT_getNeighbourhood", (DL_FUNC) &_moPLOT_getNeighbourhood, 2},
-    {"_moPLOT_dominates", (DL_FUNC) &_moPLOT_dominates, 2},
     {"_moPLOT_imputeBoundary", (DL_FUNC) &_moPLOT_imputeBoundary, 3},
     {"_moPLOT_getCriticalPointsCellCPP", (DL_FUNC) &_moPLOT_getCriticalPointsCellCPP, 6},
     {"_moPLOT_connectedComponentsGrid", (DL_FUNC) &_moPLOT_connectedComponentsGrid, 2},
     {"_moPLOT_integrateVectorField", (DL_FUNC) &_moPLOT_integrateVectorField, 3},
-    {"_moPLOT_integrateBackwards", (DL_FUNC) &_moPLOT_integrateBackwards, 4},
     {"_moPLOT_locallyNondominatedCPP", (DL_FUNC) &_moPLOT_locallyNondominatedCPP, 3},
     {"_moPLOT_changeOfSignCPP", (DL_FUNC) &_moPLOT_changeOfSignCPP, 3},
     {"_moPLOT_changeOfBasin", (DL_FUNC) &_moPLOT_changeOfBasin, 2},
     {"_moPLOT_gridBasedGradientCPP", (DL_FUNC) &_moPLOT_gridBasedGradientCPP, 5},
-    {"_moPLOT_hessian", (DL_FUNC) &_moPLOT_hessian, 3},
     {"_moPLOT_cumulateGradientsCPP", (DL_FUNC) &_moPLOT_cumulateGradientsCPP, 7},
     {"_moPLOT_getBiObjGradientCPP", (DL_FUNC) &_moPLOT_getBiObjGradientCPP, 4},
     {"_moPLOT_getTriObjGradientCPP", (DL_FUNC) &_moPLOT_getTriObjGradientCPP, 5},

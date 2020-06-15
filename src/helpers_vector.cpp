@@ -6,61 +6,6 @@ using namespace Rcpp;
 using namespace std;
 
 // [[Rcpp::export]]
-NumericVector assureBoundsCPP(NumericVector ind, NumericVector g, NumericVector lower, NumericVector upper) {
-  // ensures that a gradient step for an individual ind into direction g
-  // ends in a position, where it remains within the lower and upper bounds
-
-  int d = ind.size();                  // problem dimension
-  int i;                               // counter for the for-loops
-  NumericVector child = ind + g;       // possible child (= location resulting from the gradient step)
-  double stepMax = std::numeric_limits<double>::infinity(); // maximum step length
-  double step;                         // step length to ensure to stay in bounds
-
-  // check for lower bounds
-  int stepPos = d;
-  LogicalVector flagLow = (child < lower);
-  if (is_true(any(flagLow))) {
-    // adjust to stay within ALL lower bounds
-    for (i = 0; i < d; i++) {
-      bool fl = flagLow[i];
-      if (fl) {
-        step = (ind[i] - lower[i]) / abs(g[i]);
-        if (step < stepMax) {
-          stepMax = step;
-          stepPos = i;
-        }
-      }
-    }
-    if (stepPos < d) {
-      child = ind + g / abs(g[stepPos]) * (ind[stepPos] - lower[stepPos]);
-    }
-  }
-
-  // check for upper bounds
-  stepPos = d;
-  stepMax = std::numeric_limits<double>::infinity();
-  LogicalVector flagUpp = (child > upper);
-  if (is_true(any(flagUpp))) {
-    // adjust to stay within ALL upper bounds
-    for (i = 0; i < d; i++) {
-      bool fu = flagUpp[i];
-      if (fu) {
-        step = (upper[i] - ind[i]) / abs(g[i]);
-        if (step < stepMax) {
-          stepMax = step;
-          stepPos = i;
-        }
-      }
-    }
-    if (stepPos < d) {
-      child = ind + g / abs(g[stepPos]) * (upper[stepPos] - ind[stepPos]);
-    }
-  }
-
-  return child ;
-}
-
-// [[Rcpp::export]]
 NumericVector compute3DcrossProductCPP(NumericVector y, NumericVector z) {
   // helper function that computes the cross product between two 3D vectors
   NumericVector x(3, 0.0);
@@ -196,48 +141,6 @@ double relativeVectorOrientation(NumericVector a, NumericVector b) {
 }
 
 // [[Rcpp::export]]
-NumericVector rotate90Right2D(NumericVector v) {
-  NumericVector w(2, 0.0);
-  w(0) = v(1);
-  w(1) = -v(0);
-  return w;
-}
-
-// [[Rcpp::export]]
-NumericVector rotate90Left2D(NumericVector v) {
-  NumericVector w(2, 0.0);
-  w(0) = -v(1);
-  w(1) = v(0);
-  return w;
-}
-
-// [[Rcpp::export]]
-List getMODescentRange2D(NumericVector a, NumericVector b) {
-  double angle = computeAngleCPP(a, b, 0);
-  if (angle <= 90) {
-    return List::create(a, b);
-  }
-
-  double orientation = relativeVectorOrientation(a, b);
-
-  if (orientation > 0) {
-    // b right of a
-    return List::create(rotate90Left2D(b), rotate90Right2D(a));
-  } else if (orientation < 0) {
-    // b left of a
-    return List::create(rotate90Left2D(a), rotate90Right2D(b));
-  } else {
-    // orientation == 0
-    // a, b are (anti-) parallel
-    if (is_true(all(a == b))) {
-      return List::create(rotate90Left2D(a), rotate90Right2D(a));
-    } else {
-      return List::create(NumericVector::create(0,0),NumericVector::create(0,0));
-    }
-  }
-}
-
-// [[Rcpp::export]]
 IntegerMatrix getNeighbourhood(int d, bool include_diagonals) {
   if (include_diagonals) {
     Rcpp::Function expandGrid("expand.grid");
@@ -266,15 +169,6 @@ IntegerMatrix getNeighbourhood(int d, bool include_diagonals) {
     }
     return deltas;
   }
-}
-
-// [[Rcpp::export]]
-bool dominates(NumericVector a, NumericVector b) {
-  if (is_true(any(a < b)) &&
-      is_true(all(a <= b))) {
-    return true;
-  }
-  return false;
 }
 
 // [[Rcpp::export]]
@@ -814,125 +708,6 @@ List integrateVectorField(NumericMatrix gradMat, IntegerVector dims, IntegerVect
 }
 
 // [[Rcpp::export]]
-IntegerVector integrateBackwards(NumericMatrix gradMat, IntegerVector dims, int startID, IntegerVector stopCells) {
-  std::unordered_set<int> seen; // all visited points except for the starting point
-  std::unordered_map<int,int> seen_amt;
-  std::unordered_set<int> stop(stopCells.begin(), stopCells.end());
-  std::set<NumericVector> currentPoints;
-
-  int d = dims.size();
-
-  if (d != 2) {
-    warning("d > 2 not implemented yet!");
-    return IntegerVector(0);
-  }
-
-  IntegerVector startPoint = convertCellID2IndicesCPP(startID, dims);
-  currentPoints.insert(as<NumericVector>(startPoint));
-
-  // helpers
-  IntegerVector neighbourIndex;
-  NumericVector neighbourPoint;
-  NumericVector neighbourGrad;
-  int neighbourID;
-
-  NumericVector pointDelta;
-  NumericVector lowerLimits;
-  NumericVector upperLimits;
-  NumericVector legalLower(d);
-  NumericVector legalUpper(d);
-
-  while(!currentPoints.empty()) {
-    // save next points in separate set
-    std::set<NumericVector> nextPoints;
-
-    // iterate over all current points
-    for (NumericVector point : currentPoints) {
-      NumericVector gridPoint = round(point, 0);
-      IntegerVector gridPointIndex = as<IntegerVector>(gridPoint);
-
-      // TODO 3D
-      // iterate over all neighbours
-      for (int d_1 = -1; d_1 <= 1; d_1++) {
-        for (int d_2 = -1; d_2 <= 1; d_2++) {
-          if (d_1 == 0 && d_2 == 0) continue; // that's just where we are right now!
-
-          neighbourIndex = clone(gridPointIndex);
-          neighbourIndex(0) += d_1;
-          neighbourIndex(1) += d_2;
-
-          if (is_true(any(neighbourIndex > dims)) || is_true(any(neighbourIndex < 1))) {
-            // not a valid grid point
-            continue;
-          }
-
-          neighbourPoint = as<NumericVector>(neighbourIndex);
-          neighbourID = convertIndices2CellIDCPP(neighbourIndex, dims);
-          neighbourGrad = -1 * gradMat(neighbourID - 1,_);
-
-          pointDelta = neighbourPoint - point;
-          lowerLimits = pointDelta - 0.6;
-          upperLimits = pointDelta + 0.6; // allow 0.6 instead of 0.5 for some numeric leeway
-
-          // lower and upper ranges for the admissible vector length
-          for (int i = 0; i < d; i++) {
-            if (neighbourGrad(i) != 0) {
-              double limit_1 = lowerLimits(i) / (neighbourGrad(i));
-              double limit_2 = upperLimits(i) / (neighbourGrad(i));
-              legalLower(i) = min(limit_1, limit_2);
-              legalUpper(i) = max(limit_1, limit_2);
-            } else {
-              if (lowerLimits(i) <= 0 && upperLimits(i) >= 0) {
-                // all is legal, i.e. does not matter
-                legalLower(i) = -std::numeric_limits<double>::max();
-                legalUpper(i) = std::numeric_limits<double>::max();
-              } else {
-                // none are legal
-                legalLower(i) = std::numeric_limits<double>::max();
-                legalUpper(i) = -std::numeric_limits<double>::max();
-              }
-            }
-          }
-
-
-          double minLength = max(legalLower);
-          double maxLength = min(legalUpper);
-
-          if (minLength >= 0 && maxLength >= minLength) {
-            // legal point!
-
-            double length = (minLength + maxLength) / 2.0;
-            NumericVector nextPoint = point + length * neighbourGrad;
-            NumericVector nextGridCell = round(nextPoint, 0);
-            IntegerVector nextGridCellIndex = as<IntegerVector>(nextGridCell);
-            int nextGridCellID = convertIndices2CellIDCPP(nextGridCellIndex, dims);
-
-            if (stop.find(nextGridCellID) == stop.end() &&
-                seen_amt[nextGridCellID] < 10) {
-              // print(nextGridCellIndex);
-              // cout << nextGridCellID << endl;
-
-              // save as a next point, if it is not a "stop cell"
-              // and was not already visited now
-              // cout << "Success" << endl;
-              seen_amt[nextGridCellID]++;
-              seen.insert(nextGridCellID);
-              nextPoints.insert(nextPoint);
-            }
-
-          }
-        }
-
-      }
-    }
-
-    currentPoints = nextPoints;
-  }
-
-  return IntegerVector(seen.begin(), seen.end());
-}
-
-// [[Rcpp::export]]
 IntegerVector locallyNondominatedCPP(NumericMatrix fnMat, IntegerVector dims, bool includeDiagonals) {
   int n = fnMat.nrow();
   int d = dims.size();
@@ -1130,93 +905,6 @@ NumericMatrix gridBasedGradientCPP(NumericVector fnVec, IntegerVector dims, Nume
       }
 
       gradMat(id-1, dim) = diff;
-    }
-  }
-
-  return gradMat;
-}
-
-// [[Rcpp::export]]
-NumericMatrix hessian(NumericVector fnVec, IntegerVector dims, NumericVector stepSizes) {
-  int n = fnVec.size();
-  int d = dims.size();
-  NumericMatrix gradMat(n, d * d);
-
-  // helper variables
-  double diff;
-  IntegerVector indices;
-  IntegerVector indices_1;
-  IntegerVector indices_2;
-  IntegerVector indices_3;
-  IntegerVector indices_4;
-
-  for (int id = 1; id <= n; id++) {
-    indices = convertCellID2IndicesCPP(id, dims);
-
-    if (id % 1000 == 0) {
-      cout << id << '\r';
-    }
-
-    for (int d_1 = 0; d_1 < d; d_1++) {
-      for (int d_2 = 0; d_2 < d; d_2++) {
-        // vector access is zero-indexed!
-
-        if (d_1 == d_2) {
-          if (indices(d_1) == 1) {
-            // TODO forward differences required
-            diff = -1;
-          } else if (indices(d_1) == dims(d_1)) {
-            // TODO backward differences required
-            diff = -1;
-          } else {
-            // central differences
-            indices_1 = clone(indices);
-            indices_1(d_1)++;
-            indices_2 = clone(indices);
-            indices_2(d_1)--;
-
-            diff = 1 * fnVec(convertIndices2CellIDCPP(indices_1, dims) - 1)
-              - 2 * fnVec(convertIndices2CellIDCPP(indices, dims) - 1)
-              + 1 * fnVec(convertIndices2CellIDCPP(indices_2, dims) - 1);
-          }
-
-          diff = diff / (stepSizes(d_2) * stepSizes(d_2));
-        } else {
-          if (indices(d_1) == 1 || indices(d_2) == 1) {
-            // TODO forward differences required
-            diff = -1;
-          } else if (indices(d_1) == dims(d_1) || indices(d_2) == dims(d_2)) {
-            // TODO backward differences required
-            diff = -1;
-          } else {
-            // central differences
-            indices_1 = clone(indices);
-            indices_1(d_1)++;
-            indices_1(d_2)++;
-
-            indices_2 = clone(indices);
-            indices_2(d_1)++;
-            indices_2(d_2)--;
-
-            indices_3 = clone(indices);
-            indices_3(d_1)--;
-            indices_3(d_2)++;
-
-            indices_4 = clone(indices);
-            indices_4(d_1)--;
-            indices_4(d_2)--;
-
-            diff = fnVec(convertIndices2CellIDCPP(indices_1, dims) - 1)
-              - fnVec(convertIndices2CellIDCPP(indices_2, dims) - 1)
-              - fnVec(convertIndices2CellIDCPP(indices_3, dims) - 1)
-              + fnVec(convertIndices2CellIDCPP(indices_4, dims) - 1);
-          }
-
-          diff = diff / (4 * stepSizes(d_2) * stepSizes(d_1));
-        }
-
-        gradMat(id-1, d_1 * d + d_2) = diff;
-      }
     }
   }
 
