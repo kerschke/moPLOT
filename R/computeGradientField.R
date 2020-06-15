@@ -121,28 +121,6 @@ computeSecondOrderGrid = function(gradients, dims, step.sizes, prec.norm = 1e-6,
     gridBasedGradientCPP(gradients[,i], dims, rep(1, length(dims)), prec.norm, prec.angle)
   })
 
-  # h = sapply(1:nrow(gradients), function(i) {
-  #   det = l[[1]][i, 1] * l[[2]][i, 2] - l[[1]][i, 2] * l[[2]][i, 1]
-  #   if (det > epsilon && l[[1]][i, 1] + l[[2]][i, 2] > 0) {
-  #     # "local minimum" second order condition
-  #     return(-1)
-  #   } else if (det > epsilon && l[[1]][i, 1] + l[[2]][i, 2] < 0) {
-  #     # "local maximum" second order condition
-  #     return(1)
-  #   } else if (det < -epsilon) {
-  #     # saddle point (det < 0)
-  #     if (l[[1]][i, 1] + l[[2]][i, 2] > 0) {
-  #       return(0) # might be interesting to look at?
-  #     } else {
-  #       return(0)
-  #     }
-  #   } else {
-  #     # det is (approx.) zero
-  #     # test is inconclusive
-  #     return(0)
-  #   }
-  # })
-
   if (get.matrix) {
     j = sapply(1:nrow(gradients), function(i) {
       matrix(c(l[[1]][i, 1], l[[1]][i, 2], l[[2]][i, 1], l[[2]][i, 2]), nrow = 2, ncol = 2, byrow=T)
@@ -175,71 +153,3 @@ calcMOGradient = function(ind, fn, prec.grad, prec.norm, prec.angle) {
     getTriObjGradientCPP(g[1,], g[2,], g[3,], prec.norm, prec.angle)
   }
 }
-
-# computeHighDimensionalGradientField = function(points, fn1, fn2,
-#   scale.step = 0.5, prec.grad = 1e-6, prec.norm = 1e-6,
-#   prec.angle = 1e-4, parallelize = FALSE, lower, upper) {
-#
-#   len = ncol(points)
-#   if (missing(lower)) {
-#     lower = apply(points, 2, min) - prec.grad
-#   }
-#   if (missing(upper)) {
-#     upper = apply(points, 2, max) + prec.grad
-#   }
-#
-#   if (parallelize) {
-#     r1 = parallel::mclapply(seq_row(points), function(i) {
-#       ind = as.numeric(points[i,])
-#       g1 = -estimateGradientBothDirections(fn = fn1, ind = ind, prec.grad = prec.grad, check.data = FALSE)
-#       g1 = normalizeVectorCPP(vec = g1, prec = prec.norm)
-#       if (all(g1 == 0)) {
-#         # if the gradient of fn1 is zero, this has to be a local efficient point
-#         return(rep(0L, len))
-#       }
-#
-#       g2 = -estimateGradientBothDirections(fn = fn2, ind = ind, prec.grad = prec.grad, check.data = FALSE)
-#       g2 = normalizeVectorCPP(vec = g2, prec = prec.norm)
-#       if (all(g2 == 0)) {
-#         # if the gradient of fn2 is zero, this has to be a local efficient point
-#         return(rep(0L, len))
-#       }
-#
-#       angle = computeAngleCPP(vec1 = g1, vec2 = g2, prec = prec.norm)
-#       if (abs(180 - angle) < prec.angle) {
-#         # if the angle between both gradients is (approximately) 180 degree,
-#         # this has to be a local efficient point
-#         return(rep(0L, len))
-#       } else {
-#         return(g1 + g2)
-#       }
-#     })
-#     return(as.matrix(do.call(rbind, r1)))
-#   } else {
-#     r2 = t(apply(points, 1, function(ind) {
-#       g1 = -estimateGradientBothDirections(fn = fn1, ind = ind, prec.grad = prec.grad, check.data = FALSE)
-#       g1 = normalizeVectorCPP(vec = g1, prec = prec.norm)
-#       if (all(g1 == 0)) {
-#         # if the gradient of fn1 is zero, this has to be a local efficient point
-#         return(rep(0L, len))
-#       }
-#
-#       g2 = -estimateGradientBothDirections(fn = fn2, ind = ind, prec.grad = prec.grad, check.data = FALSE)
-#       g2 = normalizeVectorCPP(vec = g2, prec = prec.norm)
-#       if (all(g2 == 0)) {
-#         # if the gradient of fn2 is zero, this has to be a local efficient point
-#         return(rep(0L, len))
-#       }
-#
-#       angle = computeAngleCPP(vec1 = g1, vec2 = g2, prec = prec.norm)
-#       if (abs(180 - angle) < prec.angle) {
-#         # if the angle between both gradients is (approximately) 180 degree,
-#         # this has to be a local efficient point
-#         return(rep(0L, len))
-#       } else {
-#         return(g1 + g2)
-#       }
-#     }))
-#     return(as.matrix(r2))
-#   }
-# }
