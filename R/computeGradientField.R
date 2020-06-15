@@ -53,47 +53,29 @@ computeGradientField = function(points, fn, prec.grad = 1e-6,
 #' @export
 computeGradientFieldGrid = function(grid, fn, prec.norm = 1e-6, prec.angle = 1e-4) {
   obj = smoof::getNumberOfObjectives(fn)
-  d = ncol(points) # number of input dimensions
-  n = nrow(points) # total number of points
   # calculate dimensions of given field of points
 
-  if (is.null(grid$obj.space)) {
-    cat("Evaluating grid of objective values ...\n")
-    grid$obj.space = calculateObjectiveValues(grid$dec.space, fn)
-  }
-
   cat("Estimating single-objective gradients ...\n")
-
-  grad.mat.1 = -gridBasedGradientCPP(grid$obj.space[,1], grid$dims, grid$step.sizes, prec.norm, prec.angle)
-  cat("Finished objective 1\n")
-  grad.mat.2 = -gridBasedGradientCPP(grid$obj.space[,2], grid$dims, grid$step.sizes, prec.norm, prec.angle)
-  cat("Finished objective 2\n")
-
+  
+  single.objective = lapply(1:obj, function(i) {
+    cat(paste("Differentiating objective", i, "\n"))
+    -gridBasedGradientCPP(grid$obj.space[,i], grid$dims, grid$step.sizes, prec.norm, prec.angle)
+  })
+  
+  cat("Estimating multi-objective gradients ...\n")
   if (obj == 2) {
-    cat("Estimating multi-objective gradients ...\n")
-
-    mo.grad.mat = getBiObjGradientGridCPP(grad.mat.1, grad.mat.2, prec.norm, prec.angle)
-    cat("Finished multiobjective gradients\n")
-    return(list(
-      multi.objective=mo.grad.mat,
-      single.objective=list(grad.mat.1, grad.mat.2)
-    ))
+    multi.objective = getBiObjGradientGridCPP(single.objective[[1]], single.objective[[2]], prec.norm, prec.angle)
+  } else if (obj == 3) {
+    multi.objective = getTriObjGradientGridCPP(single.objective[[1]], single.objective[[2]], single.objective[[3]], prec.norm, prec.angle)
+  } else {
+    stop("Cannot cannot handle more than 3 objectives.")
   }
-
-  if (obj == 3) {
-    grad.mat.3 = -gridBasedGradientCPP(grid$obj.space[,3], grid$dims, grid$step.sizes, prec.norm, prec.angle)
-    cat("Finished objective 3\n")
-
-    cat("Estimating multi-objective gradients ...\n")
-
-    mo.grad.mat = getTriObjGradientGridCPP(grad.mat.1, grad.mat.2, grad.mat.3, prec.norm, prec.angle)
-    cat("Finished multiobjective gradients\n")
-    return(list(
-      multi.objective=mo.grad.mat,
-      single.objective=list(grad.mat.1, grad.mat.2, grad.mat.3)
-    ))
-  }
-
+  
+  cat("Finished multi-objective gradients\n")
+  return(list(
+    multi.objective=multi.objective,
+    single.objective=single.objective
+  ))
 }
 
 #' @export
