@@ -91,12 +91,12 @@ computeGradientField = function(points, fn, prec.grad = 1e-6,
 #' @export
 computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, impute.boundary = TRUE) {
 
+  assertList(grid, min.len = 3L, names = "named")
+  assertSubset(c("dims", "step.sizes", "obj.space"), choices = names(grid))
+  
   obj = ncol(grid$obj.space)
   
   cat("Estimating single-objective gradients ...\n")
-
-  assertList(grid, min.len = 3L, names = "named")
-  assertSubset(c("dims", "step.sizes", "obj.space"), choices = names(grid))
 
   single.objective = lapply(seq_len(obj), function(i) {
     cat(paste("Differentiating objective", i, "\n"))
@@ -104,6 +104,7 @@ computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, i
   })
 
   cat("Estimating multi-objective gradients ...\n")
+  
   if (obj == 2L) {
     multi.objective = getBiObjGradientGridCPP(gradMat1 = single.objective[[1L]], gradMat2 = single.objective[[2L]], precNorm = prec.norm, precAngle = prec.angle)
   } else if (obj == 3L) {
