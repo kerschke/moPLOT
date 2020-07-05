@@ -10,7 +10,7 @@ design = generateDesign(fn, 500**2)
 design$obj.space = calculateObjectiveValues(design$dec.space, fn, parallelize = T)
 
 # Calculate single-objective and multi-objective gradients
-gradients = computeGradientFieldGrid(design, fn)
+gradients = computeGradientFieldGrid(design)
 
 # Calculate divergence of MOG
 divergence = computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)

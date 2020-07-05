@@ -89,9 +89,10 @@ computeGradientField = function(points, fn, prec.grad = 1e-6,
 }
 
 #' @export
-computeGradientFieldGrid = function(grid, fn, prec.norm = 1e-6, prec.angle = 1e-4, impute.boundary = TRUE) {
+computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, impute.boundary = TRUE) {
 
-  obj = smoof::getNumberOfObjectives(fn)
+  obj = ncol(grid$obj.space)
+  
   cat("Estimating single-objective gradients ...\n")
 
   assertList(grid, min.len = 3L, names = "named")
