@@ -21,8 +21,12 @@ ggplotPLOT = function(dec.space, obj.space, sinks, height, check.data = TRUE) {
   sinks.df = cbind.data.frame(dec.space[sinks,], rank=nds$dom.counter+1)
   sinks.df = sinks.df[order(sinks.df$rank, decreasing=T),] # Ensure more efficient points are plotted later, i.e. on top
   
-  g = ggplotHeatmap(height.df, color.palette = gray.colors(500L, start = 0, end = 1, gamma = 0.5)) +
-    geom_point(mapping = aes(x1, x2, color=rank), data = sinks.df) +
+  var1 = colnames(dec.space)[1]
+  var2 = colnames(dec.space)[2]
+  
+  g = ggplotHeatmap(height.df, color.palette = gray.colors(500L, start = 0, end = 1, gamma = 0.5),
+                    var1 = var1, var2 = var2) +
+    geom_point(mapping = aes_string(var1, var2, color="rank"), data = sinks.df) +
     scale_color_gradientn(colors = fields::tim.colors(500L), na.value="black", trans = "log") +
     theme(legend.position = "none", axis.title = element_blank())
   
