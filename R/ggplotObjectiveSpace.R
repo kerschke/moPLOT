@@ -130,8 +130,7 @@ ggplotObjectiveSpace = function(df, var1 = "y1", var2 = "y2", log.scale = TRUE,
   }
 
   if (minimalistic.image) {
-    ## in case of minimalistic images, remove the grey panels from the background,
-    ## the color legend, as well as all axis labels and ticks
+    ## in case of minimalistic images, remove the color legend, axis labels and ticks
     g = g +
       theme(legend.position = "none",
             axis.text = element_blank(),
