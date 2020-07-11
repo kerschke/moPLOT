@@ -106,7 +106,7 @@ ggplotHeatmap = function(df, var1 = "x1", var2 = "x2", log.scale = TRUE, impute.
 
   if (minimalistic.image) {
     ## in case of minimalistic images, remove the color legend, axis labels and ticks
-    g = as.minimalistic.image(g)
+    g = g + minimalistic.theme()
   } else if (!missing(legend.position)) {
     ## position legend
     assertCharacter(legend.position, len = 1L, null.ok = FALSE)

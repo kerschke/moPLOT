@@ -1,13 +1,10 @@
-as.minimalistic.image = function(g) {
-  # Create a minimalist version of the given plot
-  g = g +
-    theme(legend.position = "none",
-          axis.text = element_blank(),
-          axis.title = element_blank(),
-          panel.grid = element_blank()
-    )
-  
-  return(g)
+minimalistic.theme = function(g) {
+  # Theme for a minimalist plot
+  theme(legend.position = "none",
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_blank()
+  )
 }
 
 variable.as.expression = function(v) {
