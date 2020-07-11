@@ -81,6 +81,7 @@ ggplotHeatmap = function(df, var1 = "x1", var2 = "x2", log.scale = TRUE, impute.
       color.palette = terrain.colors(500L)
     }
   }
+  
   ## create the heatmap (colored tiles)
   g = ggplot() +
     geom_raster(data = df, mapping = aes_string(x = var1, y = var2, fill = "height"), ...) +
@@ -99,29 +100,13 @@ ggplotHeatmap = function(df, var1 = "x1", var2 = "x2", log.scale = TRUE, impute.
   }
 
   ## Modify axes labels (place indices as subscripts)
-  if (var1 == "x1") {
-    g = g + xlab(expression(x[1]))
-  } else if (var1 == "x2") {
-    g = g + xlab(expression(x[2]))
-  } else if (var1 == "x3") {
-    g = g + xlab(expression(x[3]))
-  }
-  if (var2 == "x1") {
-    g = g + ylab(expression(x[1]))
-  } else if (var2 == "x2") {
-    g = g + ylab(expression(x[2]))
-  } else if (var2 == "x3") {
-    g = g + ylab(expression(x[3]))
-  }
+  g = g +
+    xlab(variable.as.expression(var1)) +
+    ylab(variable.as.expression(var2))
 
   if (minimalistic.image) {
     ## in case of minimalistic images, remove the color legend, axis labels and ticks
-    g = g +
-      theme(legend.position = "none",
-        axis.text = element_blank(),
-        axis.title = element_blank(),
-        panel.grid = element_blank()
-      )
+    g = as.minimalistic.image(g)
   } else if (!missing(legend.position)) {
     ## position legend
     assertCharacter(legend.position, len = 1L, null.ok = FALSE)
@@ -131,5 +116,6 @@ ggplotHeatmap = function(df, var1 = "x1", var2 = "x2", log.scale = TRUE, impute.
     }
     g = g + theme(legend.position = legend.position)
   }
+  
   return(g)
 }

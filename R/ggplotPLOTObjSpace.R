@@ -30,8 +30,8 @@ ggplotPLOTObjSpace = function(dec.space, obj.space, sinks, height, check.data = 
     geom_point(mapping = aes_string(var1, var2, fill="height", color=NA), data = sinks.obj.df, shape=21) +
     scale_color_gradientn(colors = gray.colors(500L, start = 0, end = 1, gamma = 0.5), na.value="transparent", trans="log") +
     scale_fill_gradientn(colors = fields::tim.colors(500L), trans = "log") +
-    xlab(var1) +
-    ylab(var2) +
+    xlab(variable.as.expression(var1)) +
+    ylab(variable.as.expression(var2)) +
     theme_minimal() +
     theme(legend.position = "none")
   
