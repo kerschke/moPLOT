@@ -18,10 +18,10 @@ inferDesign = function(dec.space, obj.space) {
     stop(paste0("Cannot visualize data with ", p, " dimensions! Please use 2 or 3 dimensions only."))
   }
   
-  # Order data by order of the decision space
+  # Order data by order of the decision space and convert to matrix (more efficient)
   
-  dec.space = dec.space[ordered.indices,]
-  obj.space = obj.space[ordered.indices,]
+  dec.space = as.matrix(dec.space[ordered.indices,])
+  obj.space = as.matrix(obj.space[ordered.indices,])
   
   # Determine grid points for each dimension
   
