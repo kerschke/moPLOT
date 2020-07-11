@@ -98,7 +98,8 @@ ggplotObjectiveSpace = function(df, var1 = "y1", var2 = "y2", log.scale = TRUE,
   g = ggplot() +
     geom_point(
       data = df,
-      mapping = aes_string(x = var1, y = var2, color = "height"), ...)
+      mapping = aes_string(x = var1, y = var2, color = "height"), ...) +
+    theme_minimal()
 
   if (log.scale) {
     ## if results are shown on log-scale, provide a 'pretty' height scale
@@ -132,7 +133,6 @@ ggplotObjectiveSpace = function(df, var1 = "y1", var2 = "y2", log.scale = TRUE,
     ## in case of minimalistic images, remove the grey panels from the background,
     ## the color legend, as well as all axis labels and ticks
     g = g +
-      theme_minimal() +
       theme(legend.position = "none",
             axis.text = element_blank(),
             axis.title = element_blank(),
