@@ -33,7 +33,7 @@ Examples for the different visualizations using the current version of this pack
 ## Citation
 
 If you use our package to visualize your multi-objective problems using
-* our multi-objective PLOTs (see our PPSN 2020 paper for details), or
+* our multi-objective PLOTs (see our PPSN 2020 paper ([arXiv](https://arxiv.org/abs/2006.11547)) for details), or
 * our gradient-field heatmaps (see our [EMO 2017 paper](http://link.springer.com/chapter/10.1007/978-3-319-54157-0_23) for details),
 
 please cite the respective publications.
