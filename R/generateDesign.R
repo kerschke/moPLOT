@@ -11,7 +11,7 @@ generateDesign = function(fn, points.total = 1e6, points.per.dimension=NULL) {
   l = list()
   step.sizes = c()
   
-  if (!is.null(points.total)) {
+  if (!is.null(points.total) & is.null(points.per.dimension)) {
     # Use points.total to calculate points.per.dimension
     ranges = upper - lower
     base.length = (points.total ** (1/p))
