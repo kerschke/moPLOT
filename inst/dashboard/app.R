@@ -9,27 +9,38 @@ options("shiny.maxRequestSize" = 50 * (1024**2))
 
 ui <- fluidPage(
   useShinyjs(),
+  
   h1(markdown("`moPLOT` Dashboard <Working Title>")),
-  sidebarLayout(
-    sidebarPanel(
-      selectInput("fn.id", "Multi-objective function", c("Select a function"="",test.function.ids)),
-      tabsetPanel(
-        tabPanel("Calculate Grid",
-                 numericInput("grid.size", "Resolution per dimension", 100, min=20, max=3000, step=1),
-                 actionButton("update.grid", "Calculate Grid"),
-                 downloadButton('download.grid', "Download Grid"),
+  
+  fluidRow(
+    
+    column(4,
+      wellPanel(
+        selectInput("fn.id", "Multi-objective function", c("Select a function"="",test.function.ids)),
+        tabsetPanel(
+          tabPanel("Calculate Grid",
+                   numericInput("grid.size", "Resolution per dimension", 100, min=20, max=3000, step=1),
+                   actionButton("update.grid", "Calculate Grid"),
+                   downloadButton('download.grid', "Download Grid"),
+          ),
+          tabPanel("Upload Grid",
+                   fileInput('upload.grid', "Upload Grid", accept = c(".Rds"))
+          ),
+          id = "grid.tabs",
+          type = "pills"
         ),
-        tabPanel("Upload Grid",
-                 fileInput('upload.grid', "Upload Grid", accept = c(".Rds"))
-        ),
-        id = "grid.tabs",
-        type = "pills"
       ),
-      selectInput("plot.type", "Type of plot", c("Select a function first" = "")),
-      selectInput("space", "Select space to plot", c("Decision Space"="decision.space", "Objective Space"="objective.space", "Decision + Objective Space"="both")),
-      actionButton("update.plot", "Update Plot", class="btn-primary")
+      
+      conditionalPanel(condition = "input['update.grid']",
+        wellPanel(
+          selectInput("plot.type", "Type of plot", c("Select a function first" = "")),
+          selectInput("space", "Select space to plot", c("Decision Space"="decision.space", "Objective Space"="objective.space", "Decision + Objective Space"="both")),
+          actionButton("update.plot", "Update Plot", class="btn-primary")
+        )
+      )
     ),
-    mainPanel(
+    
+    column(8,
       plotly::plotlyOutput(outputId = "plot", height = "100%")
     )
   )
