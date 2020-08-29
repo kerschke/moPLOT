@@ -229,8 +229,10 @@ NumericMatrix imputeBoundary(NumericMatrix moGradMat, List gradMatList, IntegerV
 }
 
 int isCritical(std::vector<NumericVector> vectors) {
-  LogicalVector positive(vectors[0].size(), false);
-  LogicalVector negative(vectors[0].size(), false);
+  int d = vectors[0].size();
+  
+  LogicalVector positive(d, false);
+  LogicalVector negative(d, false);
 
   for (int id = 0; id < vectors.size(); id++) {
     positive = positive | (vectors[id] >= 0);
@@ -242,42 +244,93 @@ int isCritical(std::vector<NumericVector> vectors) {
     // cannot be critical
     return -1;
   }
-
-  // for each vector ...
-  for (int vID = 0; vID < vectors.size(); vID++) {
-    bool pos = false;
-    bool neg = false;
-    bool zero = false;
-
+  
+  if (d == 2) {
     // for each vector ...
-
-    for (int compID = 0; compID < vectors.size(); compID++) {
-      if (is_true(all(vectors[vID] == vectors[compID]))) continue;
-
-      // TODO 3D
-      double orientation = relativeVectorOrientation(vectors[vID], vectors[compID]);
-
-      // TODO >=,<= or >, < ?!
-      if (orientation > 0) {
-        pos = true;
+    for (int vID = 0; vID < vectors.size(); vID++) {
+      bool pos = false;
+      bool neg = false;
+      bool zero = false;
+      
+      // for each other vector ...
+      for (int compID = 0; compID < vectors.size(); compID++) {
+        if (is_true(all(vectors[vID] == vectors[compID]))) continue;
+        
+        double orientation = relativeVectorOrientation(vectors[vID], vectors[compID]);
+        
+        // TODO >=,<= or >, < ?!
+        if (orientation > 0) {
+          pos = true;
+        }
+        if (orientation < 0) {
+          neg = true;
+        }
+        if (orientation == 0 && (sum(vectors[vID] * vectors[compID]) <= 0)) {
+          zero = true;
+        }
       }
-      if (orientation < 0) {
-        neg = true;
-      }
-      if (orientation == 0 && (sum(vectors[vID] * vectors[compID]) <= 0)) {
-        zero = true;
+      
+      if (!(pos && neg)) {
+        if (zero) {
+          // border case
+          return 0;
+        } else {
+          // not critical
+          return -1;
+        }
       }
     }
-
-    if (!(pos && neg)) {
-      if (zero) {
-        // border case
-        return 0;
-      } else {
-        // not critical
-        return -1;
+  } else if (d == 3) {
+    // for each potential plane ...
+    for (int vID = 0; vID < vectors.size(); vID++) {
+      for (int vID2 = 0; vID2 < vectors.size(); vID2++) {
+        if (is_true(all(vectors[vID] == vectors[vID2]))) continue;
+        
+        bool pos = false;
+        bool neg = false;
+        bool zero = false;
+        
+        // compute the normal vector
+        NumericVector normal_vector = compute3DcrossProductCPP(vectors[vID], vectors[vID2]);
+        
+        // if normal_vector == 0, we cannot do reasonable checks here
+        if (is_true(all(normal_vector == 0))) continue;
+        
+        // for each other vector ...
+        for (int compID = 0; compID < vectors.size(); compID++) {
+          if (is_true(all(vectors[vID] == vectors[compID]))) continue;
+          if (is_true(all(vectors[vID2] == vectors[compID]))) continue;
+          
+          double orientation = sum(normal_vector * vectors[compID]);
+          
+          // TODO >=,<= or >, < ?!
+          if (orientation > 0) {
+            pos = true;
+          }
+          if (orientation < 0) {
+            neg = true;
+          }
+          if (orientation == 0) {
+            zero = true;
+          }
+        }
+        
+        if (!(pos && neg)) {
+          if (zero) {
+            if (!pos && !neg) {
+              // degenerate critical
+              return 1;
+            } else {
+              return 0;
+            }
+          } else {
+            // not critical
+            return -1;
+          }
+        }
       }
     }
+    
   }
 
   // critical
