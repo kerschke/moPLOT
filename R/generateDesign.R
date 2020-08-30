@@ -1,11 +1,16 @@
 #' @export
-generateDesign = function(fn, points.total = 1e6, points.per.dimension=NULL) {
+generateDesign = function(fn, points.total = NULL, points.per.dimension = NULL) {
   upper = smoof::getUpperBoxConstraints(fn)
   lower = smoof::getLowerBoxConstraints(fn)
   p = smoof::getNumberOfParameters(fn)
   
   if (!is.null(points.total) & !is.null(points.per.dimension)) {
-    warning('points.per.dimension is set and will overwrite points.total')
+    stop('Both points.per.dimension and points.total are set! Please choose only one parameter.')
+  }
+  
+  if (is.null(points.total) & is.null(points.per.dimension)) {
+    warning('Neither points.per.dimension nor points.total are set! Will use points.total = 1e6.')
+    points.total = 1e6
   }
   
   l = list()
