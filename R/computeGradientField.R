@@ -131,12 +131,33 @@ computeDivergenceGrid = function(gradients, dims, step.sizes, prec.norm = 1e-6, 
   if (normalize) {
     gradients = normalizeMatrixRowsCPP(gradients, prec.norm)
   }
+  
+  d = length(dims)
 
-  l = lapply(seq_len(ncol(gradients)), function(i) {
-    gridBasedGradientCPP(gradients[, i], dims, step.sizes, prec.norm, prec.angle)[, i]
-  })
 
-  Reduce('+', l)
+  if (d == 2) {
+    l = lapply(seq_len(ncol(gradients)), function(i) {
+      gridBasedGradientCPP(gradients[, i], dims, step.sizes, prec.norm, prec.angle)[, i]
+    })
+    
+    Reduce('+', l)
+  } else if (d == 3) {
+    # Currently, this is a workaround that _kind of_ works for 3D, where divergence
+    # alone does not work.
+    # TODO Is there a proper, reasonably efficient way to do this?
+    
+    l = lapply(seq_len(ncol(gradients)), function(i) {
+      gridBasedGradientCPP(gradients[, i], dims, step.sizes, prec.norm, prec.angle)[,i]
+    })
+    
+    sapply(seq_along(l[[1]]), function(i) {
+      signs = numeric(3)
+      signs[1] = (l[[1]][i] + l[[2]][i])
+      signs[2] = (l[[1]][i] + l[[3]][i])
+      signs[3] = (l[[2]][i] + l[[3]][i])
+      max(signs)
+    })
+  }
 }
 
 #' @export
