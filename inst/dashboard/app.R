@@ -239,10 +239,10 @@ server <- function(input, output, session) {
       return()
     }
     
-    grid <<- moPLOT::generateDesign(fn, points.per.dimension = input$grid.size)
-    grid$obj.space <<- moPLOT::calculateObjectiveValues(grid$dec.space, fn, parallelize = T)
+    grid <<- generateDesign(fn, points.per.dimension = input$grid.size)
+    grid$obj.space <<- calculateObjectiveValues(grid$dec.space, fn, parallelize = T)
     
-    gradients <- moPLOT::computeGradientFieldGrid(grid)
+    gradients <- computeGradientFieldGrid(grid)
     
     divergence <- computeDivergenceGrid(gradients$multi.objective, grid$dims, grid$step.sizes)
     
@@ -260,13 +260,13 @@ server <- function(input, output, session) {
     n = smoof::getNumberOfObjectives(fn)
     
     if (d == 2) {
-      moPLOT::plotly2DHeatmap(grid, fn, mode="decision.space")
+      plotly2DHeatmap(grid, fn, mode="decision.space")
       # ggplotPLOT(grid$dec.space, grid$obj.space, less$sinks, less$height) %>% ggplotly()
     } else {
       # switch (input$plot.type,
-      #         pareto = moPLOT::plotly3DPareto(grid, fn, mode=input$space),
-      #         layers = moPLOT::plotly3DLayers(grid, fn, mode=input$space),
-      #         scan = moPLOT::plotly3DScan(grid, fn, mode=input$space),
+      #         pareto = plotly3DPareto(grid, fn, mode=input$space),
+      #         layers = plotly3DLayers(grid, fn, mode=input$space),
+      #         scan = plotly3DScan(grid, fn, mode=input$space),
       #         NULL # if plot.type is invalid
       # )
     }
