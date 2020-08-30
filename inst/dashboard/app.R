@@ -10,7 +10,7 @@ options("shiny.maxRequestSize" = 50L * (1024L**2L))
 ui <- fluidPage(
   useShinyjs(),
   
-  h1(markdown("`moPLOT` Dashboard <Working Title>")),
+  h1(markdown("`moPLOT` Landscape Explorer")),
   
   fluidRow(
     
@@ -113,21 +113,30 @@ ui <- fluidPage(
           selectInput("fn_name_zdt", "Function", names(zdt_functions)),
           numericInput("zdt_dim", "Dimensions", 2L, min = 2L, max = 3L, step = 1L)
         ),
+        
+        # Other
+        
+        conditionalPanel(
+          condition = "input.function_family == 'other'",
+          selectInput("fn_name_other", "Function", names(other_functions)),
+        ),
       ),
       
       wellPanel(
         numericInput("grid.size", "Resolution per dimension", 100, min=20, max=3000, step=1),
-        actionButton("update.grid", "Update Plots"),
+        actionButton("evaluate.grid", "Evaluate Grid"),
         # downloadButton('download.grid', "Download Grid"),
-        id = "update_plots"
+        id = "evaluate_grid_panel"
+      ),
+      
+      wellPanel(
+        selectInput("plot.type", "Type of plot", c("Select a function first" = "")),
+        selectInput("space", "Select space to plot", c("Decision Space"="decision.space", "Objective Space"="objective.space", "Decision + Objective Space"="both")),
+        actionButton("update.plot", "Update Plot"),
+        id = "update_plot_panel"
       )
       
       # tabsetPanel(
-      #   tabPanel("Calculate Grid",
-      #            numericInput("grid.size", "Resolution per dimension", 100, min=20, max=3000, step=1),
-      #            actionButton("update.grid", "Calculate Grid"),
-      #            downloadButton('download.grid', "Download Grid"),
-      #   ),
       #   tabPanel("Upload Grid",
       #            fileInput('upload.grid', "Upload Grid", accept = c(".Rds"))
       #   ),
@@ -143,14 +152,17 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
-  grid <- NULL
+  plot_data <- list()
   fn <- NULL
-  hide("update_plots")
+  
+  hide("evaluate_grid_panel")
+  hide("update_plot_panel")
 
   observe({
     generator_fn <- NULL
     
-    hide("update_plots")
+    hide("evaluate_grid_panel")
+    hide("update_plot_panel")
 
     shiny::validate(
       shiny::need(try({
@@ -222,33 +234,44 @@ server <- function(input, output, session) {
             args$b <- input$sympart_b
             args$c <- input$sympart_c
           }
+        } else if (input$function_family == "other") {
+          generator_fn <- other_functions[[input$fn_name_other]]
+          
+          args <- list()
         }
         
         if (!is.null(generator_fn)) {
           fn <<- do.call(generator_fn, args)
-          show("update_plots")
+          
+          if (smoof::getNumberOfParameters(fn) == 2) {
+            updateSliderInput("grid.size", session = session, value = 100, min=50, max=3000, step=50)
+            updateSelectInput(session = session, inputId = "plot.type", choices = list("PLOT" = "PLOT", "Heatmap" = "heatmap", "Cost Landscape (TODO)" = "cost_landscape"))
+          } else {
+            updateSliderInput("grid.size", session = session, value = 50, min=20, max=200, step=10)
+            updateSelectInput(session = session, inputId = "plot.type", choices = list("Onion Layers" = "layers", "MRI Scan" = "scan", "Nondominated" = "pareto"))
+          }
+          
+          show("evaluate_grid_panel")
         }
       }), "Please define a valid function.")
     )
-    
-    print(fn)
   })
   
-  update.grid = function() {
+  evaluate.grid = function() {
     if (is.null(fn)) {
       return()
     }
     
-    grid <<- generateDesign(fn, points.per.dimension = input$grid.size)
-    grid$obj.space <<- calculateObjectiveValues(grid$dec.space, fn, parallelize = T)
+    # reset stored plot data
     
-    gradients <- computeGradientFieldGrid(grid)
+    plot_data <<- list()
     
-    divergence <- computeDivergenceGrid(gradients$multi.objective, grid$dims, grid$step.sizes)
+    # generate design and evaluate objective space
     
-    # Calculate locally efficient points
-    less <<- localEfficientSetSkeleton(grid, gradients, divergence, integration="fast")
-    grid$height <<- less$height
+    design <- generateDesign(fn, points.per.dimension = input$grid.size)
+    design$obj.space <- calculateObjectiveValues(design$dec.space, fn, parallelize = T)
+    
+    plot_data$design <<- design
   }
   
   get.plot = function() {
@@ -256,32 +279,63 @@ server <- function(input, output, session) {
       return(NULL)
     }
     
-    d = smoof::getNumberOfParameters(fn)
-    n = smoof::getNumberOfObjectives(fn)
+    if (is.null(plot_data$less)) {
+      design <- plot_data$design
+      
+      gradients <- computeGradientFieldGrid(design)
+      
+      divergence <- computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
+      
+      # Calculate locally efficient points
+      plot_data$less <<- localEfficientSetSkeleton(design, gradients, divergence, integration="fast")
+    }
     
+    grid <- plot_data$design
+    grid$height <- plot_data$less$height
+    
+    less <- plot_data$less
+
+    d = smoof::getNumberOfParameters(fn)
+
     if (d == 2) {
-      plotly2DHeatmap(grid, fn, mode="decision.space")
-      # ggplotPLOT(grid$dec.space, grid$obj.space, less$sinks, less$height) %>% ggplotly()
+      switch (input$plot.type,
+              heatmap = plotly2DHeatmap(grid, fn, mode = input$space),
+              # cost_landscape = plotly3DLayers(grid, fn, mode = input$space),
+              PLOT = plotly::ggplotly(ggplotPLOT(grid$dec.space, grid$obj.space, less$sinks, less$height)),
+              NULL # if plot.type is invalid
+      )
+    } else if (d == 3) {
+      switch (input$plot.type,
+              pareto = plotly3DPareto(grid, fn, mode = input$space),
+              layers = plotly3DLayers(grid, fn, mode = input$space),
+              scan = plotly3DScan(grid, fn, mode = input$space),
+              NULL # if plot.type is invalid
+      )
     } else {
-      # switch (input$plot.type,
-      #         pareto = plotly3DPareto(grid, fn, mode=input$space),
-      #         layers = plotly3DLayers(grid, fn, mode=input$space),
-      #         scan = plotly3DScan(grid, fn, mode=input$space),
-      #         NULL # if plot.type is invalid
-      # )
+      NULL
     }
   }
   
+  observeEvent(input$evaluate.grid, {
+    disable('evaluate.grid')
+    disable('update.plot')
+    
+    evaluate.grid()
+    
+    show("update_plot_panel")
+    
+    enable('update.plot')
+    enable('evaluate.grid')
+  })
+  
   output$plot = plotly::renderPlotly(
-    eventReactive(input$update.grid, {
-      disable('update.grid')
+    eventReactive(input$update.plot, {
+      disable('evaluate.grid')
 
-      update.grid()
-      
       options(warn = -1)
       p = get.plot()
       
-      enable('update.grid')
+      enable('evaluate.grid')
 
       p
     }, event.quoted = T)()
@@ -298,25 +352,25 @@ server <- function(input, output, session) {
   #   }
   # )
   
-  observeEvent(input$upload.grid, {
-    if (!endsWith(input$upload.grid$datapath, ".Rds")) {
-      print(input$upload.grid)
-      return()
-    }
-    
-    disable('update.grid')
-    disable('update.plot')
-    
-    grid <<- readRDS(input$upload.grid$datapath)
-    
-    show('plot.type')
-    show('space')
-    show('update.plot')
-    
-    enable('update.grid')
-    enable('update.plot')
-    enable('download.grid')
-  })
+  # observeEvent(input$upload.grid, {
+  #   if (!endsWith(input$upload.grid$datapath, ".Rds")) {
+  #     print(input$upload.grid)
+  #     return()
+  #   }
+  #   
+  #   disable('evaluate.grid')
+  #   disable('update.plot')
+  #   
+  #   grid <<- readRDS(input$upload.grid$datapath)
+  #   
+  #   show('plot.type')
+  #   show('space')
+  #   show('update.plot')
+  #   
+  #   enable('evaluate.grid')
+  #   enable('update.plot')
+  #   enable('download.grid')
+  # })
 }
 
 shinyApp(ui, server)
