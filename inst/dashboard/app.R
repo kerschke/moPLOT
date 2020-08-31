@@ -123,22 +123,22 @@ ui <- fluidPage(
       ),
       
       wellPanel(
-        numericInput("grid.size", "Resolution per dimension", 100, min=20, max=3000, step=1),
-        actionButton("evaluate.grid", "Evaluate Grid"),
-        # downloadButton('download.grid', "Download Grid"),
+        numericInput("grid_size", "Resolution per dimension", 100, min=20, max=3000, step=1),
+        actionButton("evaluate_grid", "Evaluate Grid"),
+        # downloadButton('download_grid', "Download Grid"),
         id = "evaluate_grid_panel"
       ),
       
       wellPanel(
-        selectInput("plot.type", "Type of plot", c("Select a function first" = "")),
+        selectInput("plot_type", "Type of plot", c("Select a function first" = "")),
         selectInput("space", "Select space to plot", c("Decision Space"="decision.space", "Objective Space"="objective.space", "Decision + Objective Space"="both")),
-        actionButton("update.plot", "Update Plot"),
+        actionButton("update_plot", "Update Plot"),
         id = "update_plot_panel"
       )
       
       # tabsetPanel(
       #   tabPanel("Upload Grid",
-      #            fileInput('upload.grid', "Upload Grid", accept = c(".Rds"))
+      #            fileInput('upload_grid', "Upload Grid", accept = c(".Rds"))
       #   ),
       #   id = "grid.tabs",
       #   type = "pills"
@@ -244,11 +244,11 @@ server <- function(input, output, session) {
           fn <<- do.call(generator_fn, args)
           
           if (smoof::getNumberOfParameters(fn) == 2) {
-            updateSliderInput("grid.size", session = session, value = 100, min=50, max=3000, step=50)
-            updateSelectInput(session = session, inputId = "plot.type", choices = list("PLOT" = "PLOT", "Heatmap" = "heatmap", "Cost Landscape (TODO)" = "cost_landscape"))
+            updateSliderInput("grid_size", session = session, value = 100, min=50, max=3000, step=50)
+            updateSelectInput(session = session, inputId = "plot_type", choices = list("PLOT" = "PLOT", "Heatmap" = "heatmap", "Cost Landscape (TODO)" = "cost_landscape"))
           } else {
-            updateSliderInput("grid.size", session = session, value = 50, min=20, max=200, step=10)
-            updateSelectInput(session = session, inputId = "plot.type", choices = list("Onion Layers" = "layers", "MRI Scan" = "scan", "Nondominated" = "pareto"))
+            updateSliderInput("grid_size", session = session, value = 50, min=20, max=200, step=10)
+            updateSelectInput(session = session, inputId = "plot_type", choices = list("Onion Layers" = "layers", "MRI Scan" = "scan", "Nondominated" = "pareto"))
           }
           
           show("evaluate_grid_panel")
@@ -257,7 +257,7 @@ server <- function(input, output, session) {
     )
   })
   
-  evaluate.grid = function() {
+  evaluate_grid = function() {
     if (is.null(fn)) {
       return()
     }
@@ -268,7 +268,7 @@ server <- function(input, output, session) {
     
     # generate design and evaluate objective space
     
-    design <- generateDesign(fn, points.per.dimension = input$grid.size)
+    design <- generateDesign(fn, points.per.dimension = input$grid_size)
     design$obj.space <- calculateObjectiveValues(design$dec.space, fn, parallelize = T)
     
     plot_data$design <<- design
@@ -298,53 +298,53 @@ server <- function(input, output, session) {
     d = smoof::getNumberOfParameters(fn)
 
     if (d == 2) {
-      switch (input$plot.type,
+      switch (input$plot_type,
               heatmap = plotly2DHeatmap(grid, fn, mode = input$space),
               # cost_landscape = plotly3DLayers(grid, fn, mode = input$space),
               PLOT = plotly::ggplotly(ggplotPLOT(grid$dec.space, grid$obj.space, less$sinks, less$height)),
-              NULL # if plot.type is invalid
+              NULL # if plot_type is invalid
       )
     } else if (d == 3) {
-      switch (input$plot.type,
+      switch (input$plot_type,
               pareto = plotly3DPareto(grid, fn, mode = input$space),
               layers = plotly3DLayers(grid, fn, mode = input$space),
               scan = plotly3DScan(grid, fn, mode = input$space),
-              NULL # if plot.type is invalid
+              NULL # if plot_type is invalid
       )
     } else {
       NULL
     }
   }
   
-  observeEvent(input$evaluate.grid, {
-    disable('evaluate.grid')
-    disable('update.plot')
+  observeEvent(input$evaluate_grid, {
+    disable('evaluate_grid')
+    disable('update_plot')
     
-    evaluate.grid()
+    evaluate_grid()
     
     show("update_plot_panel")
     
-    enable('update.plot')
-    enable('evaluate.grid')
+    enable('update_plot')
+    enable('evaluate_grid')
   })
   
   output$plot = plotly::renderPlotly(
-    eventReactive(input$update.plot, {
-      disable('evaluate.grid')
+    eventReactive(input$update_plot, {
+      disable('evaluate_grid')
 
       options(warn = -1)
       p = get.plot()
       
-      enable('evaluate.grid')
+      enable('evaluate_grid')
 
       p
     }, event.quoted = T)()
   )
   
-  # output$download.grid = downloadHandler(
+  # output$download_grid = downloadHandler(
   #   filename = function() {
   #     fn = test.functions[[as.numeric(input$fn.id)]]
-  #     paste0(smoof::getName(fn), "-grid-", input$grid.size, '.Rds')
+  #     paste0(smoof::getName(fn), "-grid-", input$grid_size, '.Rds')
   #   },
   #   
   #   content = function(file) {
@@ -352,24 +352,24 @@ server <- function(input, output, session) {
   #   }
   # )
   
-  # observeEvent(input$upload.grid, {
-  #   if (!endsWith(input$upload.grid$datapath, ".Rds")) {
-  #     print(input$upload.grid)
+  # observeEvent(input$upload_grid, {
+  #   if (!endsWith(input$upload_grid$datapath, ".Rds")) {
+  #     print(input$upload_grid)
   #     return()
   #   }
   #   
-  #   disable('evaluate.grid')
-  #   disable('update.plot')
+  #   disable('evaluate_grid')
+  #   disable('update_plot')
   #   
-  #   grid <<- readRDS(input$upload.grid$datapath)
+  #   grid <<- readRDS(input$upload_grid$datapath)
   #   
-  #   show('plot.type')
+  #   show('plot_type')
   #   show('space')
-  #   show('update.plot')
+  #   show('update_plot')
   #   
-  #   enable('evaluate.grid')
-  #   enable('update.plot')
-  #   enable('download.grid')
+  #   enable('evaluate_grid')
+  #   enable('update_plot')
+  #   enable('download_grid')
   # })
 }
 
