@@ -2,9 +2,14 @@ function_families <- c(
   "Bi-Objective BBOB" = "biobj_bbob",
   "DTLZ Functions" = "dtlz",
   "MMF Functions" = "mmf",
+  "MOP Functions" = "mop",
   "MPM2 Generator (TODO)" = "mpm2",
   "ZDT Functions" = "zdt",
   "Other" = "other"
+)
+
+biobj_bbob_functions <- list(
+  "Bi-Objective BBOB" = smoof::makeBiObjBBOBFunction
 )
 
 dtlz_functions <- list(
@@ -48,6 +53,16 @@ zdt_functions = list(
   "ZDT3" = smoof::makeZDT3Function,
   "ZDT4" = smoof::makeZDT4Function,
   "ZDT6" = smoof::makeZDT6Function
+)
+
+mop_functions = list(
+  "MOP1" = smoof::makeMOP1Function,
+  "MOP2" = smoof::makeMOP2Function,
+  "MOP3" = smoof::makeMOP3Function,
+  "MOP4" = smoof::makeMOP4Function,
+  "MOP5" = smoof::makeMOP5Function,
+  "MOP6" = smoof::makeMOP6Function,
+  "MOP7" = smoof::makeMOP7Function
 )
 
 # Aspar functions
