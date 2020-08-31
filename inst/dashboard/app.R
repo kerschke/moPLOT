@@ -18,108 +18,9 @@ ui <- fluidPage(
       h3("Choose MOP"),
       wellPanel(
         selectInput("function_family", "Function Family", c("Select a function family"="", function_families)),
+        selectInput("fn_name", "Function", c("Select a function family first"="")),
         
-        # Bi-Objective BBOB
-        
-        conditionalPanel(
-          condition = "input.function_family == 'biobj_bbob'",
-          splitLayout(
-            numericInput("biobj_bbob_fid", "Function ID", 1L, min = 1L, max = 55L, step = 1L),
-            numericInput("biobj_bbob_iid", "Instance ID", 1L, min = 1L),
-            numericInput("biobj_bbob_dim", "Dimensions", 2L, min = 2L, max = 3L, step = 1L)
-          )
-        ),
-        
-        # DTLZ
-        
-        conditionalPanel(
-          condition = "input.function_family == 'dtlz'",
-          selectInput("fn_name_dtlz", "Function", names(dtlz_functions)),
-          splitLayout(
-            numericInput("dtlz_dim", "Dimensions", 2L, min = 2L, max = 3L, step = 1L),
-            numericInput("dtlz_obj", "Objectives", 2L, min = 2L, max = 3L, step = 1L)
-          ),
-          
-          conditionalPanel(
-            condition = "input.fn_name_dtlz == 'DTLZ4'",
-            numericInput("dtlz_alpha", "Alpha", 100L)
-          )
-        ),
-        
-        # MMF
-        
-        conditionalPanel(
-          condition = "input.function_family == 'mmf'",
-          selectInput("fn_name_mmf", "Function", names(mmf_functions)),
-          
-          conditionalPanel(
-            condition = "input.fn_name_mmf == 'MMF14' ||
-                         input.fn_name_mmf == 'MMF14a' ||
-                         input.fn_name_mmf == 'MMF15' ||
-                         input.fn_name_mmf == 'MMF15a'",
-            splitLayout(
-              numericInput("mmf_dim", "Dimensions", 2L, min = 2L, max = 3L, step = 1L),
-              numericInput("mmf_obj", "Objectives", 2L, min = 2L, max = 3L, step = 1L)
-            )
-          ),
-          
-          conditionalPanel(
-            condition = "input.fn_name_mmf == 'MMF1e'",
-            numericInput("mmf_a", "a", exp(1L))
-          ),
-          
-          conditionalPanel(
-            condition = "input.fn_name_mmf == 'MMF1z'",
-            numericInput("mmf_k", "k", 3L)
-          ),
-          
-          conditionalPanel(
-            condition = "input.fn_name_mmf == 'MMF9' ||
-                         input.fn_name_mmf == 'MMF11' ||
-                         input.fn_name_mmf == 'MMF12' ||
-                         input.fn_name_mmf == 'MMF13' ||
-                         input.fn_name_mmf == 'MMF14' ||
-                         input.fn_name_mmf == 'MMF14a' ||
-                         input.fn_name_mmf == 'MMF15' ||
-                         input.fn_name_mmf == 'MMF15a'",
-            numericInput("mmf_np", "np", 2L, min = 1L, step = 1L)
-          ),
-          
-          conditionalPanel(
-            condition = "input.fn_name_mmf == 'MMF12'",
-            numericInput("mmf_q", "q", 4L, min = 1L, step = 1L)
-          ),
-          
-          conditionalPanel(
-            condition = "input.fn_name_mmf == 'SYMPART-rotated'",
-            numericInput("sympart_w", "w", pi / 4, step = pi / 8),
-          ),
-          
-          conditionalPanel(
-            condition = "input.fn_name_mmf == 'SYMPART-simple' ||
-                         input.fn_name_mmf == 'SYMPART-rotated'",
-            splitLayout(
-              numericInput("sympart_a", "a", 1L),
-              numericInput("sympart_b", "b", 10L),
-              numericInput("sympart_c", "c", 8L)
-            )
-          )
-        ),
-        
-        # ZDT
-        
-        conditionalPanel(
-          condition = "input.function_family == 'zdt'",
-          selectInput("fn_name_zdt", "Function", names(zdt_functions)),
-          numericInput("zdt_dim", "Dimensions", 2L, min = 2L, max = 3L, step = 1L)
-        ),
-        
-        # Other
-        
-        conditionalPanel(
-          condition = "input.function_family == 'other'",
-          selectInput("fn_name_other", "Function", names(other_functions)),
-        ),
+        uiOutput("fn_args")
       ),
       
       wellPanel(
@@ -153,114 +54,174 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   plot_data <- list()
-  fn <- NULL
+  
+  # Hide some parts per default
   
   hide("evaluate_grid_panel")
   hide("update_plot_panel")
-
-  observe({
-    generator_fn <- NULL
-    
-    hide("evaluate_grid_panel")
-    hide("update_plot_panel")
-
-    shiny::validate(
-      shiny::need(try({
-        if (input$function_family == "biobj_bbob") {
-          # Bi-objective BBOB
-          
-          generator_fn <- smoof::makeBiObjBBOBFunction
-          
-          args <- list(
-            dimensions = input$biobj_bbob_dim,
-            fid = input$biobj_bbob_fid,
-            iid = input$biobj_bbob_iid
-          )
-        } else if (input$function_family == "dtlz") {
-          # DTLZ
-          
-          generator_fn <- dtlz_functions[[input$fn_name_dtlz]]
-          
-          args <- list(
-            dimensions = input$dtlz_dim,
-            n.objectives = input$dtlz_obj
-          )
-          
-          if (input$fn_name_dtlz == "DTLZ4") {
-            args$alpha <- input$dtlz_alpha
-          }
-        } else if (input$function_family == "zdt") {
-          # ZDT
-          
-          generator_fn <- zdt_functions[[input$fn_name_zdt]]
-          
-          args <- list(
-            dimensions = input$zdt_dim
-          )
-        } else if (input$function_family == "mmf") {
-          # MMF
-          
-          generator_fn <- mmf_functions[[input$fn_name_mmf]]
-          
-          args <- list()
-          
-          if (input$fn_name_mmf == "MMF1e") {
-            args$a <- input$mmf_a
-          }
-          
-          if (input$fn_name_mmf == "MMF1z") {
-            args$k <- input$mmf_k
-          }
-          
-          if (input$fn_name_mmf %in% c("MMF14", "MMF14a", "MMF15", "MMF15a")) {
-            args$dimensions <- input$mmf_dim
-            args$n.objectives <- input$mmf_obj
-          }
-          
-          if (input$fn_name_mmf %in% c("MMF9", "MMF11", "MMF12", "MMF13", "MMF14", "MMF14a", "MMF15", "MMF15a")) {
-            args$np <- input$mmf_np
-          }
-          
-          if (input$fn_name_mmf == "MMF12") {
-            args$q <- input$mmf_q
-          }
-          
-          if (input$fn_name_mmf == "SYMPART-rotated") {
-            args$w <- input$sympart_w
-          }
-          
-          if (input$fn_name_mmf %in% c("SYMPART-simple", "SYMPART-rotated")) {
-            args$a <- input$sympart_a
-            args$b <- input$sympart_b
-            args$c <- input$sympart_c
-          }
-        } else if (input$function_family == "other") {
-          generator_fn <- other_functions[[input$fn_name_other]]
-          
-          args <- list()
-        }
-        
-        if (!is.null(generator_fn)) {
-          fn <<- do.call(generator_fn, args)
-          
-          if (smoof::getNumberOfParameters(fn) == 2) {
-            updateSliderInput("grid_size", session = session, value = 100, min=50, max=3000, step=50)
-            updateSelectInput(session = session, inputId = "plot_type", choices = list("PLOT" = "PLOT", "Heatmap" = "heatmap", "Cost Landscape (TODO)" = "cost_landscape"))
-          } else {
-            updateSliderInput("grid_size", session = session, value = 50, min=20, max=200, step=10)
-            updateSelectInput(session = session, inputId = "plot_type", choices = list("Onion Layers" = "layers", "MRI Scan" = "scan", "Nondominated" = "pareto"))
-          }
-          
-          show("evaluate_grid_panel")
-        }
-      }), "Please define a valid function.")
+  hide("fn_name")
+  
+  # Reactive getters
+  
+  get_fn_family <- reactive({
+    switch(
+      input$function_family,
+      biobj_bbob = biobj_bbob_functions,
+      dtlz = dtlz_functions,
+      mmf = mmf_functions,
+      mop = mop_functions,
+      zdt = zdt_functions,
+      other = other_functions
     )
   })
   
-  evaluate_grid = function() {
-    if (is.null(fn)) {
-      return()
+  get_generator_fn <- reactive({
+    get_fn_family()[[input$fn_name]]
+  })
+  
+  get_default_args <- reactive({
+    generator_fn <- get_generator_fn()
+    
+    if (is.null(generator_fn)) {
+      list()
+    } else {
+      args <- formals(generator_fn)
+
+      if (length(args) > 0) args else list()
     }
+  })
+  
+  get_selected_args <- reactive({
+    args <- lapply(get_args_names_ui(), function(argument_name) {
+      input[[argument_name]]
+    })
+    
+    # Only return args if correctly connected to output
+    if (any(sapply(args, is.null))) return(NULL)
+    
+    names(args) <- names(get_default_args())
+
+    args
+  })
+  
+  get_args_names_ui <- reactive({
+    args_names <- names(get_default_args())
+    
+    if (is.null(args_names)) list() else paste0("args_", args_names)
+  })
+  
+  get_fn <- reactive({
+    generator_fn <- get_generator_fn()
+    args <- get_selected_args()
+    
+    req(generator_fn)
+    req(args)
+    
+    tryCatch({
+      do.call(generator_fn, args)
+    }, error = function(e) {
+      print(e)
+      
+      NULL
+    })
+  })
+  
+  # Observers that change the UI dynamically
+  
+  observe({
+    fn <- get_fn()
+    
+    req(fn)
+
+    hide("evaluate_grid_panel")
+    hide("update_plot_panel")
+    
+    if (smoof::getNumberOfParameters(fn) == 2) {
+      updateSliderInput("grid_size", session = session, value = 200, min=50, max=3000, step=50)
+      updateSelectInput(session = session, inputId = "plot_type", choices = list("PLOT" = "PLOT", "Heatmap" = "heatmap", "Cost Landscape (TODO)" = "cost_landscape"))
+    } else {
+      updateSliderInput("grid_size", session = session, value = 50, min=20, max=200, step=10)
+      updateSelectInput(session = session, inputId = "plot_type", choices = list("Onion Layers" = "layers", "MRI Scan" = "scan", "Nondominated" = "pareto"))
+    }
+    
+    show("evaluate_grid_panel")
+  })
+  
+  observe({
+    fn_family <- get_fn_family()
+    
+    updateSelectInput(session, "fn_name", choices = names(fn_family))
+
+    if (is.null(fn_family) || input$function_family == "biobj_bbob") {
+      hide("fn_name")
+    } else {
+      show("fn_name")
+    }
+  })
+  
+  # Dynamically created view with function parameters
+  
+  output$fn_args = renderUI({
+    print(input$fn_name)
+    
+    args <- get_default_args()
+    
+    ui_inputs <- lapply(names(args), function(argument_name) {
+      input_args <- list(
+        inputId = paste0("args_", argument_name), 
+        value = if (is.symbol(args[[argument_name]])) 0 else eval(args[[argument_name]]),
+        label = argument_name
+      )
+      
+      # General special cases
+      
+      if (input_args$label == "dimensions") {
+        input_args$label = "Dimensions"
+        input_args$value = 2
+        input_args$min = 2
+        input_args$max = 3
+      } else if (input_args$label == "n.objectives") {
+        input_args$label = "Objectives"
+        input_args$value = 2
+        input_args$min = 2
+        input_args$max = 3
+      }
+      
+      # Special cases for Bi-Obj BBOB
+      
+      if (input$function_family == "biobj_bbob") {
+        if (input_args$label == "fid") {
+          input_args$label = "Function ID"
+          input_args$value = 1
+          input_args$min = 1
+          input_args$max = 55
+        }
+        
+        if (input_args$label == "iid") {
+          input_args$label = "Instance ID"
+          input_args$value = 1
+          input_args$min = 1
+        }
+      }
+      
+      input_type <- ifelse(is.numeric(input_args$value), numericInput, textInput)
+      
+      do.call(input_type, input_args)
+    })
+    
+    ui_inputs$cellArgs <- list(style = "width: 49%")
+    
+    do.call(flowLayout, ui_inputs)
+  })
+  
+  # Plotting-related functions
+  
+  evaluate_grid = function() {
+    fn <- get_fn()
+    
+    req(fn)
+    
+    print(fn)
     
     # reset stored plot data
     
@@ -275,9 +236,9 @@ server <- function(input, output, session) {
   }
   
   get.plot = function() {
-    if (is.null(fn)) {
-      return(NULL)
-    }
+    fn <- get_fn()
+    
+    req(fn)
     
     if (is.null(plot_data$less)) {
       design <- plot_data$design
