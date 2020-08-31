@@ -97,9 +97,10 @@ server <- function(input, output, session) {
     })
     
     # Only return args if correctly connected to output
-    if (any(sapply(args, is.null))) return(NULL)
+    if (all(sapply(args, is.null))) return(list())
     
     names(args) <- names(get_default_args())
+    args <- args[!sapply(args, function(arg) (is.null(arg) || arg == ""))]
 
     args
   })
@@ -162,25 +163,23 @@ server <- function(input, output, session) {
   # Dynamically created view with function parameters
   
   output$fn_args = renderUI({
-    print(input$fn_name)
-    
     args <- get_default_args()
     
     ui_inputs <- lapply(names(args), function(argument_name) {
       input_args <- list(
         inputId = paste0("args_", argument_name), 
-        value = if (is.symbol(args[[argument_name]])) 0 else eval(args[[argument_name]]),
-        label = argument_name
+        value = if (is.symbol(args[[argument_name]])) NULL else tryCatch(eval(args[[argument_name]]), error = function(e) NULL),
+        label = code(argument_name)
       )
       
       # General special cases
       
-      if (input_args$label == "dimensions") {
+      if (argument_name == "dimensions") {
         input_args$label = "Dimensions"
         input_args$value = 2
         input_args$min = 2
         input_args$max = 3
-      } else if (input_args$label == "n.objectives") {
+      } else if (argument_name == "n.objectives") {
         input_args$label = "Objectives"
         input_args$value = 2
         input_args$min = 2
@@ -190,14 +189,14 @@ server <- function(input, output, session) {
       # Special cases for Bi-Obj BBOB
       
       if (input$function_family == "biobj_bbob") {
-        if (input_args$label == "fid") {
+        if (argument_name == "fid") {
           input_args$label = "Function ID"
           input_args$value = 1
           input_args$min = 1
           input_args$max = 55
         }
         
-        if (input_args$label == "iid") {
+        if (argument_name == "iid") {
           input_args$label = "Instance ID"
           input_args$value = 1
           input_args$min = 1
