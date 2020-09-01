@@ -7,8 +7,10 @@ localEfficientSetSkeleton = function(design, gradients, divergence, integration=
   # lnd = lapply(1:ncol(grid$obj.space), function(i) {
   #   locallyNondominatedCPP(matrix(grid$obj.space[,i]), grid$dims, T)
   # })
+  
+  lnd = locallyNondominatedCPP(design$obj.space, design$dims, TRUE)
 
-  critical = getCriticalPointsCellCPP(gradients$multi.objective, gradients$single.objective, divergence, c(-1), design$dims, FALSE)
+  critical = getCriticalPointsCellCPP(gradients$multi.objective, gradients$single.objective, divergence, lnd, design$dims, FALSE)
 
   sinks = critical$sinks
 

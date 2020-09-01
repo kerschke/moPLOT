@@ -126,18 +126,18 @@ BEGIN_RCPP
 END_RCPP
 }
 // getCriticalPointsCellCPP
-List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, NumericVector div, IntegerVector lowerOrderCritical, IntegerVector dims, bool sinks_only);
-RcppExport SEXP _moPLOT_getCriticalPointsCellCPP(SEXP moGradMatSEXP, SEXP gradMatListSEXP, SEXP divSEXP, SEXP lowerOrderCriticalSEXP, SEXP dimsSEXP, SEXP sinks_onlySEXP) {
+List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, NumericVector div, IntegerVector locallyNondominated, IntegerVector dims, bool sinks_only);
+RcppExport SEXP _moPLOT_getCriticalPointsCellCPP(SEXP moGradMatSEXP, SEXP gradMatListSEXP, SEXP divSEXP, SEXP locallyNondominatedSEXP, SEXP dimsSEXP, SEXP sinks_onlySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type moGradMat(moGradMatSEXP);
     Rcpp::traits::input_parameter< List >::type gradMatList(gradMatListSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type div(divSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type lowerOrderCritical(lowerOrderCriticalSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type locallyNondominated(locallyNondominatedSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
     Rcpp::traits::input_parameter< bool >::type sinks_only(sinks_onlySEXP);
-    rcpp_result_gen = Rcpp::wrap(getCriticalPointsCellCPP(moGradMat, gradMatList, div, lowerOrderCritical, dims, sinks_only));
+    rcpp_result_gen = Rcpp::wrap(getCriticalPointsCellCPP(moGradMat, gradMatList, div, locallyNondominated, dims, sinks_only));
     return rcpp_result_gen;
 END_RCPP
 }

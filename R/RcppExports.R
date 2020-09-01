@@ -41,8 +41,8 @@ imputeBoundary <- function(moGradMat, gradMatList, dims) {
     .Call(`_moPLOT_imputeBoundary`, moGradMat, gradMatList, dims)
 }
 
-getCriticalPointsCellCPP <- function(moGradMat, gradMatList, div, lowerOrderCritical, dims, sinks_only) {
-    .Call(`_moPLOT_getCriticalPointsCellCPP`, moGradMat, gradMatList, div, lowerOrderCritical, dims, sinks_only)
+getCriticalPointsCellCPP <- function(moGradMat, gradMatList, div, locallyNondominated, dims, sinks_only) {
+    .Call(`_moPLOT_getCriticalPointsCellCPP`, moGradMat, gradMatList, div, locallyNondominated, dims, sinks_only)
 }
 
 connectedComponentsGrid <- function(ids, dims) {

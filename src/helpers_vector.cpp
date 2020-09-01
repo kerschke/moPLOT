@@ -338,7 +338,7 @@ int isCritical(std::vector<NumericVector> vectors) {
 }
 
 // [[Rcpp::export]]
-List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, NumericVector div, IntegerVector lowerOrderCritical, IntegerVector dims, bool sinks_only) {
+List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, NumericVector div, IntegerVector locallyNondominated, IntegerVector dims, bool sinks_only) {
   int p = gradMatList.length();
   int d = dims.size();
   int n = div.length();
@@ -349,7 +349,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
     gradMat[i] = as<NumericMatrix>(gradMatList(i));
   }
 
-  std::set<int> loc_set(lowerOrderCritical.begin(), lowerOrderCritical.end());
+  std::set<int> locally_nondmominated(locallyNondominated.begin(), locallyNondominated.end());
 
   std::unordered_set<int> sinks;
   std::unordered_set<int> sources;
@@ -435,19 +435,19 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
       }
 
       bool crit = false;
-
+      
       // critical if MO is critical
 
       int mo_critical = isCritical(allVectors);
-      if (mo_critical == 1 || (p == 1 && mo_critical == 0)) {
+      
+      if (mo_critical == 1) {
         crit = true;
-      }
-
-      // critical if some corner is defined as critical
-
-      for (int cornerID: cornerIDs) {
-        if (loc_set.find(cornerID) != loc_set.end()) {
-          crit = true;
+      } else if (mo_critical == 0) {
+        // in the edge case, only critical, if a corner point is locally nondominated
+        for (int cornerID: cornerIDs) {
+          if (locally_nondmominated.find(cornerID) != locally_nondmominated.end()) {
+            crit = true;
+          }
         }
       }
 
