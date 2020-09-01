@@ -24,10 +24,20 @@ ggplotPLOT = function(dec.space, obj.space, sinks, height, check.data = TRUE) {
   var1 = colnames(dec.space)[1]
   var2 = colnames(dec.space)[2]
   
-  g = ggplotHeatmap(height.df, color.palette = gray.colors(500L, start = 0, end = 1, gamma = 0.5),
+  colorscale.efficient = fields::tim.colors(500L)
+  colorscale.heatmap = gray.colors(500L, start = 0, end = 1, gamma = 0.5)
+  
+  if (all(sinks.df$rank == sinks.df$rank[1])) {
+    # If all "rank" values are identical, they are all globally efficient.
+    # Change the colorscale so that they are plotted as the "lowest" color
+    # value rather than the middle one (which is the default).
+    colorscale.efficient = colorscale.efficient[1]
+  }
+  
+  g = ggplotHeatmap(height.df, color.palette = colorscale.heatmap,
                     var1 = var1, var2 = var2) +
     geom_point(mapping = aes_string(var1, var2, color="rank"), data = sinks.df) +
-    scale_color_gradientn(colors = fields::tim.colors(500L), na.value="black", trans = "log") +
+    scale_color_gradientn(colors = colorscale.efficient, na.value="black", trans = "log") +
     theme(legend.position = "none", axis.title = element_blank())
   
   return(g)
