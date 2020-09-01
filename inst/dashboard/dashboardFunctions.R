@@ -79,7 +79,7 @@ f3_2 = function(x) ((x[1] + 0.25) ** 4 + 3 * (x[2] - 1) ** 2 + (x[3] - 1) ** 2)
 f_3d2d = function(x) c(f1_2(x), f2_2(x))
 f_3d3d = function(x) c(f1_2(x), f2_2(x), f3_2(x))
 
-makeAsparFunction <- function(dimensions, n.objectives) {
+makeAsparFunction <- function(dimensions = 2, n.objectives = 2) {
   if (dimensions == 2 && n.objectives == 2) {
     smoof::makeMultiObjectiveFunction(name = "2D->2D Test Function", id = "test_2d2d", description = "", fn = f_2d2d,
                                       par.set = ParamHelpers::makeNumericParamSet(len = 2, lower = c(-2,-1), upper = c(2,3)))
