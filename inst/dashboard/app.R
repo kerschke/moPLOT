@@ -242,7 +242,7 @@ server <- function(input, output, session) {
     if (is.null(plot_data$less)) {
       design <- plot_data$design
       
-      gradients <- computeGradientFieldGrid(design)
+      gradients <- computeGradientFieldGrid(design, prec.angle = 1)
       
       divergence <- computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
       
