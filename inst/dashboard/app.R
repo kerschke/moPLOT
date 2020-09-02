@@ -15,28 +15,25 @@ ui <- fluidPage(
   fluidRow(
     
     column(4L,
-      # h3("Choose MOP"),
+      h3("Select MOP"),
+      
       wellPanel(
-        selectInput("function_family", "Function Family", c("Select a function family"="", function_families)),
+        selectInput("function_family", "Function family", c("Select a function family"="", function_families)),
         selectInput("fn_name", "Function", c("Select a function family first"="")),
         
         uiOutput("fn_args")
       ),
       
-      wellPanel(
-        checkboxInput("compute_plot", "Compute PLOT and Heatmap", TRUE),
-        checkboxInput("compute_cost_landscape", "Compute Cost Landscape", FALSE),
-        numericInput("grid_size", "Resolution per dimension", 100, min=20, max=3000, step=1),
-        actionButton("evaluate_grid", "Evaluate"), # icon = icon('th')
-        # downloadButton('download_grid', "Download Grid"),
+      div(
+        h3("Generate Data"),
+        wellPanel(
+          numericInput("grid_size", "Resolution per dimension", 100, min=20, max=3000, step=1),
+          checkboxInput("compute_plot", "Compute PLOT and heatmap", TRUE),
+          checkboxInput("compute_cost_landscape", "Compute cost landscape", FALSE),
+          actionButton("evaluate_grid", "Evaluate"), # icon = icon('th')
+          # downloadButton('download_grid', "Download Grid"),
+        ),
         id = "evaluate_grid_panel"
-      ),
-      
-      wellPanel(
-        selectInput("plot_type", "Type of plot", c("Select a function first" = "")),
-        selectInput("space", "Select space to plot", c("Decision Space"="decision.space", "Objective Space"="objective.space", "Decision + Objective Space"="both")),
-        actionButton("update_plot", "Update Plot"),
-        id = "update_plot_panel"
       )
       
       # tabsetPanel(
@@ -49,7 +46,35 @@ ui <- fluidPage(
     ),
     
     column(8,
-      uiOutput("plot_ui")
+      tabsetPanel(
+        tabPanel(
+          "PLOT",
+          plotly::plotlyOutput("plot"),
+          value = "tab_plot"
+        ),
+        tabPanel(
+          "Gradient Field Heatmap",
+          plotly::plotlyOutput("heatmap"),
+          value = "tab_heatmap"
+        ),
+        tabPanel(
+          "Cost Landscape",
+          plotly::plotlyOutput("cost_landscape"),
+          value = "tab_cost_landscape"
+        ),
+        id = "tabset_plots"
+      ),
+      div(
+        h3("Plot Options"),
+        wellPanel(
+          selectInput("space", "Select space to plot", c("Decision space" = "decision.space", "Objective space" = "objective.space", "Decision + objective space" = "both")),
+          div(
+            selectInput("three_d_approach", "3D Approach", c("MRI Scan" = "scan", "Onion Layers" = "layers", "Nondominated" = "pareto")),
+            id = "three_d_only"
+          )
+        ),
+        id = "plot_options"
+      )
     )
   )
 )
@@ -57,11 +82,28 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   plot_data <- list()
   
+  outputOptions(output, suspendWhenHidden = FALSE)
+  
+  reset_plots <- function() {
+    plot_data <<- list()
+    
+    hideTab("tabset_plots", "tab_plot")
+    hideTab("tabset_plots", "tab_heatmap")
+    hideTab("tabset_plots", "tab_cost_landscape")
+    
+    hide("tabset_plots")
+    hide("plot_options")
+    
+    enable("compute_plot")
+    enable("compute_cost_landscape")
+  }
+  
   # Hide some parts per default
   
   hide("evaluate_grid_panel")
-  hide("update_plot_panel")
   hide("fn_name")
+  
+  reset_plots()
   
   # Reactive getters
   
@@ -138,14 +180,14 @@ server <- function(input, output, session) {
     req(fn)
 
     hide("evaluate_grid_panel")
-    hide("update_plot_panel")
-    
+
     if (smoof::getNumberOfParameters(fn) == 2) {
       updateSliderInput("grid_size", session = session, value = 200, min=50, max=3000, step=50)
       updateSelectInput(session = session, inputId = "plot_type", choices = list("PLOT" = "PLOT", "Heatmap" = "heatmap", "Cost Landscape" = "cost_landscape"))
+      hide("three_d_only")
     } else {
       updateSliderInput("grid_size", session = session, value = 50, min=20, max=200, step=10)
-      updateSelectInput(session = session, inputId = "plot_type", choices = list("MRI Scan" = "scan", "Onion Layers" = "layers", "Nondominated" = "pareto"))
+      show("three_d_only")
     }
     
     show("evaluate_grid_panel")
@@ -216,55 +258,11 @@ server <- function(input, output, session) {
     do.call(flowLayout, ui_inputs)
   })
   
-  # Plotting-related functions
-  
-  get.plot = function() {
-    fn <- get_fn()
-    
-    req(fn)
+  # Generating data
 
-    grid <- plot_data$design
-    
-    grid$height <- switch (
-      input$plot_type,
-      heatmap = {
-        req(plot_data$less)
-        plot_data$less$height
-      },
-      cost_landscape = {
-        req(plot_data$domination_counts)
-        plot_data$domination_counts
-      }
-    )
-    
-    less <- plot_data$less
-
-    d = smoof::getNumberOfParameters(fn)
-    
-    if (d == 2) {
-      switch (input$plot_type,
-              heatmap = plotly2DHeatmap(grid, fn, mode = input$space),
-              cost_landscape = plotly2DHeatmap(grid, fn, mode = input$space),
-              PLOT = plotly2DPLOT(grid$dec.space, grid$obj.space, less$sinks, less$height, fn, mode = input$space),
-              NULL # if plot_type is invalid
-      )
-    } else if (d == 3) {
-      switch (input$plot_type,
-              pareto = plotly3DPareto(grid, fn, mode = input$space),
-              layers = plotly3DLayers(grid, fn, mode = input$space),
-              scan = plotly3DScan(grid, fn, mode = input$space),
-              NULL # if plot_type is invalid
-      )
-    } else {
-      NULL
-    }
-  }
-  
   observeEvent(c(input$grid_size, get_fn()), {
-    # reset stored plot data when resolution changes
-    plot_data <<- list()
-    enable("compute_plot")
-    enable("compute_cost_landscape")
+    # reset stored plot data when resolution or function changes
+    reset_plots()
   })
   
   observeEvent(input$evaluate_grid, {
@@ -272,7 +270,7 @@ server <- function(input, output, session) {
     req(fn)
     
     disable(selector = "button")
-
+    
     if (is.null(plot_data$design)) {
       # generate design and evaluate objective space
       
@@ -292,6 +290,9 @@ server <- function(input, output, session) {
       # Calculate locally efficient points
       plot_data$less <<- localEfficientSetSkeleton(design, gradients, divergence, integration="fast")
       
+      showTab("tabset_plots", "tab_plot")
+      showTab("tabset_plots", "tab_heatmap")
+      
       disable("compute_plot")
     }
     
@@ -299,30 +300,78 @@ server <- function(input, output, session) {
       nds <- ecr::doNondominatedSorting(t(plot_data$design$obj.space))
       plot_data$domination_counts <<- cbind(height = nds$dom.counter + 1)
       
+      showTab("tabset_plots", "tab_cost_landscape")
+      
       disable("compute_cost_landscape")
     }
     
-    show("update_plot_panel")
+    show("tabset_plots")
+    show("plot_options")
     
     enable(selector = "button")
   })
   
-  output$plot_ui = renderUI(
-    plotly::plotlyOutput(outputId = "plot", height = "100%")
-  )
+  # Plotting-related functions
+  
+  get_plot = function(plot_data, plot_type, space, three_d_approach) {
+    fn <- get_fn()
+    
+    req(fn)
+
+    grid <- plot_data$design
+    
+    grid$height <- switch (
+      plot_type,
+      heatmap = {
+        req(plot_data$less)
+        plot_data$less$height
+      },
+      cost_landscape = {
+        req(plot_data$domination_counts)
+        plot_data$domination_counts
+      }
+    )
+    
+    less <- plot_data$less
+
+    d = smoof::getNumberOfParameters(fn)
+    
+    if (d == 2) {
+      switch (plot_type,
+              heatmap = plotly2DHeatmap(grid, fn, mode = space),
+              cost_landscape = plotly2DHeatmap(grid, fn, mode = space),
+              PLOT = plotly2DPLOT(grid$dec.space, grid$obj.space, less$sinks, less$height, fn, mode = space),
+              NULL # if plot_type is invalid
+      )
+    } else if (d == 3) {
+      switch (three_d_approach,
+              pareto = plotly3DPareto(grid, fn, mode = space),
+              layers = plotly3DLayers(grid, fn, mode = space),
+              scan = plotly3DScan(grid, fn, mode = space),
+              NULL # if plot_type is invalid
+      )
+    } else {
+      NULL
+    }
+  }
   
   output$plot = plotly::renderPlotly(
-    eventReactive(input$update_plot, {
-      disable('evaluate_grid')
-
-      options(warn = -1)
-      p = get.plot()
-      
-      enable('evaluate_grid')
-
-      p
-    }, event.quoted = T)()
+    reactive({
+      get_plot(plot_data, "PLOT", input$space, input$three_d_approach)
+    }, quoted = TRUE)()
   )
+  
+  output$heatmap = plotly::renderPlotly({
+    reactive({
+      get_plot(plot_data, "heatmap", input$space, input$three_d_approach)
+    }, quoted = TRUE)()
+  })
+  
+  output$cost_landscape = plotly::renderPlotly({
+    reactive({
+      get_plot(plot_data, "cost_landscape", input$space, input$three_d_approach)
+    }, quoted = TRUE)()
+  })
   
   # output$download_grid = downloadHandler(
   #   filename = function() {
