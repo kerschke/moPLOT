@@ -372,14 +372,14 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
   NumericVector compVec;
 
   for (int id = 1; id <= n; id++) {
-    // loop over cell indices
+    // Loop over cell indices
     if (id % 1000 == 0) {
       cout << id << '\r';
     }
 
     anchorIndex = convertCellID2IndicesCPP(id, dims);
 
-    // for each "neighbouring simplex"
+    // for each "neighboring simplex"
     for (int simplexCounter = 0; simplexCounter < pow(2, d); simplexCounter++) {
       // fill all corners of current cell
       int step;
@@ -397,7 +397,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
 
         if (is_true(any(neighbourIndex < 1)) ||
             is_true(any(neighbourIndex > dims))) {
-          // illegal cell! we cannot evaluate this "simplex"
+          // Illegal cell! we cannot evaluate this "simplex"
           illegal_vertex = true;
           break;
         }
@@ -406,7 +406,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
       }
 
       if (illegal_vertex) {
-        // do not evaluate, if simplex is not legal
+        // Do not evaluate, if simplex is not legal
         continue;
       }
 
@@ -421,45 +421,45 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
         }
       }
 
-      if (sinks_only && not_sink) {
-        // current simplex cannot be a sink
-        continue;
-      }
-
-      int last_id = 0;
+      int vector_id = 0;
 
       for (int fID = 0; fID < p; fID++) {
         for (int cornerIndex = 0; cornerIndex < cornerIndices.nrow(); cornerIndex++) {
-          allVectors[last_id++] = gradMat[fID](cornerIDs(cornerIndex) - 1,_);
+          // Add all SO gradient vectors to a single list for easier reference
+          allVectors[vector_id++] = gradMat[fID](cornerIDs(cornerIndex) - 1,_);
         }
       }
 
       bool crit = false;
       
-      // critical if MO is critical
-
-      int mo_critical = isCritical(allVectors);
+      if (!(sinks_only && not_sink)) {
+        // Skip evaluation if we only want sinks and this cannot be one
       
-      if (mo_critical == 1) {
-        crit = true;
-      } else if (mo_critical == 0) {
-        // in the edge case, only critical, if a corner point is locally nondominated
-        for (int cornerID: cornerIDs) {
-          if (locally_nondmominated.find(cornerID) != locally_nondmominated.end()) {
-            crit = true;
+        // Check criticality of MO gradients
+        
+        int mo_critical = isCritical(allVectors);
+        
+        if (mo_critical == 1) {
+          crit = true;
+        } else if (mo_critical == 0) {
+          // In the edge case, only critical, if a corner point is locally nondominated
+          for (int cornerID: cornerIDs) {
+            if (locally_nondmominated.find(cornerID) != locally_nondmominated.end()) {
+              crit = true;
+            }
           }
         }
-      }
-
-      // critical if all point have zero MOG (degenerate critical point)
-
-      if (!crit) {
-        crit = true;
-
-        for (int cornerID : cornerIDs) {
-          if (is_true(any(moGradMat(cornerID-1,_) != 0))) {
-            crit = false;
-            break;
+        
+        // Critical if all point have zero MOG (degenerate critical point)
+        
+        if (!crit) {
+          crit = true;
+          
+          for (int cornerID : cornerIDs) {
+            if (is_true(any(moGradMat(cornerID-1,_) != 0))) {
+              crit = false;
+              break;
+            }
           }
         }
       }
@@ -468,7 +468,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
         bool pos = false;
         bool neg = false;
         bool zero = false;
-
+        
         for (int i : cornerIDs) {
           if (div(i-1) < 0) {
             neg = true;
@@ -493,7 +493,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
       }
 
       // (2)
-      // boundary cases: also critical, if no descent direction along boundary exists with neighbours at boundary
+      // boundary cases: also critical, if no descent direction along boundary exists with neighbors at boundary
 
       if (is_true(any(anchorIndex == 1)) || is_true(any(anchorIndex == dims))) {
         for (int d_iter = 0; d_iter < d; d_iter++) {

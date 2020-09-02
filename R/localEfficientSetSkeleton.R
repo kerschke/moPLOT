@@ -1,5 +1,5 @@
 #' @export
-localEfficientSetSkeleton = function(design, gradients, divergence, integration="fast", with.basins = F) {
+localEfficientSetSkeleton = function(design, gradients, divergence, integration = "fast", with.basins = FALSE) {
   less = list()
 
   cat('Finding critical points ...\n')
@@ -10,7 +10,7 @@ localEfficientSetSkeleton = function(design, gradients, divergence, integration=
   
   lnd = locallyNondominatedCPP(design$obj.space, design$dims, TRUE)
 
-  critical = getCriticalPointsCellCPP(gradients$multi.objective, gradients$single.objective, divergence, lnd, design$dims, FALSE)
+  critical = getCriticalPointsCellCPP(gradients$multi.objective, gradients$single.objective, divergence, lnd, design$dims, sinks_only = TRUE)
 
   sinks = critical$sinks
 
