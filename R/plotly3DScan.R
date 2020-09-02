@@ -1,5 +1,5 @@
 #' @export
-plotly3DScan = function(grid, fn, mode = "decision.space", impute.zero = T) {
+plotly3DScan = function(grid, fn, mode = "decision.space", frame = "x3", impute.zero = T) {
   # grid: list of obj.space, dims, dec.space, step.sizes
   # fn: smoof function, 3 dimensional decision space
   
@@ -33,11 +33,11 @@ plotly3DScan = function(grid, fn, mode = "decision.space", impute.zero = T) {
   
   if (mode == "both") {
     x.shared = highlight_key(x)
-    p.decision = plotly3DScanDecisionSpace(x.shared, fn, marker, scene="scene") %>% layout(
+    p.decision = plotly3DScanDecisionSpace(x.shared, fn, marker, frame = frame, scene = "scene") %>% layout(
       xaxis = list(range = c(min(x$y1),max(x$y1)), title='y₁'),
       yaxis = list(range = c(min(x$y2),max(x$y2)), title='y₂')
     )
-    p.objective = plotly3DScanObjectiveSpace(x.shared, fn, marker, scene="scene2")
+    p.objective = plotly3DScanObjectiveSpace(x.shared, fn, marker, frame = frame, scene="scene2")
     
     domain.left = list(
       x=c(0,0.5),
@@ -56,7 +56,6 @@ plotly3DScan = function(grid, fn, mode = "decision.space", impute.zero = T) {
     }
     
     subplot(p.decision, p.objective) %>% layout(
-      title = paste("Decision and Objective Space of", smoof::getName(fn)),
       scene = decision.scene,
       scene2 = objective.scene
     ) %>% highlight(
@@ -69,16 +68,16 @@ plotly3DScan = function(grid, fn, mode = "decision.space", impute.zero = T) {
       frame = 5000
     )
   } else if (mode == "decision.space") {
-    plotly3DScanDecisionSpace(x,fn, marker) %>% layout(
+    plotly3DScanDecisionSpace(x,fn, marker, frame = frame) %>% layout(
       scene = decision.scene
     )
   } else if (mode == "objective.space") {
     if (n == 3) {
-      plotly3DScanObjectiveSpace(x,fn, marker) %>% layout(
+      plotly3DScanObjectiveSpace(x,fn, marker, frame = frame) %>% layout(
         scene = objective.scene
       )
     } else {
-      plotly3DScanObjectiveSpace(x,fn, marker) %>% layout(
+      plotly3DScanObjectiveSpace(x,fn, marker, frame = frame) %>% layout(
         xaxis = list(range = c(min(x$y1),max(x$y1)), title='y₁'),
         yaxis = list(range = c(min(x$y2),max(x$y2)), title='y₂')
       )
