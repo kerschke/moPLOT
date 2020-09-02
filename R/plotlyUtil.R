@@ -26,11 +26,11 @@ imputeZero = function(height) {
   return(height)
 }
 
-plotlyMarker = function(grid) {
+plotlyMarker = function(height, colorscale = plotlyColorscale()) {
   list(
     color=~log(height),
-    colorscale=plotlyColorscale(),
-    cmin=log(min(grid$height)),
-    cmax=log(max(grid$height))
+    colorscale=colorscale,
+    cmin=log(min(height)),
+    cmax=log(max(height))
   )
 }

@@ -266,7 +266,7 @@ server <- function(input, output, session) {
       switch (input$plot_type,
               heatmap = plotly2DHeatmap(grid, fn, mode = input$space),
               cost_landscape = plotly2DHeatmap(grid, fn, mode = input$space),
-              PLOT = plotly::ggplotly(ggplotPLOT(grid$dec.space, grid$obj.space, less$sinks, less$height)),
+              PLOT = plotly2DPLOT(grid$dec.space, grid$obj.space, less$sinks, less$height, fn, mode = input$space),
               NULL # if plot_type is invalid
       )
     } else if (d == 3) {
@@ -318,7 +318,7 @@ server <- function(input, output, session) {
     design <- plot_data$design
     
     nds <- ecr::doNondominatedSorting(t(plot_data$design$obj.space))
-    plot_data$domination_counts <<- cbind(height = nds$dom.counter)
+    plot_data$domination_counts <<- cbind(height = nds$dom.counter) + 1
 
     hide("compute_cost_landscape")
     enable(selector = "button")

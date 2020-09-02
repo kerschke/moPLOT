@@ -29,7 +29,7 @@ plotly3DScan = function(grid, fn, mode = "decision.space", impute.zero = T) {
     )
   }
   
-  marker = plotlyMarker(grid)
+  marker = plotlyMarker(grid$height)
   
   if (mode == "both") {
     x.shared = highlight_key(x)

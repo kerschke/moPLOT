@@ -26,3 +26,5 @@ variable.as.expression = function(v) {
     v
   }
 }
+
+gray.colorscale = gray.colors(500L, start = 0, end = 1, gamma = 0.5)

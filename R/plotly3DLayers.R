@@ -54,7 +54,7 @@ plotly3DLayers = function(grid, fn, mode = "decision.space", no.steps = 20, impu
     )
   }
 
-  marker = plotlyMarker(grid)
+  marker = plotlyMarker(grid$height)
 
   if (mode == "both") {
     x.shared = highlight_key(x.boundaries)
