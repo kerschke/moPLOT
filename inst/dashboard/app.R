@@ -15,7 +15,7 @@ ui <- fluidPage(
   fluidRow(
     
     column(4L,
-      h3("Choose MOP"),
+      # h3("Choose MOP"),
       wellPanel(
         selectInput("function_family", "Function Family", c("Select a function family"="", function_families)),
         selectInput("fn_name", "Function", c("Select a function family first"="")),
@@ -24,12 +24,10 @@ ui <- fluidPage(
       ),
       
       wellPanel(
-        verticalLayout(
-          numericInput("grid_size", "Resolution per dimension", 100, min=20, max=3000, step=1),
-          actionButton("evaluate_grid", "Evaluate Grid"), # icon = icon('th')
-          actionButton("compute_plot", "Compute PLOT and Heatmap"),
-          actionButton("compute_cost_landscape", "Compute Cost Landscape")
-        ),
+        checkboxInput("compute_plot", "Compute PLOT and Heatmap", TRUE),
+        checkboxInput("compute_cost_landscape", "Compute Cost Landscape", FALSE),
+        numericInput("grid_size", "Resolution per dimension", 100, min=20, max=3000, step=1),
+        actionButton("evaluate_grid", "Evaluate"), # icon = icon('th')
         # downloadButton('download_grid', "Download Grid"),
         id = "evaluate_grid_panel"
       ),
@@ -151,8 +149,6 @@ server <- function(input, output, session) {
     }
     
     show("evaluate_grid_panel")
-    hide("compute_plot")
-    hide("compute_cost_landscape")
   })
   
   observe({
@@ -222,23 +218,6 @@ server <- function(input, output, session) {
   
   # Plotting-related functions
   
-  evaluate_grid = function() {
-    fn <- get_fn()
-    
-    req(fn)
-
-    # reset stored plot data
-    
-    plot_data <<- list()
-    
-    # generate design and evaluate objective space
-    
-    design <- generateDesign(fn, points.per.dimension = input$grid_size)
-    design$obj.space <- calculateObjectiveValues(design$dec.space, fn, parallelize = T)
-    
-    plot_data$design <<- design
-  }
-  
   get.plot = function() {
     fn <- get_fn()
     
@@ -281,46 +260,50 @@ server <- function(input, output, session) {
     }
   }
   
+  observeEvent(c(input$grid_size, get_fn()), {
+    # reset stored plot data when resolution changes
+    plot_data <<- list()
+    enable("compute_plot")
+    enable("compute_cost_landscape")
+  })
+  
   observeEvent(input$evaluate_grid, {
-    disable('evaluate_grid')
-    disable('update_plot')
+    fn <- get_fn()
+    req(fn)
     
-    evaluate_grid()
+    disable(selector = "button")
+
+    if (is.null(plot_data$design)) {
+      # generate design and evaluate objective space
+      
+      design <- generateDesign(fn, points.per.dimension = input$grid_size)
+      design$obj.space <- calculateObjectiveValues(design$dec.space, fn, parallelize = T)
+      
+      plot_data$design <<- design
+    }
     
-    show("compute_plot")
-    show("compute_cost_landscape")
+    if (input$compute_plot && is.null(plot_data$less)) {
+      design <- plot_data$design
+      
+      gradients <- computeGradientFieldGrid(design, prec.angle = 1)
+      
+      divergence <- computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
+      
+      # Calculate locally efficient points
+      plot_data$less <<- localEfficientSetSkeleton(design, gradients, divergence, integration="fast")
+      
+      disable("compute_plot")
+    }
+    
+    if (input$compute_cost_landscape && is.null(plot_data$domination_counts)) {
+      nds <- ecr::doNondominatedSorting(t(plot_data$design$obj.space))
+      plot_data$domination_counts <<- cbind(height = nds$dom.counter + 1)
+      
+      disable("compute_cost_landscape")
+    }
     
     show("update_plot_panel")
     
-    enable('update_plot')
-    enable('evaluate_grid')
-  })
-  
-  observeEvent(input$compute_plot, {
-    disable(selector = 'button')
-    
-    design <- plot_data$design
-    
-    gradients <- computeGradientFieldGrid(design, prec.angle = 1)
-    
-    divergence <- computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
-    
-    # Calculate locally efficient points
-    plot_data$less <<- localEfficientSetSkeleton(design, gradients, divergence, integration="fast")
-    
-    hide("compute_plot")
-    enable(selector = 'button')
-  })
-  
-  observeEvent(input$compute_cost_landscape, {
-    disable(selector = 'button')
-    
-    design <- plot_data$design
-    
-    nds <- ecr::doNondominatedSorting(t(plot_data$design$obj.space))
-    plot_data$domination_counts <<- cbind(height = nds$dom.counter) + 1
-
-    hide("compute_cost_landscape")
     enable(selector = "button")
   })
   
