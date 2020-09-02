@@ -10,7 +10,7 @@ options("shiny.maxRequestSize" = 50L * (1024L**2L))
 ui <- fluidPage(
   useShinyjs(),
   
-  h1(markdown("`moPLOT` Landscape Explorer")),
+  h1(code("moPLOT"), "Landscape Explorer"),
   
   fluidRow(
     
@@ -24,8 +24,12 @@ ui <- fluidPage(
       ),
       
       wellPanel(
-        numericInput("grid_size", "Resolution per dimension", 100, min=20, max=3000, step=1),
-        actionButton("evaluate_grid", "Evaluate Grid"),
+        verticalLayout(
+          numericInput("grid_size", "Resolution per dimension", 100, min=20, max=3000, step=1),
+          actionButton("evaluate_grid", "Evaluate Grid"), # icon = icon('th')
+          actionButton("compute_plot", "Compute PLOT and Heatmap"),
+          actionButton("compute_cost_landscape", "Compute Cost Landscape")
+        ),
         # downloadButton('download_grid', "Download Grid"),
         id = "evaluate_grid_panel"
       ),
@@ -47,7 +51,7 @@ ui <- fluidPage(
     ),
     
     column(8,
-      plotly::plotlyOutput(outputId = "plot", height = "100%")
+      uiOutput("plot_ui")
     )
   )
 )
@@ -64,6 +68,7 @@ server <- function(input, output, session) {
   # Reactive getters
   
   get_fn_family <- reactive({
+    # TODO MinDist
     switch(
       input$function_family,
       biobj_bbob = biobj_bbob_functions,
@@ -139,13 +144,15 @@ server <- function(input, output, session) {
     
     if (smoof::getNumberOfParameters(fn) == 2) {
       updateSliderInput("grid_size", session = session, value = 200, min=50, max=3000, step=50)
-      updateSelectInput(session = session, inputId = "plot_type", choices = list("PLOT" = "PLOT", "Heatmap" = "heatmap", "Cost Landscape (TODO)" = "cost_landscape"))
+      updateSelectInput(session = session, inputId = "plot_type", choices = list("PLOT" = "PLOT", "Heatmap" = "heatmap", "Cost Landscape" = "cost_landscape"))
     } else {
       updateSliderInput("grid_size", session = session, value = 50, min=20, max=200, step=10)
-      updateSelectInput(session = session, inputId = "plot_type", choices = list("Onion Layers" = "layers", "MRI Scan" = "scan", "Nondominated" = "pareto"))
+      updateSelectInput(session = session, inputId = "plot_type", choices = list("MRI Scan" = "scan", "Onion Layers" = "layers", "Nondominated" = "pareto"))
     }
     
     show("evaluate_grid_panel")
+    hide("compute_plot")
+    hide("compute_cost_landscape")
   })
   
   observe({
@@ -219,9 +226,7 @@ server <- function(input, output, session) {
     fn <- get_fn()
     
     req(fn)
-    
-    print(fn)
-    
+
     # reset stored plot data
     
     plot_data <<- list()
@@ -238,29 +243,29 @@ server <- function(input, output, session) {
     fn <- get_fn()
     
     req(fn)
-    
-    if (is.null(plot_data$less)) {
-      design <- plot_data$design
-      
-      gradients <- computeGradientFieldGrid(design, prec.angle = 1)
-      
-      divergence <- computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
-      
-      # Calculate locally efficient points
-      plot_data$less <<- localEfficientSetSkeleton(design, gradients, divergence, integration="fast")
-    }
-    
+
     grid <- plot_data$design
-    grid$height <- plot_data$less$height
+    
+    grid$height <- switch (
+      input$plot_type,
+      heatmap = {
+        req(plot_data$less)
+        plot_data$less$height
+      },
+      cost_landscape = {
+        req(plot_data$domination_counts)
+        plot_data$domination_counts
+      }
+    )
     
     less <- plot_data$less
 
     d = smoof::getNumberOfParameters(fn)
-
+    
     if (d == 2) {
       switch (input$plot_type,
               heatmap = plotly2DHeatmap(grid, fn, mode = input$space),
-              # cost_landscape = plotly3DLayers(grid, fn, mode = input$space),
+              cost_landscape = plotly2DHeatmap(grid, fn, mode = input$space),
               PLOT = plotly::ggplotly(ggplotPLOT(grid$dec.space, grid$obj.space, less$sinks, less$height)),
               NULL # if plot_type is invalid
       )
@@ -282,11 +287,46 @@ server <- function(input, output, session) {
     
     evaluate_grid()
     
+    show("compute_plot")
+    show("compute_cost_landscape")
+    
     show("update_plot_panel")
     
     enable('update_plot')
     enable('evaluate_grid')
   })
+  
+  observeEvent(input$compute_plot, {
+    disable(selector = 'button')
+    
+    design <- plot_data$design
+    
+    gradients <- computeGradientFieldGrid(design, prec.angle = 1)
+    
+    divergence <- computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
+    
+    # Calculate locally efficient points
+    plot_data$less <<- localEfficientSetSkeleton(design, gradients, divergence, integration="fast")
+    
+    hide("compute_plot")
+    enable(selector = 'button')
+  })
+  
+  observeEvent(input$compute_cost_landscape, {
+    disable(selector = 'button')
+    
+    design <- plot_data$design
+    
+    nds <- ecr::doNondominatedSorting(t(plot_data$design$obj.space))
+    plot_data$domination_counts <<- cbind(height = nds$dom.counter)
+
+    hide("compute_cost_landscape")
+    enable(selector = "button")
+  })
+  
+  output$plot_ui = renderUI(
+    plotly::plotlyOutput(outputId = "plot", height = "100%")
+  )
   
   output$plot = plotly::renderPlotly(
     eventReactive(input$update_plot, {
