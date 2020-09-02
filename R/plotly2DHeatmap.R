@@ -47,7 +47,6 @@ plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = T) {
     }
     
     subplot(p.decision, p.objective) %>% layout(
-      title = paste("Decision and Objective Space of", smoof::getName(fn)),
       scene = objective.scene
     ) %>% highlight(
       on="plotly_click",

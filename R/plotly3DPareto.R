@@ -60,7 +60,6 @@ plotly3DPareto = function(grid, fn, mode = "decision.space", impute.zero = T) {
     }
     
     subplot(p.decision, p.objective) %>% layout(
-      title = paste("Decision and Objective Space of", smoof::getName(fn)),
       scene = decision.scene,
       scene2 = objective.scene
     ) %>% highlight(

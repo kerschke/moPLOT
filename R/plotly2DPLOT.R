@@ -61,7 +61,6 @@ plotly2DPLOT = function(dec.space, obj.space, sinks, height, fn, mode = "decisio
     }
     
     subplot(p.decision, p.objective) %>% layout(
-      title = paste("Decision and Objective Space of", smoof::getName(fn)),
       scene = objective.scene
     ) %>% highlight(
       on="plotly_click",
@@ -76,7 +75,7 @@ plotly2DPLOT = function(dec.space, obj.space, sinks, height, fn, mode = "decisio
     if (n == 3) {
       plotly2DPLOTObjectiveSpace(x, x.locally.efficient, fn, marker.heatmap, marker.locally.efficient) %>% layout(
         scene = objective.scene
-      )
+      ) %>% hide_guides()
     } else {
       plotly2DPLOTObjectiveSpace(x, x.locally.efficient, fn, marker.heatmap, marker.locally.efficient) %>%
         hide_guides()

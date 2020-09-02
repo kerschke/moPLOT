@@ -78,7 +78,6 @@ plotly3DLayers = function(grid, fn, mode = "decision.space", no.steps = 20, impu
     }
 
     subplot(p.decision, p.objective) %>% layout(
-      title = paste("Decision and Objective Space of", smoof::getName(fn)),
       scene = decision.scene,
       scene2 = objective.scene
     ) %>% highlight(
