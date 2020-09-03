@@ -49,17 +49,17 @@ ui <- fluidPage(
       tabsetPanel(
         tabPanel(
           "PLOT",
-          plotly::plotlyOutput("plot"),
+          plotly::plotlyOutput("plot", height = "500px"),
           value = "tab_plot"
         ),
         tabPanel(
           "Gradient Field Heatmap",
-          plotly::plotlyOutput("heatmap"),
+          plotly::plotlyOutput("heatmap", height = "500px"),
           value = "tab_heatmap"
         ),
         tabPanel(
           "Cost Landscape",
-          plotly::plotlyOutput("cost_landscape"),
+          plotly::plotlyOutput("cost_landscape", height = "500px"),
           value = "tab_cost_landscape"
         ),
         id = "tabset_plots"
@@ -70,6 +70,9 @@ ui <- fluidPage(
           selectInput("space", "Select space to plot", c("Decision space" = "decision.space", "Objective space" = "objective.space", "Decision + objective space" = "both")),
           div(
             selectInput("three_d_approach", "3D Approach", c("MRI Scan" = "scan", "Onion Layers" = "layers", "Nondominated" = "pareto")),
+            conditionalPanel("input.three_d_approach == 'scan'",
+              selectInput("scan_direction", "Scan Direction", c("x₁" = "x1", "x₂" = "x2", "x₃" = "x3"), selected = "x3")
+            ),
             id = "three_d_only"
           )
         ),
@@ -347,7 +350,7 @@ server <- function(input, output, session) {
       switch (three_d_approach,
               pareto = plotly3DPareto(grid, fn, mode = space),
               layers = plotly3DLayers(grid, fn, mode = space),
-              scan = plotly3DScan(grid, fn, mode = space),
+              scan = plotly3DScan(grid, fn, mode = space, frame = input$scan_direction),
               NULL # if plot_type is invalid
       )
     } else {
