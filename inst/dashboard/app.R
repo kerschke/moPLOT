@@ -85,17 +85,17 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   plot_data <- list()
   
-  outputOptions(output, suspendWhenHidden = FALSE)
+  # outputOptions(output, suspendWhenHidden = FALSE)
   
   reset_plots <- function() {
-    plot_data <<- list()
-    
     hideTab("tabset_plots", "tab_plot")
     hideTab("tabset_plots", "tab_heatmap")
     hideTab("tabset_plots", "tab_cost_landscape")
     
     hide("tabset_plots")
     hide("plot_options")
+    
+    plot_data <<- list()
     
     enable("compute_plot")
     enable("compute_cost_landscape")
@@ -141,14 +141,32 @@ server <- function(input, output, session) {
   
   get_selected_args <- reactive({
     args <- lapply(get_args_names_ui(), function(argument_name) {
-      input[[argument_name]]
+      arg <- input[[argument_name]]
+      
+      if (length(arg) > 0) {
+        print(arg) 
+        if (!is.numeric(arg)) {
+          tryCatch(
+            eval(parse(text = arg)),
+            error = function(e) {
+              tryCatch(
+                parse(text = arg),
+                error = function(e) NULL
+              )
+            })
+        } else {
+          arg
+        }
+      } else {
+        NULL
+      }
     })
     
     # Only return args if correctly connected to output
     if (all(sapply(args, is.null))) return(list())
     
     names(args) <- names(get_default_args())
-    args <- args[!sapply(args, function(arg) (is.null(arg) || arg == ""))]
+    args <- args[!sapply(args, function(arg) (is.null(arg) || length(as.character(arg)) == 0))]
 
     args
   })
@@ -214,9 +232,23 @@ server <- function(input, output, session) {
     args <- get_default_args()
     
     ui_inputs <- lapply(names(args), function(argument_name) {
+      arg_char <- as.character(args[[argument_name]])
+      
+      if (length(arg_char) > 0) {
+        if (is.symbol(args[[argument_name]])) {
+          value <- arg_char
+        } else if (is.numeric(args[[argument_name]])){
+          value <- args[[argument_name]]
+        } else {
+          value <- deparse(args[[argument_name]])
+        }
+      } else {
+        value <- 0
+      }
+      
       input_args <- list(
         inputId = paste0("args_", argument_name), 
-        value = if (is.symbol(args[[argument_name]])) NULL else tryCatch(eval(args[[argument_name]]), error = function(e) NULL),
+        value = value,
         label = code(argument_name)
       )
       
@@ -286,7 +318,7 @@ server <- function(input, output, session) {
     if (input$compute_plot && is.null(plot_data$less)) {
       design <- plot_data$design
       
-      gradients <- computeGradientFieldGrid(design, prec.angle = 1)
+      gradients <- computeGradientFieldGrid(design) #, prec.angle = 1
       
       divergence <- computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
       
@@ -319,7 +351,9 @@ server <- function(input, output, session) {
   get_plot = function(plot_data, plot_type, space, three_d_approach) {
     fn <- get_fn()
     
-    req(fn)
+    if (is.null(fn) || is.null(plot_data$design)) {
+      return(NULL)
+    }
 
     grid <- plot_data$design
     
@@ -360,18 +394,21 @@ server <- function(input, output, session) {
   
   output$plot = plotly::renderPlotly(
     reactive({
+      input$tabset_plots
       get_plot(plot_data, "PLOT", input$space, input$three_d_approach)
     }, quoted = TRUE)()
   )
   
   output$heatmap = plotly::renderPlotly({
     reactive({
+      input$tabset_plots
       get_plot(plot_data, "heatmap", input$space, input$three_d_approach)
     }, quoted = TRUE)()
   })
   
   output$cost_landscape = plotly::renderPlotly({
     reactive({
+      input$tabset_plots
       get_plot(plot_data, "cost_landscape", input$space, input$three_d_approach)
     }, quoted = TRUE)()
   })
