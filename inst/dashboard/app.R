@@ -83,13 +83,11 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
-  plot_data <- list()
+  plot_data <- reactiveValues()
   
   # outputOptions(output, suspendWhenHidden = FALSE)
   
   reset_plots <- function() {
-    updateTabsetPanel(session, "tabset_plots", selected = NULL)
-    
     hide("tabset_plots")
     hide("plot_options")
     
@@ -100,7 +98,9 @@ server <- function(input, output, session) {
     enable("compute_plot")
     enable("compute_cost_landscape")
     
-    plot_data <<- list()
+    plot_data$design <- NULL
+    plot_data$less <- NULL
+    plot_data$domination_counts <- NULL
   }
   
   # Hide some parts per default
@@ -205,7 +205,6 @@ server <- function(input, output, session) {
 
     if (smoof::getNumberOfParameters(fn) == 2) {
       updateSliderInput("grid_size", session = session, value = 200, min=50, max=3000, step=50)
-      updateSelectInput(session = session, inputId = "plot_type", choices = list("PLOT" = "PLOT", "Heatmap" = "heatmap", "Cost Landscape" = "cost_landscape"))
       hide("three_d_only")
     } else {
       updateSliderInput("grid_size", session = session, value = 50, min=20, max=200, step=10)
@@ -349,12 +348,11 @@ server <- function(input, output, session) {
   
   # Plotting-related functions
   
-  get_plot = function(plot_data, plot_type, space, three_d_approach) {
+  get_plot = function(plot_type, space, three_d_approach) {
     fn <- get_fn()
     
-    if (is.null(fn) || is.null(plot_data$design)) {
-      return(NULL)
-    }
+    req(fn)
+    req(plot_data$design)
 
     grid <- plot_data$design
     
@@ -367,6 +365,10 @@ server <- function(input, output, session) {
       cost_landscape = {
         req(plot_data$domination_counts)
         plot_data$domination_counts
+      },
+      PLOT = {
+        req(plot_data$less)
+        plot_data$less$height
       }
     )
     
@@ -395,28 +397,34 @@ server <- function(input, output, session) {
   
   output$plot = plotly::renderPlotly(
     reactive({
-      # input$tabset_plots
+      disable("plot")
       print("Updating PLOT")
       
-      get_plot(plot_data, "PLOT", input$space, input$three_d_approach)
+      p <- get_plot("PLOT", input$space, input$three_d_approach)
+      enable("plot")
+      p
     }, quoted = TRUE)()
   )
   
   output$heatmap = plotly::renderPlotly({
     reactive({
-      # input$tabset_plots
+      disable("heatmap")
       print("Updating Heatmap")
 
-      get_plot(plot_data, "heatmap", input$space, input$three_d_approach)
+      p <- get_plot("heatmap", input$space, input$three_d_approach)
+      enable("heatmap")
+      p
     }, quoted = TRUE)()
   })
   
   output$cost_landscape = plotly::renderPlotly({
     reactive({
-      # input$tabset_plots
+      disable("cost_landscape")
       print("Updating Cost Landscape")
       
-      get_plot(plot_data, "cost_landscape", input$space, input$three_d_approach)
+      p <- get_plot("cost_landscape", input$space, input$three_d_approach)
+      enable("cost_landscape")
+      p
     }, quoted = TRUE)()
   })
   
