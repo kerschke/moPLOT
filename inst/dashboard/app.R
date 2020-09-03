@@ -15,69 +15,73 @@ ui <- fluidPage(
   fluidRow(
     
     column(4L,
-      h3("Select MOP"),
-      
-      wellPanel(
-        selectInput("benchmark_set", "Benchmark set", c("Select a benchmark set"="", benchmark_sets)),
-        selectInput("fn_name", "Function", c("Select a benchmark set first"="")),
-        
-        uiOutput("fn_args")
-      ),
-      
-      div(
-        h3("Generate Data"),
-        wellPanel(
-          numericInput("grid_size", "Resolution per dimension", 100, min=20, max=3000, step=1),
-          checkboxInput("compute_plot", "Compute PLOT and heatmap", TRUE),
-          checkboxInput("compute_cost_landscape", "Compute cost landscape", FALSE),
-          actionButton("evaluate_grid", "Evaluate"), # icon = icon('th')
-          # downloadButton('download_grid', "Download Grid"),
-        ),
-        id = "evaluate_grid_panel"
-      )
-      
-      # tabsetPanel(
-      #   tabPanel("Upload Grid",
-      #            fileInput('upload_grid', "Upload Grid", accept = c(".Rds"))
-      #   ),
-      #   id = "grid.tabs",
-      #   type = "pills"
-      # ),
+           tabsetPanel(
+             tabPanel(
+               "Select MOP",
+               wellPanel(
+                 selectInput("benchmark_set", "Benchmark set", c("Select a benchmark set"="", benchmark_sets)),
+                 selectInput("fn_name", "Function", c("Select a benchmark set first"="")),
+                 uiOutput("fn_args")
+               ),
+               
+               div(
+                 h3("Generate Data"),
+                 wellPanel(
+                   numericInput("grid_size", "Resolution per dimension", 100, min=20, max=3000, step=1),
+                   checkboxInput("compute_plot", "Compute PLOT and heatmap", TRUE),
+                   checkboxInput("compute_cost_landscape", "Compute cost landscape", FALSE),
+                   splitLayout(
+                     actionButton("evaluate_grid", "Evaluate"), # icon = icon('th')
+                     downloadButton("download_data", "Download")
+                   )
+                 ),
+                 id = "evaluate_grid_panel"
+               )
+             ),
+             tabPanel(
+               "Upload Data",
+               wellPanel(
+                 fileInput("upload_data", "Upload Data", accept = c(".Rds"))
+               )
+             ),
+             type = "pills",
+             id = "fn_select"
+           ),
     ),
     
     column(8,
-      tabsetPanel(
-        tabPanel(
-          "PLOT",
-          plotly::plotlyOutput("plot", height = "500px"),
-          value = "tab_plot"
-        ),
-        tabPanel(
-          "Gradient Field Heatmap",
-          plotly::plotlyOutput("heatmap", height = "500px"),
-          value = "tab_heatmap"
-        ),
-        tabPanel(
-          "Cost Landscape",
-          plotly::plotlyOutput("cost_landscape", height = "500px"),
-          value = "tab_cost_landscape"
-        ),
-        id = "tabset_plots"
-      ),
-      div(
-        h3("Plot Options"),
-        wellPanel(
-          selectInput("space", "Space to plot", c("Decision Space" = "decision.space", "Objective Space" = "objective.space", "Decision + Objective Space" = "both")),
-          div(
-            selectInput("three_d_approach", "3D approach", c("MRI Scan" = "scan", "Onion Layers" = "layers", "Nondominated" = "pareto")),
-            conditionalPanel("input.three_d_approach == 'scan'",
-              selectInput("scan_direction", "Scan direction", c("x₁" = "x1", "x₂" = "x2", "x₃" = "x3"), selected = "x3")
-            ),
-            id = "three_d_only"
-          )
-        ),
-        id = "plot_options"
-      )
+           tabsetPanel(
+             tabPanel(
+               "PLOT",
+               plotly::plotlyOutput("plot", height = "500px"),
+               value = "tab_plot"
+             ),
+             tabPanel(
+               "Gradient Field Heatmap",
+               plotly::plotlyOutput("heatmap", height = "500px"),
+               value = "tab_heatmap"
+             ),
+             tabPanel(
+               "Cost Landscape",
+               plotly::plotlyOutput("cost_landscape", height = "500px"),
+               value = "tab_cost_landscape"
+             ),
+             id = "tabset_plots"
+           ),
+           div(
+             h3("Plot Options"),
+             wellPanel(
+               selectInput("space", "Space to plot", c("Decision Space" = "decision.space", "Objective Space" = "objective.space", "Decision + Objective Space" = "both")),
+               div(
+                 selectInput("three_d_approach", "3D approach", c("MRI Scan" = "scan", "Onion Layers" = "layers", "Nondominated" = "pareto")),
+                 conditionalPanel("input.three_d_approach == 'scan'",
+                                  selectInput("scan_direction", "Scan direction", c("x₁" = "x1", "x₂" = "x2", "x₃" = "x3"), selected = "x3")
+                 ),
+                 id = "three_d_only"
+               )
+             ),
+             id = "plot_options"
+           )
     )
   )
 )
@@ -136,7 +140,7 @@ server <- function(input, output, session) {
       list()
     } else {
       args <- formals(generator_fn)
-
+      
       if (length(args) > 0) args else list()
     }
   })
@@ -168,7 +172,7 @@ server <- function(input, output, session) {
     
     names(args) <- names(get_default_args())
     args <- args[!sapply(args, function(arg) (is.null(arg) || length(as.character(arg)) == 0))]
-
+    
     args
   })
   
@@ -200,9 +204,9 @@ server <- function(input, output, session) {
     fn <- get_fn()
     
     req(fn)
-
+    
     hide("evaluate_grid_panel")
-
+    
     if (smoof::getNumberOfParameters(fn) == 2) {
       updateSliderInput("grid_size", session = session, value = 200, min=50, max=3000, step=50)
       hide("three_d_only")
@@ -218,7 +222,7 @@ server <- function(input, output, session) {
     bench_set <- get_benchmark_set()
     
     updateSelectInput(session, "fn_name", choices = names(bench_set))
-
+    
     if (is.null(bench_set) || input$benchmark_set == "biobj_bbob") {
       hide("fn_name")
     } else {
@@ -294,7 +298,7 @@ server <- function(input, output, session) {
   })
   
   # Generating data
-
+  
   observeEvent(c(input$grid_size, get_fn()), {
     # reset stored plot data when resolution or function changes
     reset_plots()
@@ -357,7 +361,7 @@ server <- function(input, output, session) {
     
     req(fn)
     req(plot_data$design)
-
+    
     grid <- plot_data$design
     
     grid$height <- switch (
@@ -377,7 +381,7 @@ server <- function(input, output, session) {
     )
     
     less <- plot_data$less
-
+    
     d = smoof::getNumberOfParameters(fn)
     
     if (d == 2) {
@@ -414,7 +418,7 @@ server <- function(input, output, session) {
     reactive({
       disable("heatmap")
       print("Updating Heatmap")
-
+      
       p <- get_plot("heatmap", input$space, input$three_d_approach)
       enable("heatmap")
       p
@@ -432,36 +436,109 @@ server <- function(input, output, session) {
     }, quoted = TRUE)()
   })
   
-  # output$download_grid = downloadHandler(
-  #   filename = function() {
-  #     fn = test.functions[[as.numeric(input$fn.id)]]
-  #     paste0(smoof::getName(fn), "-grid-", input$grid_size, '.Rds')
-  #   },
-  #   
-  #   content = function(file) {
-  #     saveRDS(grid, file)
-  #   }
-  # )
+  # Up- and Download
   
-  # observeEvent(input$upload_grid, {
-  #   if (!endsWith(input$upload_grid$datapath, ".Rds")) {
-  #     print(input$upload_grid)
-  #     return()
-  #   }
-  #   
-  #   disable('evaluate_grid')
-  #   disable('update_plot')
-  #   
-  #   grid <<- readRDS(input$upload_grid$datapath)
-  #   
-  #   show('plot_type')
-  #   show('space')
-  #   show('update_plot')
-  #   
-  #   enable('evaluate_grid')
-  #   enable('update_plot')
-  #   enable('download_grid')
-  # })
+  output$download_data = downloadHandler(
+    filename = function() {
+      fn = get_fn()
+      req(fn)
+      
+      paste0(smoof::getName(fn), "-data-", input$grid_size, '.Rds')
+    },
+    
+    content = function(file) {
+      input_list <- reactiveValuesToList(input)
+      plot_data_list <- reactiveValuesToList(plot_data)
+      
+      data = list()
+      
+      data$input <- input_list
+      data$plot_data <- plot_data_list
+      
+      saveRDS(data, file)
+    }
+  )
+  
+  observeEvent(input$upload_data, {
+    if (!endsWith(input$upload_data$datapath, ".Rds")) {
+      print(input$upload_data)
+      return()
+    }
+    
+    data <- readRDS(input$upload_data$datapath)
+    
+    reset_plots()
+    
+    updateTabsetPanel(session, "fn_select", selected = "Select MOP")
+    updateSelectInput(session, "benchmark_set", selected = data$input$benchmark_set)
+    updateSelectInput(session, "fn_name", selected = data$input$fn_name)
+    
+    updateNumericInput(session, "grid_size", value = data$input$grid_size)
+    updateCheckboxInput(session, "compute_plot", value = data$input$compute_plot)
+    updateCheckboxInput(session, "compute_cost_landscape", value = data$input$compute_cost_landscape)
+    
+    delay(500, {
+      
+      # Set values of dynamic UI
+      
+      args <- get_args_names_ui()
+      
+      lapply(args, function(arg_name) {
+        session$sendInputMessage(arg_name, list(value = data$input[[arg_name]]))
+      })
+    })
+    
+    delay(1000, {
+      
+      # Set data generation enabled / disabled accordingly
+      
+      if (data$input$compute_plot) {
+        disable("compute_plot")
+      } else {
+        enable("compute_plot")
+      }
+      
+      if (data$input$compute_cost_landscape) {
+        disable("compute_cost_landscape")
+      } else {
+        enable("compute_cost_landscape")
+      }
+      
+      # Update plot_data object
+      
+      plot_data$design <<- data$plot_data$design
+      plot_data$less <<- data$plot_data$less
+      plot_data$domination_counts <<- data$plot_data$domination_counts
+      
+      if (!is.null(plot_data$design)) {
+        show("tabset_plots")
+        show("plot_options")
+      } else {
+        hide("tabset_plots")
+        hide("plot_options")
+      }
+      
+      if (!is.null(plot_data$less)) {
+        showTab("tabset_plots", "tab_heatmap")
+        
+        if (smoof::getNumberOfParameters(get_fn()) == 2) {
+          showTab("tabset_plots", "tab_plot")
+        } else {
+          hideTab("tabset_plots", "tab_plot")
+        }
+      } else {
+        hideTab("tabset_plots", "tab_plot")
+        hideTab("tabset_plots", "tab_heatmap")
+      }
+      
+      if (!is.null(plot_data$domination_counts)) {
+        showTab("tabset_plots", "tab_cost_landscape")
+      } else {
+        hideTab("tabset_plots", "tab_cost_landscape")
+      }
+      
+    })
+  })
 }
 
 shinyApp(ui, server)
