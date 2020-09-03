@@ -18,8 +18,8 @@ ui <- fluidPage(
       h3("Select MOP"),
       
       wellPanel(
-        selectInput("function_family", "Function family", c("Select a function family"="", function_families)),
-        selectInput("fn_name", "Function", c("Select a function family first"="")),
+        selectInput("benchmark_set", "Benchmark set", c("Select a benchmark set"="", benchmark_sets)),
+        selectInput("fn_name", "Function", c("Select a benchmark set first"="")),
         
         uiOutput("fn_args")
       ),
@@ -67,11 +67,11 @@ ui <- fluidPage(
       div(
         h3("Plot Options"),
         wellPanel(
-          selectInput("space", "Select space to plot", c("Decision space" = "decision.space", "Objective space" = "objective.space", "Decision + objective space" = "both")),
+          selectInput("space", "Space to plot", c("Decision Space" = "decision.space", "Objective Space" = "objective.space", "Decision + Objective Space" = "both")),
           div(
-            selectInput("three_d_approach", "3D Approach", c("MRI Scan" = "scan", "Onion Layers" = "layers", "Nondominated" = "pareto")),
+            selectInput("three_d_approach", "3D approach", c("MRI Scan" = "scan", "Onion Layers" = "layers", "Nondominated" = "pareto")),
             conditionalPanel("input.three_d_approach == 'scan'",
-              selectInput("scan_direction", "Scan Direction", c("x₁" = "x1", "x₂" = "x2", "x₃" = "x3"), selected = "x3")
+              selectInput("scan_direction", "Scan direction", c("x₁" = "x1", "x₂" = "x2", "x₃" = "x3"), selected = "x3")
             ),
             id = "three_d_only"
           )
@@ -112,9 +112,9 @@ server <- function(input, output, session) {
   
   # Reactive getters
   
-  get_fn_family <- reactive({
+  get_benchmark_set <- reactive({
     switch(
-      input$function_family,
+      input$benchmark_set,
       biobj_bbob = biobj_bbob_functions,
       dtlz = dtlz_functions,
       mindist = mindist_functions,
@@ -126,7 +126,7 @@ server <- function(input, output, session) {
   })
   
   get_generator_fn <- reactive({
-    get_fn_family()[[input$fn_name]]
+    get_benchmark_set()[[input$fn_name]]
   })
   
   get_default_args <- reactive({
@@ -215,11 +215,11 @@ server <- function(input, output, session) {
   })
   
   observe({
-    fn_family <- get_fn_family()
+    bench_set <- get_benchmark_set()
     
-    updateSelectInput(session, "fn_name", choices = names(fn_family))
+    updateSelectInput(session, "fn_name", choices = names(bench_set))
 
-    if (is.null(fn_family) || input$function_family == "biobj_bbob") {
+    if (is.null(bench_set) || input$benchmark_set == "biobj_bbob") {
       hide("fn_name")
     } else {
       show("fn_name")
@@ -268,7 +268,7 @@ server <- function(input, output, session) {
       
       # Special cases for Bi-Obj BBOB
       
-      if (input$function_family == "biobj_bbob") {
+      if (input$benchmark_set == "biobj_bbob") {
         if (argument_name == "fid") {
           input_args$label = "Function ID"
           input_args$value = 1
@@ -325,7 +325,11 @@ server <- function(input, output, session) {
       # Calculate locally efficient points
       plot_data$less <<- localEfficientSetSkeleton(design, gradients, divergence, integration="fast")
       
-      showTab("tabset_plots", "tab_plot")
+      if (smoof::getNumberOfParameters(fn) == 2) {
+        # PLOT only in 2D for now
+        showTab("tabset_plots", "tab_plot")
+      }
+      
       showTab("tabset_plots", "tab_heatmap")
       
       disable("compute_plot")

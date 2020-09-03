@@ -1,4 +1,4 @@
-function_families <- c(
+benchmark_sets <- c(
   "Bi-Objective BBOB" = "biobj_bbob",
   "DTLZ Functions" = "dtlz",
   "MinDist Functions" = "mindist",
