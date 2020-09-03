@@ -1,6 +1,7 @@
 function_families <- c(
   "Bi-Objective BBOB" = "biobj_bbob",
   "DTLZ Functions" = "dtlz",
+  "MinDist Functions" = "mindist",
   "MMF Functions" = "mmf",
   "MOP Functions" = "mop",
   "MPM2 Generator (TODO)" = "mpm2",
@@ -65,6 +66,47 @@ mop_functions = list(
   "MOP7" = smoof::makeMOP7Function
 )
 
+makeMinDistFunction = function(centers.f1 = list(c(-2, -1), c(2, 1)),
+                               centers.f2 = list(c(-2, 1), c(2, -1)),
+                               centers.f3 = list(c(0, 1), c(0, -1))) {
+  if (is.null(centers.f3)) {
+    f <- function(x) {
+      y1 <- min(sapply(centers.f1, function(center) sqrt(sum((x - center) ** 2))))
+      y2 <- min(sapply(centers.f2, function(center) sqrt(sum((x - center) ** 2))))
+      
+      c(y1, y2)
+    }
+    
+    all.centers <- Reduce(rbind, c(centers.f1, centers.f2))
+  } else {
+    f <- function(x) {
+      y1 <- min(sapply(centers.f1, function(center) sqrt(sum((x - center) ** 2))))
+      y2 <- min(sapply(centers.f2, function(center) sqrt(sum((x - center) ** 2))))
+      y3 <- min(sapply(centers.f3, function(center) sqrt(sum((x - center) ** 2))))
+      
+      c(y1, y2, y3)
+    }
+    
+    all.centers <- Reduce(rbind, c(centers.f1, centers.f2, centers.f3))
+  }
+  
+  lower <- apply(all.centers, 2, min) - 1
+  upper <- apply(all.centers, 2, max) + 1
+  
+  smoof::makeMultiObjectiveFunction(name = "MinDist Function", id = "mindist", description = "", fn = f,
+                                    par.set = ParamHelpers::makeNumericParamSet(len = ncol(all.centers), lower = lower, upper = upper))
+}
+
+makeBiObjMinDistFunction = function(centers.f1 = list(c(-2, -1), c(2, 1)),
+                                    centers.f2 = list(c(-2, 1), c(2, -1))) {
+  makeMinDistFunction(centers.f1, centers.f2, centers.f3 = NULL)
+}
+
+mindist_functions = list(
+  "Bi-Objective MinDist" = makeBiObjMinDistFunction,
+  "Tri-Objective MinDist" = makeMinDistFunction
+)
+
 # Aspar functions
 
 f1_1 = function(x) (x[1]**4 - 2*x[1]**2 + x[2]**2 + 1)
@@ -97,7 +139,7 @@ makeAsparFunction <- function(dimensions = 2, n.objectives = 2) {
 
 other_functions = list(
   "Aspar" = makeAsparFunction,
-  # "BiSphere" = smoof::makeBiSphereFunction, # does not work as expected and is kinda boring
+  "BiSphere" = smoof::makeBiSphereFunction, # does not work as expected and is kinda boring
   "BK1" = smoof::makeBK1Function,
   "Dent" = smoof::makeDentFunction,
   "ED1" = smoof::makeED1Function,

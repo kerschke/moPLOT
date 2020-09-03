@@ -88,17 +88,19 @@ server <- function(input, output, session) {
   # outputOptions(output, suspendWhenHidden = FALSE)
   
   reset_plots <- function() {
-    hideTab("tabset_plots", "tab_plot")
-    hideTab("tabset_plots", "tab_heatmap")
-    hideTab("tabset_plots", "tab_cost_landscape")
+    updateTabsetPanel(session, "tabset_plots", selected = NULL)
     
     hide("tabset_plots")
     hide("plot_options")
     
-    plot_data <<- list()
+    hideTab("tabset_plots", "tab_plot")
+    hideTab("tabset_plots", "tab_heatmap")
+    hideTab("tabset_plots", "tab_cost_landscape")
     
     enable("compute_plot")
     enable("compute_cost_landscape")
+    
+    plot_data <<- list()
   }
   
   # Hide some parts per default
@@ -111,11 +113,11 @@ server <- function(input, output, session) {
   # Reactive getters
   
   get_fn_family <- reactive({
-    # TODO MinDist
     switch(
       input$function_family,
       biobj_bbob = biobj_bbob_functions,
       dtlz = dtlz_functions,
+      mindist = mindist_functions,
       mmf = mmf_functions,
       mop = mop_functions,
       zdt = zdt_functions,
@@ -144,7 +146,6 @@ server <- function(input, output, session) {
       arg <- input[[argument_name]]
       
       if (length(arg) > 0) {
-        print(arg) 
         if (!is.numeric(arg)) {
           tryCatch(
             eval(parse(text = arg)),
@@ -394,21 +395,27 @@ server <- function(input, output, session) {
   
   output$plot = plotly::renderPlotly(
     reactive({
-      input$tabset_plots
+      # input$tabset_plots
+      print("Updating PLOT")
+      
       get_plot(plot_data, "PLOT", input$space, input$three_d_approach)
     }, quoted = TRUE)()
   )
   
   output$heatmap = plotly::renderPlotly({
     reactive({
-      input$tabset_plots
+      # input$tabset_plots
+      print("Updating Heatmap")
+
       get_plot(plot_data, "heatmap", input$space, input$three_d_approach)
     }, quoted = TRUE)()
   })
   
   output$cost_landscape = plotly::renderPlotly({
     reactive({
-      input$tabset_plots
+      # input$tabset_plots
+      print("Updating Cost Landscape")
+      
       get_plot(plot_data, "cost_landscape", input$space, input$three_d_approach)
     }, quoted = TRUE)()
   })
