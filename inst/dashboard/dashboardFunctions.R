@@ -10,7 +10,7 @@ benchmark_sets <- c(
 )
 
 biobj_bbob_functions <- list(
-  "Bi-Objective BBOB" = smoof::makeBiObjBBOBFunction
+  "Bi-objective BBOB" = smoof::makeBiObjBBOBFunction
 )
 
 dtlz_functions <- list(
@@ -103,8 +103,8 @@ makeBiObjMinDistFunction = function(centers.f1 = list(c(-2, -1), c(2, 1)),
 }
 
 mindist_functions = list(
-  "Bi-Objective MinDist" = makeBiObjMinDistFunction,
-  "Tri-Objective MinDist" = makeMinDistFunction
+  "Bi-objective MinDist" = makeBiObjMinDistFunction,
+  "Tri-objective MinDist" = makeMinDistFunction
 )
 
 # MPM2 functions
@@ -128,8 +128,8 @@ makeTriObjMPM2Function = function(dimensions = 2, n.peaks.1 = 3, topology.1 = "r
 }
 
 mpm2_functions = list(
-  "Bi-Objective MPM2" = makeBiObjMPM2Function,
-  "Tri-Objective MPM2" = makeTriObjMPM2Function
+  "Bi-objective MPM2" = makeBiObjMPM2Function,
+  "Tri-objective MPM2" = makeTriObjMPM2Function
 )
 
 # Aspar functions
