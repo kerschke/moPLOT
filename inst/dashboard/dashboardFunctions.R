@@ -1,10 +1,10 @@
 benchmark_sets <- c(
-  "Bi-Objective BBOB" = "biobj_bbob",
+  "Bi-objective BBOB" = "biobj_bbob",
   "DTLZ Functions" = "dtlz",
   "MinDist Functions" = "mindist",
   "MMF Functions" = "mmf",
   "MOP Functions" = "mop",
-  "MPM2 Generator (TODO)" = "mpm2",
+  "MPM2 Generator" = "mpm2",
   "ZDT Functions" = "zdt",
   "Other" = "other"
 )
@@ -105,6 +105,31 @@ makeBiObjMinDistFunction = function(centers.f1 = list(c(-2, -1), c(2, 1)),
 mindist_functions = list(
   "Bi-Objective MinDist" = makeBiObjMinDistFunction,
   "Tri-Objective MinDist" = makeMinDistFunction
+)
+
+# MPM2 functions
+
+makeBiObjMPM2Function = function(dimensions = 2, n.peaks.1 = 3, topology.1 = "random", seed.1 = 4,
+                                 n.peaks.2 = 3, topology.2 = "random", seed.2 = 8) {
+  f1 <- smoof::makeMPM2Function(n.peaks.1, dimensions, topology.1, seed.1)
+  f2 <- smoof::makeMPM2Function(n.peaks.2, dimensions, topology.2, seed.2)
+  
+  smoof::makeGOMOPFunction(dimensions = dimensions, funs = list(f1, f2))
+}
+
+makeTriObjMPM2Function = function(dimensions = 2, n.peaks.1 = 3, topology.1 = "random", seed.1 = 4,
+                                  n.peaks.2 = 3, topology.2 = "random", seed.2 = 8,
+                                  n.peaks.3 = 3, topology.3 = "random", seed.3 = 12) {
+  f1 <- smoof::makeMPM2Function(n.peaks.1, dimensions, topology.1, seed.1)
+  f2 <- smoof::makeMPM2Function(n.peaks.2, dimensions, topology.2, seed.2)
+  f3 <- smoof::makeMPM2Function(n.peaks.3, dimensions, topology.3, seed.3)
+  
+  smoof::makeGOMOPFunction(dimensions = dimensions, funs = list(f1, f2, f3))
+}
+
+mpm2_functions = list(
+  "Bi-Objective MPM2" = makeBiObjMPM2Function,
+  "Tri-Objective MPM2" = makeTriObjMPM2Function
 )
 
 # Aspar functions

@@ -124,6 +124,7 @@ server <- function(input, output, session) {
       mindist = mindist_functions,
       mmf = mmf_functions,
       mop = mop_functions,
+      mpm2 = mpm2_functions,
       zdt = zdt_functions,
       other = other_functions
     )
