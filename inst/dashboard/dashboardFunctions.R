@@ -162,6 +162,30 @@ makeAsparFunction <- function(dimensions = 2, n.objectives = 2) {
   }
 }
 
+# SGK Function
+
+makeSGKFunction = function() {
+  g = function(x, h, c1, c2) {
+    h / (1 + 4 * ((x[1] - c1) ** 2 + (x[2] - c2) ** 2))
+  }
+  
+  f = function(x) c(
+    1 - 1 / (1 + 4 * ((x[1] - 2 / 3) ** 2 + (x[2] - 1) ** 2)),
+    1 - max(
+      g(x, 1.5, 0.5, 0),
+      g(x, 2, 0.25, 2 / 3),
+      g(x, 3, 1, 1)
+    )
+  )
+  
+  lower = c(-0.25, -0.25)
+  upper = c(1.25, 1.25)
+  
+  smoof::makeMultiObjectiveFunction(
+    name = "SGK Function", id = "sgk_function", description = "", fn = f,
+    par.set = ParamHelpers::makeNumericParamSet(len = 2, lower = lower, upper = upper))
+}
+
 other_functions = list(
   "Aspar" = makeAsparFunction,
   "BiSphere" = smoof::makeBiSphereFunction, # does not work as expected and is kinda boring
@@ -170,5 +194,6 @@ other_functions = list(
   "ED1" = smoof::makeED1Function,
   "ED2" = smoof::makeED2Function,
   "Kursawe" = smoof::makeKursaweFunction,
+  "SGK" = makeSGKFunction,
   "Viennet" = smoof::makeViennetFunction
 )
