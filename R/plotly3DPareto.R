@@ -97,10 +97,19 @@ plotly3DParetoObjectiveSpace = function(x, fn, marker.style, scene="scene") {
   
   if (n == 2) {
     plot_ly(data = x,
-            type="scatter",
+            type="scattergl",
             x=~y1,y=~y2,
             mode = "markers",
             marker = marker.style
+    ) %>% layout(
+      xaxis = list(
+        title = "y₁",
+        constrain = "domain"
+      ),
+      yaxis = list(
+        title = "y₂",
+        constrain = "domain"
+      )
     )
   } else if (n == 3) {
     plot_ly(data = x,

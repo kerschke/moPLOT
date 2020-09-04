@@ -110,7 +110,7 @@ plotly3DLayersObjectiveSpace = function(x, fn, marker.style, scene="scene") {
 
   if (p == 2) {
     plot_ly(data = x,
-            type="scatter",
+            type="scattergl",
             x=~y1,y=~y2,
             frame=~frame,
             ids=~paste(x1,x2,x3),
@@ -119,6 +119,15 @@ plotly3DLayersObjectiveSpace = function(x, fn, marker.style, scene="scene") {
     ) %>% animation_opts(
       frame = 1000,
       transition = 0
+    ) %>% layout(
+      xaxis = list(
+        title = "y₁",
+        constrain = "domain"
+      ),
+      yaxis = list(
+        title = "y₂",
+        constrain = "domain"
+      )
     )
   } else if (p == 3) {
     plot_ly(data = x,

@@ -107,8 +107,6 @@ plotly2DPLOTObjectiveSpace = function(x, x.locally.efficient, fn, marker.heatmap
         constrain = "domain"
       ),
       yaxis = list(
-        # scaleanchor = "x",
-        # scaleratio = (max(x$y1) - min(x$y1)) / (max(x$y2) - min(x$y2)),
         title = "y₂",
         constrain = "domain"
       )

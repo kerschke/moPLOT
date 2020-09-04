@@ -102,7 +102,7 @@ plotly3DScanObjectiveSpace = function(x, fn, marker.style, frame="x3", scene="sc
   
   if (n == 2) {
     plot_ly(data = x,
-            type="scatter",
+            type="scattergl",
             x=~y1,y=~y2,
             ids=ids,
             frame=frame,
@@ -111,6 +111,15 @@ plotly3DScanObjectiveSpace = function(x, fn, marker.style, frame="x3", scene="sc
     ) %>% animation_opts(
       frame = 1000,
       transition = 0
+    ) %>% layout(
+      xaxis = list(
+        title = "y₁",
+        constrain = "domain"
+      ),
+      yaxis = list(
+        title = "y₂",
+        constrain = "domain"
+      )
     )
   } else if (n == 3) {
     plot_ly(data = x,

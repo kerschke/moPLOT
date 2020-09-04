@@ -74,10 +74,19 @@ plotly2DHeatmapObjectiveSpace = function(x, fn, marker.style, scene="scene") {
   
   if (n == 2) {
     plot_ly(data = x,
-            type="scatter",
+            type="scattergl",
             x=~y1,y=~y2,
             mode = "markers",
             marker = marker.style
+    ) %>% layout(
+      xaxis = list(
+        title = "y₁",
+        constrain = "domain"
+      ),
+      yaxis = list(
+        title = "y₂",
+        constrain = "domain"
+      )
     )
   } else if (n == 3) {
     plot_ly(data = x,
@@ -97,12 +106,13 @@ plotly2DHeatmapDecisionSpace = function(x, fn, marker.style) {
           colorscale=plotlyColorscale()
   ) %>% layout(
     xaxis = list(
-      title = "x_1",
+      title = "x₁",
       constrain = "domain"
     ),
     yaxis = list(
       scaleanchor = "x",
-      title = "x_2",
+      scaleratio = (max(x$x1) - min(x$x1)) / (max(x$x2) - min(x$x2)),
+      title = "x₂",
       constrain = "domain"
     )
   )
