@@ -29,6 +29,14 @@ devtools::install_github("kerschke/moPLOT")
 
 Examples for the different visualizations using the current version of this package can be found in the [examples](/examples) folder.
 
+## Dashboard
+
+The `moPLOT` package comes with a [`shiny`](https://shiny.rstudio.com)-based dashboard integrating the main visualizations and a wide variety of benchmark suites, allowing for an interactive exploration of their multi-objective landscapes. It can be started using the `runDashboard` command:
+
+```r
+library(moPLOT)
+runDashboard()
+```
 
 ## Citation
 
