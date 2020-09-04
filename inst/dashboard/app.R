@@ -18,6 +18,7 @@ ui <- fluidPage(
            tabsetPanel(
              tabPanel(
                "Select MOP",
+               p(),
                wellPanel(
                  selectInput("benchmark_set", "Benchmark set", c("Select a benchmark set"="", benchmark_sets)),
                  selectInput("fn_name", "Function", c("Select a benchmark set first"="")),
@@ -31,8 +32,8 @@ ui <- fluidPage(
                    checkboxInput("compute_plot", "Compute PLOT and heatmap", TRUE),
                    checkboxInput("compute_cost_landscape", "Compute cost landscape", FALSE),
                    splitLayout(
-                     actionButton("evaluate_grid", "Evaluate"), # icon = icon('th')
-                     downloadButton("download_data", "Download")
+                     actionButton("evaluate_grid", "Evaluate", style = "width: 100%"), # icon = icon('th')
+                     downloadButton("download_data", "Download", style = "width: 100%")
                    )
                  ),
                  id = "evaluate_grid_panel"
@@ -40,6 +41,7 @@ ui <- fluidPage(
              ),
              tabPanel(
                "Upload Data",
+               p(),
                wellPanel(
                  fileInput("upload_data", "Upload Data", accept = c(".Rds"))
                )
