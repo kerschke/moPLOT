@@ -102,7 +102,7 @@ computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, i
     cat(paste("Differentiating objective", i, "\n"))
     -gridBasedGradientCPP(grid$obj.space[,i], grid$dims, grid$step.sizes, prec.norm, prec.angle)
   })
-
+  
   cat("Estimating multi-objective gradients ...\n")
   
   if (obj == 2L) {
@@ -114,12 +114,18 @@ computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, i
   }
 
   cat("Finished multi-objective gradients\n")
-
+  
   if (impute.boundary) {
-    cat("Imputing multi-objective gradient at boundary\n")
+    cat("Imputing gradients at boundary\n")
+    
     multi.objective = imputeBoundary(multi.objective, single.objective, grid$dims)
+    
+    single.objective = lapply(seq_along(single.objective), function(i) {
+      # Bit of a hack, but works fine ...
+      imputeBoundary(single.objective[[i]], single.objective[i], grid$dims)
+    })
   }
-
+  
   return(list(
     multi.objective = multi.objective,
     single.objective = single.objective
