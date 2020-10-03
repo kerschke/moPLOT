@@ -71,19 +71,23 @@ IntegerVector findNextCellCPP(NumericVector gradient) {
 
   int d = gradient.size();
   IntegerVector direction(d, 0.0);
-
-  // we need the largest absolute value to stretch the gradient to the boundary
-  double maxval = max(abs(gradient));
+  
+  NumericVector normalized_gradient = normalizeVectorCPP(gradient, 0);
 
   // stretch gradient vector such that its longest component touches the boundary
   // of [-3, 3]^d; for each component with a (stretched) value >= 1 go in positive
   // direction, for all components with a value <= -1 go in the negative direction
   for (int j = 0; j < d; j++) {
-    double vec = 1.5 * gradient[j] / maxval;
-    if (vec >= 1.0) {
-      direction[j] = 1; // step in positive direction of x[j]
-    } else if (vec <= -1.0) {
-      direction[j] = -1; // step in negative direction of x[j]
+    
+    // Threshold corresponds to an angle of 22.5 degrees in a given direction
+    double threshold = sin((22.5 / 360) * 2 * M_PI);
+    
+    if (normalized_gradient(j) < -threshold) {
+      direction(j) = -1;
+    } else if (normalized_gradient(j) > threshold) {
+      direction(j) = 1;
+    } else {
+      direction(j) = 0;
     }
   }
   return direction;
