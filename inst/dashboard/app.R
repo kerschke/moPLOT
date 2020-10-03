@@ -316,7 +316,7 @@ server <- function(input, output, session) {
     if (is.null(plot_data$design)) {
       # generate design and evaluate objective space
       
-      design <- generateDesign(fn, points.per.dimension = input$grid_size)
+      design <- moPLOT::generateDesign(fn, points.per.dimension = input$grid_size)
       design$obj.space <- calculateObjectiveValues(design$dec.space, fn, parallelize = T)
       
       plot_data$design <<- design
@@ -474,13 +474,16 @@ server <- function(input, output, session) {
     
     updateTabsetPanel(session, "fn_select", selected = "Select MOP")
     updateSelectInput(session, "benchmark_set", selected = data$input$benchmark_set)
-    updateSelectInput(session, "fn_name", selected = data$input$fn_name)
-    
+
     updateNumericInput(session, "grid_size", value = data$input$grid_size)
     updateCheckboxInput(session, "compute_plot", value = data$input$compute_plot)
     updateCheckboxInput(session, "compute_cost_landscape", value = data$input$compute_cost_landscape)
     
     delay(500, {
+      updateSelectInput(session, "fn_name", selected = data$input$fn_name)
+    })
+    
+    delay(1000, {
       
       # Set values of dynamic UI
       
@@ -491,7 +494,7 @@ server <- function(input, output, session) {
       })
     })
     
-    delay(1000, {
+    delay(1500, {
       
       # Set data generation enabled / disabled accordingly
       
