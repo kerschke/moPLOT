@@ -218,11 +218,16 @@ NumericMatrix imputeBoundary(NumericMatrix moGradMat, List gradMatList, IntegerV
           for (int f_id = 0; f_id < p; f_id++) {
             if (sum(gradMat[f_id](id-1,_) * newGradient) < 0) {
               legal = false;
+              break;
             }
           }
 
-          if (is_false(all(newGradient == 0)) && legal) {
-            moGrad(id-1,_) = newGradient / computeVectorLengthCPP(newGradient) * length;
+          if (legal) {
+            if (is_false(all(newGradient == 0))) {
+              moGrad(id-1,_) = newGradient / computeVectorLengthCPP(newGradient) * length;
+            } else {
+              moGrad(id-1,_) = newGradient;
+            }
           }
         }
       }
@@ -380,6 +385,10 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
     if (id % 1000 == 0) {
       cout << id << '\r';
     }
+    
+    if (sinks_only && div(id - 1) > 0) {
+      continue;
+    }
 
     anchorIndex = convertCellID2IndicesCPP(id, dims);
 
@@ -424,6 +433,11 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
           not_sink = true;
         }
       }
+      
+      if (sinks_only && not_sink) {
+        // Skip evaluation if we only want sinks and this cannot be one
+        continue;
+      }
 
       int vector_id = 0;
 
@@ -436,34 +450,30 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
 
       bool crit = false;
       
-      if (!(sinks_only && not_sink)) {
-        // Skip evaluation if we only want sinks and this cannot be one
+      // Check criticality of MO gradients
       
-        // Check criticality of MO gradients
-        
-        int mo_critical = isCritical(allVectors);
-        
-        if (mo_critical == 1) {
-          crit = true;
-        } else if (mo_critical == 0) {
-          // In the edge case, only critical, if a corner point is locally nondominated
-          for (int cornerID: cornerIDs) {
-            if (locally_nondmominated.find(cornerID) != locally_nondmominated.end()) {
-              crit = true;
-            }
+      int mo_critical = isCritical(allVectors);
+      
+      if (mo_critical == 1) {
+        crit = true;
+      } else if (mo_critical == 0) {
+        // In the edge case, only critical, if a corner point is locally nondominated
+        for (int cornerID: cornerIDs) {
+          if (locally_nondmominated.find(cornerID) != locally_nondmominated.end()) {
+            crit = true;
           }
         }
+      }
+      
+      // Critical if all point have zero MOG (degenerate critical point)
+      
+      if (!crit) {
+        crit = true;
         
-        // Critical if all point have zero MOG (degenerate critical point)
-        
-        if (!crit) {
-          crit = true;
-          
-          for (int cornerID : cornerIDs) {
-            if (is_true(any(moGradMat(cornerID-1,_) != 0))) {
-              crit = false;
-              break;
-            }
+        for (int cornerID : cornerIDs) {
+          if (is_true(any(moGradMat(cornerID-1,_) != 0))) {
+            crit = false;
+            break;
           }
         }
       }
@@ -492,83 +502,6 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
             sink_count[i-1]++;
           } else {
             saddle_count[i-1]++;
-          }
-        }
-      }
-
-      // (2)
-      // boundary cases: also critical, if no descent direction along boundary exists with neighbors at boundary
-
-      if (is_true(any(anchorIndex == 1)) || is_true(any(anchorIndex == dims))) {
-        for (int d_iter = 0; d_iter < d; d_iter++) {
-          if (anchorIndex(d_iter) == 1 || anchorIndex(d_iter) == dims(d_iter)) {
-            std::vector<int> boundaryIDs;
-            std::vector<NumericVector> boundaryVectors;
-
-            for (int cornerIndex = 0; cornerIndex < cornerIndices.nrow(); cornerIndex++) {
-              if (cornerIndices(cornerIndex,d_iter) == anchorIndex(d_iter)) {
-                boundaryIDs.push_back(cornerIDs(cornerIndex));
-              }
-            }
-
-            for (int id : boundaryIDs) {
-              for (int fID = 0; fID < p; fID++) {
-                boundaryVectors.push_back(gradMat[fID](id-1,_));
-              }
-            }
-
-            bool boundary_critical = true;
-
-            IntegerMatrix neighbourhood = getNeighbourhood(d, true);
-
-            for (int n_i = 0; n_i < neighbourhood.nrow(); n_i++) {
-              if (neighbourhood(n_i, d_iter) == 0 && // move along boundary
-                  is_true(any(neighbourhood(n_i, _) != 0)) && // not anchorIndex
-                  convertIndices2CellIDCPP(anchorIndex + neighbourhood(n_i,_), dims) != -1 // descent direction needs to be legal, important for corners
-              ) {
-                IntegerVector descentDirectionInt = neighbourhood(n_i,_);
-                NumericVector descentDirection = as<NumericVector>(descentDirectionInt);
-                bool descent_direction_legal = true;
-
-                for (NumericVector boundaryVector : boundaryVectors) {
-                  if (sum(boundaryVector * descentDirection) <= 0) {
-                    descent_direction_legal = false;
-                  }
-                }
-
-                if (descent_direction_legal) {
-                  boundary_critical = false;
-                  break;
-                }
-              }
-
-            }
-
-            if (boundary_critical) {
-              bool entering = false;
-              bool exiting = false;
-
-              for (NumericVector v : boundaryVectors) {
-                if ((anchorIndex(d_iter) == 1 && v(d_iter) > 0) ||
-                    (anchorIndex(d_iter) == dims(d_iter) && v(d_iter) < 0)) {
-                  entering = true;
-                }
-                if ((anchorIndex(d_iter) == 1 && v(d_iter) < 0) ||
-                    (anchorIndex(d_iter) == dims(d_iter) && v(d_iter) > 0)) {
-                  exiting = true;
-                }
-              }
-
-              for (int i : boundaryIDs) {
-                if (entering && !exiting) {
-                  source_count[i-1]++;
-                } else if (exiting && !entering) {
-                  sink_count[i-1]++;
-                } else {
-                  saddle_count[i-1]++;
-                }
-              }
-            }
           }
         }
       }
