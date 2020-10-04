@@ -471,70 +471,73 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
   int p = gradMatList.length();
   int d = dims.size();
   int n = div.length();
+  
+  // Gradient matrices
 
   std::vector<NumericMatrix> gradMat(p);
 
   for (int i = 0; i < p; i++) {
     gradMat[i] = as<NumericMatrix>(gradMatList(i));
   }
+  
+  // IDs of locally non-dominated points
 
   std::set<int> locally_nondmominated(locallyNondominated.begin(), locallyNondominated.end());
   
-  std::vector<std::vector<int>> simplices = getCellSimplices(d);
-  std::vector<IntegerVector> cubeCorners = getCubeCorners(d);
+  // Helpers for defining the cube and simplices that will be checked for each cube
   
-  std::unordered_set<int> sinks;
-  std::unordered_set<int> sources;
-  std::unordered_set<int> saddles;
+  std::vector<std::vector<int>> simplices = getCellSimplices(d);
+  std::vector<IntegerVector> cube_corners = getCubeCorners(d);
 
+  // Counter for each node if it is associated with a sink, a source, or a saddle
+  
   std::vector<int> sink_count(n, 0);
   std::vector<int> source_count(n, 0);
   std::vector<int> saddle_count(n, 0);
 
-  // anchor index of the current cell
-  IntegerVector anchorIndex;
-  IntegerVector neighbourIndex;
+  // Anchor index of the current cell
   
-  std::vector<IntegerVector> cornerIndices(d + 1, d);
-  IntegerVector cornerIDs(d + 1);
+  IntegerVector anchor_index;
   
-  std::vector<NumericVector> allVectors(p * (d + 1));
-  
-  std::vector<IntegerVector> cubeIndices(pow(2, d));
-  IntegerVector cubeIDs(pow(2, d));
-    
-  std::vector<NumericVector> cubeVectors(p * pow(2, d));
+  // Data for cube that is currently processed
 
-  // helpers
-  NumericVector vec;
-  NumericVector compVec;
+  std::vector<IntegerVector> cube_indices(pow(2, d));
+  IntegerVector cube_ids(pow(2, d));
+  std::vector<NumericVector> cube_vectors(p * pow(2, d));
+  
+  // Data for simplex (within the cube) that is currently processed
+  
+  IntegerVector simplex_ids(d + 1);
+  std::vector<NumericVector> simplex_vectors(p * (d + 1));
 
-  for (int id = 1; id <= n; id++) {
+  for (int anchor_id = 1; anchor_id <= n; anchor_id++) {
     // Loop over cell indices
     // Each anchor index refers to the hypercube defined by itself and +1 into each dimension
-    if (id % 1000 == 0) {
-      cout << id << '\r';
+    if (anchor_id % 1000 == 0) {
+      cout << anchor_id << '\r';
     }
 
-    anchorIndex = convertCellID2IndicesCPP(id, dims);
+    anchor_index = convertCellID2IndicesCPP(anchor_id, dims);
     
-    if (is_true(any(anchorIndex == dims))) {
-      // Hypercube not valid
+    if (is_true(any(anchor_index == dims))) {
+      // Hypercube is not valid, as some points would be out-of-bounds
       continue;
     }
     
     int not_sink_count = 0;
     
-    for (int i = 0; i < cubeCorners.size(); i++) {
-      cubeIndices[i] = anchorIndex + cubeCorners[i];
-      cubeIDs[i] = convertIndices2CellIDCPP(cubeIndices[i], dims);
+    // Compute indices and aggregate vectors of this cube
+    
+    for (int i = 0; i < cube_corners.size(); i++) {
+      cube_indices[i] = anchor_index + cube_corners[i];
+      cube_ids[i] = convertIndices2CellIDCPP(cube_indices[i], dims);
       
-      if (div(cubeIDs[i] - 1) > 0) {
+      if (div(cube_ids[i] - 1) > 0) {
         not_sink_count++;
       }
       
-      for (int fID = 0; fID < p; fID++) {
-        cubeVectors[p * i + fID] = gradMat[fID](cubeIDs[i] - 1,_);
+      for (int f_id = 0; f_id < p; f_id++) {
+        cube_vectors[p * i + f_id] = gradMat[f_id](cube_ids[i] - 1,_);
       }
     }
 
@@ -543,28 +546,29 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
       continue;
     }
     
-    int cube_critical = isCritical(cubeVectors);
+    // Check if the vectors associated to the cube as a whole can be critical
+    int cube_critical = isCritical(cube_vectors);
 
     if (cube_critical == -1) {
       // If whole cube is not critical, none of its simplices can be
       continue;
     }
 
-    // For each simplex contained in cube
+    // For each simplex contained in cube ...
     for (std::vector<int> simplex : simplices) {
-      // Collect all indices for nodes in simplex
       bool not_sink = false;
       
+      // Collect all ids for the nodes in simplex
+      
       for (int i = 0; i < simplex.size(); i++) {
-        cornerIndices[i] = cubeIndices[simplex[i]];
-        cornerIDs[i] = cubeIDs[simplex[i]];
+        simplex_ids[i] = cube_ids[simplex[i]];
         
-        if (div(cornerIDs[i] - 1) > 0) {
+        if (div(simplex_ids[i] - 1) > 0) {
           not_sink = true;
         }
         
-        for (int fID = 0; fID < p; fID++) {
-          allVectors[p * i + fID] = gradMat[fID](cornerIDs[i] - 1,_);
+        for (int f_id = 0; f_id < p; f_id++) {
+          simplex_vectors[p * i + f_id] = gradMat[f_id](simplex_ids[i] - 1,_);
         }
       }
       
@@ -575,28 +579,28 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
 
       bool crit = false;
       
-      // Check criticality of MO gradients
+      // Check if gradients are critical
       
-      int mo_critical = isCritical(allVectors);
+      int gradients_critical = isCritical(simplex_vectors);
       
-      if (mo_critical == 1) {
+      if (gradients_critical == 1) {
         crit = true;
-      } else if (mo_critical == 0) {
-        // In the edge case, only critical, if a corner point is locally nondominated
-        for (int cornerID: cornerIDs) {
-          if (locally_nondmominated.find(cornerID) != locally_nondmominated.end()) {
+      } else if (gradients_critical == 0) {
+        // In the edge case, it is only critical, if a corner point is locally non-dominated
+        for (int i : simplex_ids) {
+          if (locally_nondmominated.find(i) != locally_nondmominated.end()) {
             crit = true;
           }
         }
       }
       
-      // Critical if all point have zero MOG (degenerate critical point)
+      // Critical if all points have zero MOG (degenerate critical point)
       
       if (!crit) {
         crit = true;
         
-        for (int cornerID : cornerIDs) {
-          if (is_true(any(moGradMat(cornerID-1,_) != 0))) {
+        for (int i : simplex_ids) {
+          if (is_true(any(moGradMat(i - 1,_) != 0))) {
             crit = false;
             break;
           }
@@ -608,7 +612,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
         bool neg = false;
         bool zero = false;
         
-        for (int i : cornerIDs) {
+        for (int i : simplex_ids) {
           if (div(i-1) < 0) {
             neg = true;
           } else if (div(i-1) > 0) {
@@ -618,7 +622,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
           }
         }
 
-        for (int i : cornerIDs) {
+        for (int i : simplex_ids) {
           if (pos && !neg) {
             source_count[i-1]++;
           } else if ((neg && !pos) || (zero && !neg && !pos)) {
@@ -632,18 +636,24 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
       }
     }
   }
+  
+  // Aggregate results and return sinks, sources and saddles
+  
+  std::vector<int> sinks;
+  std::vector<int> sources;
+  std::vector<int> saddles;
 
   for (int id = 1; id <= n; id++) {
     if (sink_count[id-1] > 0) {
-      sinks.insert(id);
+      sinks.push_back(id);
     }
 
     if (source_count[id-1] > 0) {
-      sources.insert(id);
+      sources.push_back(id);
     }
 
     if (saddle_count[id-1] > 0) {
-      saddles.insert(id);
+      saddles.push_back(id);
     }
   }
 
