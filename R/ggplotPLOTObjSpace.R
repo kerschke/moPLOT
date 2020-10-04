@@ -1,11 +1,10 @@
 #' @export
-ggplotPLOTObjSpace = function(dec.space, obj.space, sinks, height, check.data = TRUE) {
+ggplotPLOTObjSpace = function(obj.space, sinks, height, check.data = TRUE) {
   if (check.data) {
-    assertMatrix(dec.space, ncols = 2, col.names = "unique") # 2D only
-    assertMatrix(obj.space, min.cols = 2, nrows = nrow(dec.space)) # at least 2-objective
+    assertMatrix(obj.space, ncols = 2) # 2-objective only
     
-    assertInteger(sinks, lower = 1, upper = nrow(dec.space)) # sinks are valid indices for observations
-    assertNumeric(height, len = nrow(dec.space)) # one height value per observation
+    assertInteger(sinks, lower = 1, upper = nrow(obj.space)) # Sinks are valid indices for observations
+    assertNumeric(height, len = nrow(obj.space)) # One height value per observation
   }
   
   # Compute coloring of locally efficient points

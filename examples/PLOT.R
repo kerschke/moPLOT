@@ -20,5 +20,5 @@ less = localEfficientSetSkeleton(design, gradients, divergence, integration="fas
 
 # Plot the results
 ggplotPLOT(design$dec.space, design$obj.space, less$sinks, less$height)
-ggplotPLOTObjSpace(design$dec.space, design$obj.space, less$sinks, less$height)
+ggplotPLOTObjSpace(design$obj.space, less$sinks, less$height)
 
