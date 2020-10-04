@@ -346,6 +346,126 @@ int isCritical(std::vector<NumericVector> vectors) {
   return 1;
 }
 
+std::vector<std::vector<IntegerVector>> getCellSimplices(int dimension) {
+  if (dimension == 2) {
+    std::vector<std::vector<IntegerVector>> simplices {
+      {
+        IntegerVector {0, 0},
+        IntegerVector {0, 1},
+        IntegerVector {1, 1}
+      },{
+        IntegerVector {0, 0},
+        IntegerVector {0, 1},
+        IntegerVector {1, 0}
+      },{
+        IntegerVector {0, 0},
+        IntegerVector {1, 0},
+        IntegerVector {1, 1}
+      },{
+        IntegerVector {0, 1},
+        IntegerVector {1, 0},
+        IntegerVector {1, 1}
+      }
+    };
+    
+    return simplices;
+  } else if (dimension == 3) {
+    std::vector<std::vector<IntegerVector>> simplices {
+      // Eight "right angle" corners, i.e. a corner and then one step into each direction
+      {
+        {0, 0, 0}, // anchor
+        {0, 0, 1}, // change x1
+        {0, 1, 0}, // change x2
+        {1, 0, 0}  // change x3
+      },{
+        {0, 0, 1}, // ...
+        {0, 0, 0},
+        {0, 1, 1},
+        {1, 0, 1}
+      },{
+        {0, 1, 0},
+        {0, 1, 1},
+        {0, 0, 0},
+        {1, 1, 0}
+      },{
+        {0, 1, 1},
+        {0, 1, 0},
+        {0, 0, 1},
+        {1, 1, 1}
+      },{
+        {1, 0, 0},
+        {1, 0, 1},
+        {1, 1, 0},
+        {0, 0, 0}
+      },{
+        {1, 0, 1},
+        {1, 0, 0},
+        {1, 1, 1},
+        {0, 0, 1}
+      },{
+        {1, 1, 0},
+        {1, 1, 1},
+        {1, 0, 0},
+        {0, 1, 0}
+      },{
+        {1, 1, 1},
+        {1, 1, 0},
+        {1, 0, 1},
+        {0, 1, 1}
+      },{
+      // Two simplices that cover the "middle" part of the cube
+        {0, 0, 0},
+        {1, 1, 0},
+        {1, 0, 1},
+        {0, 1, 1}
+      },{
+        {1, 1, 1},
+        {0, 0, 1},
+        {0, 1, 0},
+        {1, 0, 0}
+      }
+    };
+    
+    return simplices;
+  } else {
+    warning("Cannot generate for dimensions other than 2 or 3");
+    
+    std::vector<std::vector<IntegerVector>> simplices(0);
+    return simplices;
+  }
+}
+
+std::vector<IntegerVector> getCubeCorners(int dimension) {
+  if (dimension == 2) {
+    std::vector<IntegerVector> corners = {
+      {0, 0},
+      {0, 1},
+      {1, 0},
+      {1, 1}
+    };
+    
+    return corners;
+  } else if (dimension == 3) {
+    std::vector<IntegerVector> corners = {
+      {0, 0, 0},
+      {0, 0, 1},
+      {0, 1, 0},
+      {0, 1, 1},
+      {1, 0, 0},
+      {1, 0, 1},
+      {1, 1, 0},
+      {1, 1, 1}
+    };
+    
+    return corners;
+  } else {
+    warning("Cannot generate for dimensions other than 2 or 3");
+    
+    std::vector<IntegerVector> corners(0);
+    return corners;
+  }
+}
+
 // [[Rcpp::export]]
 List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, NumericVector div, IntegerVector locallyNondominated, IntegerVector dims, bool sinks_only) {
   int p = gradMatList.length();
@@ -359,7 +479,10 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
   }
 
   std::set<int> locally_nondmominated(locallyNondominated.begin(), locallyNondominated.end());
-
+  
+  std::vector<std::vector<IntegerVector>> simplices = getCellSimplices(d);
+  std::vector<IntegerVector> cubeCorners = getCubeCorners(d);
+  
   std::unordered_set<int> sinks;
   std::unordered_set<int> sources;
   std::unordered_set<int> saddles;
@@ -371,10 +494,16 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
   // anchor index of the current cell
   IntegerVector anchorIndex;
   IntegerVector neighbourIndex;
-  IntegerMatrix cornerIndices(d + 1, d);
+  
+  std::vector<IntegerVector> cornerIndices(d + 1, d);
   IntegerVector cornerIDs(d + 1);
-  std::vector<NumericVector> allVectors(p*(d + 1));
-  std::vector<NumericVector> soVectors(d+1);
+  
+  std::vector<NumericVector> allVectors(p * (d + 1));
+  
+  std::vector<IntegerVector> cubeIndices(pow(2, d));
+  IntegerVector cubeIDs(pow(2, d));
+    
+  std::vector<NumericVector> cubeVectors(p * pow(2, d));
 
   // helpers
   NumericVector vec;
@@ -382,70 +511,66 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
 
   for (int id = 1; id <= n; id++) {
     // Loop over cell indices
+    // Each anchor index refers to the hypercube defined by itself and +1 into each dimension
     if (id % 1000 == 0) {
       cout << id << '\r';
     }
+
+    anchorIndex = convertCellID2IndicesCPP(id, dims);
     
-    if (sinks_only && div(id - 1) > 0) {
+    if (is_true(any(anchorIndex == dims))) {
+      // Hypercube not valid
+      continue;
+    }
+    
+    int not_sink_count = 0;
+    
+    for (int i = 0; i < cubeCorners.size(); i++) {
+      cubeIndices[i] = anchorIndex + cubeCorners[i];
+      cubeIDs[i] = convertIndices2CellIDCPP(cubeIndices[i], dims);
+      
+      if (div(cubeIDs[i] - 1) > 0) {
+        not_sink_count++;
+      }
+      
+      for (int fID = 0; fID < p; fID++) {
+        cubeVectors[p * i + fID] = gradMat[fID](cubeIDs[i] - 1,_);
+      }
+    }
+
+    if (sinks_only && not_sink_count > (pow(2, d) - (d + 1))) {
+      // Skip evaluation if we only want sinks and there cannot be one in this cube
+      continue;
+    }
+    
+    int cube_critical = isCritical(cubeVectors);
+
+    if (cube_critical == -1) {
+      // If whole cube is not critical, none of its simplices can be
       continue;
     }
 
-    anchorIndex = convertCellID2IndicesCPP(id, dims);
-
-    // for each "neighboring simplex"
-    for (int simplexCounter = 0; simplexCounter < pow(2, d); simplexCounter++) {
-      // fill all corners of current cell
-      int step;
-      bool illegal_vertex = false;
-      for (int d_corner = 0; d_corner < d; d_corner++) {
-        // is d_corner-th bit set?
-        if (((simplexCounter >> d_corner) & 1) == 0) {
-          step = -1;
-        } else {
-          step = +1;
-        }
-
-        neighbourIndex = clone(anchorIndex);
-        neighbourIndex(d_corner) += step;
-
-        if (is_true(any(neighbourIndex < 1)) ||
-            is_true(any(neighbourIndex > dims))) {
-          // Illegal cell! we cannot evaluate this "simplex"
-          illegal_vertex = true;
-          break;
-        }
-
-        cornerIndices(d_corner,_) = neighbourIndex;
-      }
-
-      if (illegal_vertex) {
-        // Do not evaluate, if simplex is not legal
-        continue;
-      }
-
-      cornerIndices(d,_) = anchorIndex;
-
+    // For each simplex contained in cube
+    for (std::vector<IntegerVector> simplex : simplices) {
+      // Collect all indices for nodes in simplex
       bool not_sink = false;
-
-      for (int cornerIndex = 0; cornerIndex < cornerIndices.nrow(); cornerIndex++) {
-        cornerIDs(cornerIndex) = convertIndices2CellIDCPP(cornerIndices(cornerIndex,_), dims);
-        if (div(cornerIDs(cornerIndex)-1) > 0) {
+      
+      for (int i = 0; i < simplex.size(); i++) {
+        cornerIndices[i] = anchorIndex + simplex[i];
+        cornerIDs[i] = convertIndices2CellIDCPP(cornerIndices[i], dims);
+        
+        if (div(cornerIDs[i] - 1) > 0) {
           not_sink = true;
+        }
+        
+        for (int fID = 0; fID < p; fID++) {
+          allVectors[p * i + fID] = gradMat[fID](cornerIDs[i] - 1,_);
         }
       }
       
       if (sinks_only && not_sink) {
         // Skip evaluation if we only want sinks and this cannot be one
         continue;
-      }
-
-      int vector_id = 0;
-
-      for (int fID = 0; fID < p; fID++) {
-        for (int cornerIndex = 0; cornerIndex < cornerIndices.nrow(); cornerIndex++) {
-          // Add all SO gradient vectors to a single list for easier reference
-          allVectors[vector_id++] = gradMat[fID](cornerIDs(cornerIndex) - 1,_);
-        }
       }
 
       bool crit = false;
