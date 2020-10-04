@@ -346,83 +346,83 @@ int isCritical(std::vector<NumericVector> vectors) {
   return 1;
 }
 
-std::vector<std::vector<IntegerVector>> getCellSimplices(int dimension) {
+std::vector<std::vector<int>> getCellSimplices(int dimension) {
   if (dimension == 2) {
-    std::vector<std::vector<IntegerVector>> simplices {
+    std::vector<std::vector<int>> simplices {
       {
-        IntegerVector {0, 0},
-        IntegerVector {0, 1},
-        IntegerVector {1, 1}
+        0b00,
+        0b01,
+        0b11
       },{
-        IntegerVector {0, 0},
-        IntegerVector {0, 1},
-        IntegerVector {1, 0}
+        0b00,
+        0b01,
+        0b10
       },{
-        IntegerVector {0, 0},
-        IntegerVector {1, 0},
-        IntegerVector {1, 1}
+        0b00,
+        0b10,
+        0b11
       },{
-        IntegerVector {0, 1},
-        IntegerVector {1, 0},
-        IntegerVector {1, 1}
+        0b01,
+        0b10,
+        0b11
       }
     };
     
     return simplices;
   } else if (dimension == 3) {
-    std::vector<std::vector<IntegerVector>> simplices {
+    std::vector<std::vector<int>> simplices {
       // Eight "right angle" corners, i.e. a corner and then one step into each direction
       {
-        {0, 0, 0}, // anchor
-        {0, 0, 1}, // change x1
-        {0, 1, 0}, // change x2
-        {1, 0, 0}  // change x3
+        0b000, // anchor
+        0b001, // change x1
+        0b010, // change x2
+        0b100  // change x3
       },{
-        {0, 0, 1}, // ...
-        {0, 0, 0},
-        {0, 1, 1},
-        {1, 0, 1}
+        0b001, // ...
+        0b000,
+        0b011,
+        0b101
       },{
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 0, 0},
-        {1, 1, 0}
+        0b010,
+        0b011,
+        0b000,
+        0b110
       },{
-        {0, 1, 1},
-        {0, 1, 0},
-        {0, 0, 1},
-        {1, 1, 1}
+        0b011,
+        0b010,
+        0b001,
+        0b111
       },{
-        {1, 0, 0},
-        {1, 0, 1},
-        {1, 1, 0},
-        {0, 0, 0}
+        0b100,
+        0b101,
+        0b110,
+        0b000
       },{
-        {1, 0, 1},
-        {1, 0, 0},
-        {1, 1, 1},
-        {0, 0, 1}
+        0b101,
+        0b100,
+        0b111,
+        0b001
       },{
-        {1, 1, 0},
-        {1, 1, 1},
-        {1, 0, 0},
-        {0, 1, 0}
+        0b110,
+        0b111,
+        0b100,
+        0b010
       },{
-        {1, 1, 1},
-        {1, 1, 0},
-        {1, 0, 1},
-        {0, 1, 1}
+        0b111,
+        0b110,
+        0b101,
+        0b011
       },{
       // Two simplices that cover the "middle" part of the cube
-        {0, 0, 0},
-        {1, 1, 0},
-        {1, 0, 1},
-        {0, 1, 1}
+        0b000,
+        0b110,
+        0b101,
+        0b011
       },{
-        {1, 1, 1},
-        {0, 0, 1},
-        {0, 1, 0},
-        {1, 0, 0}
+        0b111,
+        0b001,
+        0b010,
+        0b100
       }
     };
     
@@ -430,7 +430,7 @@ std::vector<std::vector<IntegerVector>> getCellSimplices(int dimension) {
   } else {
     warning("Cannot generate for dimensions other than 2 or 3");
     
-    std::vector<std::vector<IntegerVector>> simplices(0);
+    std::vector<std::vector<int>> simplices(0);
     return simplices;
   }
 }
@@ -480,7 +480,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
 
   std::set<int> locally_nondmominated(locallyNondominated.begin(), locallyNondominated.end());
   
-  std::vector<std::vector<IntegerVector>> simplices = getCellSimplices(d);
+  std::vector<std::vector<int>> simplices = getCellSimplices(d);
   std::vector<IntegerVector> cubeCorners = getCubeCorners(d);
   
   std::unordered_set<int> sinks;
@@ -551,13 +551,13 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
     }
 
     // For each simplex contained in cube
-    for (std::vector<IntegerVector> simplex : simplices) {
+    for (std::vector<int> simplex : simplices) {
       // Collect all indices for nodes in simplex
       bool not_sink = false;
       
       for (int i = 0; i < simplex.size(); i++) {
-        cornerIndices[i] = anchorIndex + simplex[i];
-        cornerIDs[i] = convertIndices2CellIDCPP(cornerIndices[i], dims);
+        cornerIndices[i] = cubeIndices[simplex[i]];
+        cornerIDs[i] = cubeIDs[simplex[i]];
         
         if (div(cornerIDs[i] - 1) > 0) {
           not_sink = true;
