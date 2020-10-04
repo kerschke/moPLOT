@@ -90,13 +90,13 @@ plotly2DPLOTObjectiveSpace = function(x, x.locally.efficient, fn, marker.heatmap
   if (n == 2) {
     plot_ly(
       data = x,
-      type="scatter",
+      type="scattergl",
       x = ~y1, y = ~y2,
       mode = "markers",
       marker = marker.heatmap
     ) %>% add_trace(
       data = x.locally.efficient,
-      type = "scatter",
+      type = "scattergl",
       x = ~y1, y = ~y2,
       mode = "markers",
       marker = marker.locally.efficient,
