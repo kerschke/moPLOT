@@ -237,8 +237,33 @@ NumericMatrix imputeBoundary(NumericMatrix moGradMat, List gradMatList, IntegerV
   return moGrad;
 }
 
-int isCritical(std::vector<NumericVector> vectors) {
+int isCritical(std::vector<NumericVector> vectors, IntegerVector on_boundary) {
   int d = vectors[0].size();
+  
+  if (is_true(any(on_boundary != 0))) {
+    std::vector<NumericVector> additional_vectors;
+    
+    for (NumericVector v: vectors) {
+      NumericVector new_v(v);
+      additional_vectors.push_back(new_v);
+    }
+    
+    for (int i = 0; i < on_boundary.size(); i++) {
+      if (on_boundary[i] < 0) {
+        // lower bound --> zero anything negative
+        for (NumericVector v : additional_vectors) {
+          v[i] = max(0.0, v[i]);
+        }
+      } else if (on_boundary[i] > 0) {
+        // upper bound --> zero anything positive
+        for (NumericVector v : additional_vectors) {
+          v[i] = min(0.0, v[i]);
+        }
+      }
+    }
+    
+    vectors.insert(vectors.end(), additional_vectors.begin(), additional_vectors.end());
+  }
   
   LogicalVector positive(d, false);
   LogicalVector negative(d, false);
@@ -344,6 +369,12 @@ int isCritical(std::vector<NumericVector> vectors) {
 
   // critical
   return 1;
+}
+
+int isCritical(std::vector<NumericVector> vectors) {
+  IntegerVector on_boundary(0, vectors[0].size());
+  
+  return isCritical(vectors, on_boundary);
 }
 
 std::vector<std::vector<int>> getCellSimplices(int dimension) {
@@ -524,6 +555,11 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
       continue;
     }
     
+    IntegerVector on_boundary(d, 0);
+    
+    on_boundary[anchor_index == (dims - 1)] = 1;
+    on_boundary[anchor_index == 1] = -1;
+    
     int not_sink_count = 0;
     
     // Compute indices and aggregate vectors of this cube
@@ -543,11 +579,12 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
 
     if (sinks_only && not_sink_count > (pow(2, d) - (d + 1))) {
       // Skip evaluation if we only want sinks and there cannot be one in this cube
+      // TODO don't skip if all MOG == 0
       continue;
     }
     
     // Check if the vectors associated to the cube as a whole can be critical
-    int cube_critical = isCritical(cube_vectors);
+    int cube_critical = isCritical(cube_vectors, on_boundary);
 
     if (cube_critical == -1) {
       // If whole cube is not critical, none of its simplices can be
@@ -581,7 +618,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
       
       // Check if gradients are critical
       
-      int gradients_critical = isCritical(simplex_vectors);
+      int gradients_critical = isCritical(simplex_vectors, on_boundary);
       
       if (gradients_critical == 1) {
         crit = true;
