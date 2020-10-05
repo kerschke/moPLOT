@@ -244,7 +244,7 @@ int isCritical(std::vector<NumericVector> vectors, IntegerVector on_boundary) {
     std::vector<NumericVector> additional_vectors;
     
     for (NumericVector v: vectors) {
-      NumericVector new_v(v);
+      NumericVector new_v(v.begin(), v.end());
       additional_vectors.push_back(new_v);
     }
     
