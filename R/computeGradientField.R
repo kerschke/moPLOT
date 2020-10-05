@@ -116,14 +116,9 @@ computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, i
   cat("Finished multi-objective gradients\n")
   
   if (impute.boundary) {
-    cat("Imputing gradients at boundary\n")
+    cat("Imputing multi-objective gradient at boundary\n")
     
     multi.objective = imputeBoundary(multi.objective, single.objective, grid$dims)
-    
-    single.objective = lapply(seq_along(single.objective), function(i) {
-      # Bit of a hack, but works fine ...
-      imputeBoundary(single.objective[[i]], single.objective[i], grid$dims)
-    })
   }
   
   return(list(
