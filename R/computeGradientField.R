@@ -135,6 +135,7 @@ computeDivergenceGrid = function(gradients, dims, step.sizes, prec.norm = 1e-6, 
   
   d = length(dims)
 
+  # TODO There has to be some extra handling to catch all cases on the decision boundary
 
   if (d == 2) {
     l = lapply(seq_len(ncol(gradients)), function(i) {
@@ -143,20 +144,74 @@ computeDivergenceGrid = function(gradients, dims, step.sizes, prec.norm = 1e-6, 
     
     Reduce('+', l)
   } else if (d == 3) {
-    # Currently, this is a workaround that _kind of_ works for 3D, where divergence
-    # alone does not work.
-    # TODO Is there a proper, reasonably efficient way to do this?
-    
     l = lapply(seq_len(ncol(gradients)), function(i) {
-      gridBasedGradientCPP(gradients[, i], dims, step.sizes, prec.norm, prec.angle)[,i]
+      gridBasedGradientCPP(gradients[, i], dims, step.sizes, prec.norm, prec.angle)
     })
     
-    sapply(seq_along(l[[1]]), function(i) {
-      signs = numeric(3)
-      signs[1] = (l[[1]][i] + l[[2]][i])
-      signs[2] = (l[[1]][i] + l[[3]][i])
-      signs[3] = (l[[2]][i] + l[[3]][i])
-      max(signs)
+    sapply(seq_len(nrow(gradients)), function(i) {
+      J = matrix(
+        c(l[[1L]][i, 1L], l[[1L]][i, 2L], l[[1L]][i, 3L],
+          l[[2L]][i, 1L], l[[2L]][i, 2L], l[[2L]][i, 3L],
+          l[[3L]][i, 1L], l[[3L]][i, 2L], l[[3L]][i, 3L]),
+        nrow = 3L, ncol = 3L, byrow = TRUE
+      )
+      
+      real_parts <- Re(eigen(1/2 * (J + t(J)), symmetric = TRUE, only.values = TRUE)$values)
+      
+      pair_sums = c(
+        real_parts[1] + real_parts[2],
+        real_parts[1] + real_parts[3],
+        real_parts[2] + real_parts[3]
+      )
+      
+      if (all(pair_sums < 0)) {
+        max(pair_sums)
+      } else if (all(pair_sums > 0)) {
+        min(pair_sums)
+      } else {
+        median(pair_sums)
+      }
+      
+      # See: 
+      # Chong, M.S., Perry, A.E., Cantwell, B.J.:
+      # A general classification of three-dimensional flow fields.
+      # Physics of Fluids A: Fluid Dynamics 2(5), 765–777 (1990)
+      
+      # (For the time) too inaccurate,
+      # as we expect some eigenvalues to be approx. zero:
+      
+      # P = -(J[1,1] + J[2,2] + J[3,3])
+      # Q = (J[1,1] * J[2,2] - J[2,1] * J[1,2]) +
+      #     (J[1,1] * J[3,3] - J[3,1] * J[1,3]) +
+      #     (J[2,2] * J[3,3] - J[3,2] * J[2,3])
+      # R = -det(J)
+
+      # if (P > 0) {
+      #   if (R < 0) {
+      #     -1 # stable
+      #   } else if (R > 0 && Q <= R / P) {
+      #     1 # unstable
+      #   } else {
+      #     -1 # stable
+      #   }
+      # } else if (P < 0) {
+      #   if (R > 0) {
+      #     1 # unstable
+      #   } else if (R < 0 && Q <= R / P) {
+      #     -1 # stable
+      #   } else {
+      #     1 # unstable
+      #   }
+      # } else {
+      #   # P == 0
+      #   if (R < 0) {
+      #     -1 # stable
+      #   } else if (R > 0) {
+      #     1 # unstable
+      #   } else {
+      #     -1 # stable
+      #   }
+      # }
     })
   }
 }
