@@ -1,5 +1,5 @@
 #' @export
-plotly3DLayers = function(grid, fn, mode = "decision.space", no.steps = 20, impute.zero = T) {
+plotly3DLayers = function(grid, fn, sinks = NULL, mode = "decision.space", no.steps = 20, impute.zero = T) {
   # grid: list of obj.space, dims, dec.space, step.sizes
   # fn: smoof function, 3 dimensional decision space
 
@@ -9,6 +9,14 @@ plotly3DLayers = function(grid, fn, mode = "decision.space", no.steps = 20, impu
 
   if (impute.zero) {
     grid$height = imputeZero(grid$height)
+  }
+  
+  if (!is.null(sinks)) {
+    x.sinks = cbind.data.frame(grid$dec.space[sinks,], grid$obj.space[sinks,])
+    dom.counter = ecr::doNondominatedSorting(t(grid$obj.space[sinks,]))$dom.counter
+  } else {
+    x.sinks = NULL
+    dom.counter = NULL
   }
 
   maxh = calculateMaxDisplayHeightCPP(grid$height, grid$dims, F)
@@ -36,13 +44,12 @@ plotly3DLayers = function(grid, fn, mode = "decision.space", no.steps = 20, impu
   }
 
   x.boundaries = as.data.frame(x.boundaries)
-  # print(head(x.boundaries))
 
   decision.scene = list(
     aspectmode='cube',
-    xaxis = list(range = c(lower[1],upper[1]), title='x₁'),
-    yaxis = list(range = c(lower[2],upper[2]), title='x₂'),
-    zaxis = list(range = c(lower[3],upper[3]), title='x₃')
+    xaxis = list(range = c(lower[1], upper[1]), title='x₁'),
+    yaxis = list(range = c(lower[2], upper[2]), title='x₂'),
+    zaxis = list(range = c(lower[3], upper[3]), title='x₃')
   )
 
   if (n == 3) {
@@ -54,23 +61,24 @@ plotly3DLayers = function(grid, fn, mode = "decision.space", no.steps = 20, impu
     )
   }
 
-  marker = plotlyMarker(grid$height)
-
   if (mode == "both") {
-    x.shared = highlight_key(x.boundaries)
-    p.decision = plotly3DLayersDecisionSpace(x.shared, fn, marker, scene="scene")
-    p.objective = plotly3DLayersObjectiveSpace(x.shared, fn, marker, scene="scene2")
+    # TODO Currently the animation is broken if mode == "both"
+    
+    p.decision = plotly3DLayersDecisionSpace(x.boundaries, fn, x.sinks, dom.counter, scene="scene")
+    p.objective = plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter, scene="scene2")
 
     domain.left = list(
       x=c(0,0.5),
       y=c(0,1)
     )
+    
     decision.scene$domain = domain.left
 
     domain.right = list(
       x=c(0.5,1),
       y=c(0,1)
     )
+    
     if (n == 3) {
       objective.scene$domain = domain.right
     } else {
@@ -80,22 +88,14 @@ plotly3DLayers = function(grid, fn, mode = "decision.space", no.steps = 20, impu
     subplot(p.decision, p.objective) %>% layout(
       scene = decision.scene,
       scene2 = objective.scene
-    ) %>% highlight(
-      on="plotly_click",
-      off="plotly_deselect",
-      opacityDim = 0.5,
-      color = "red"
-    ) %>% hide_guides() %>% animation_opts(
-      # does not work?
-      frame = 5000
-    )
+    ) %>% hide_guides()
   } else if (mode == "decision.space") {
-    plotly3DLayersDecisionSpace(x.boundaries, fn, marker) %>% layout(
+    plotly3DLayersDecisionSpace(x.boundaries, fn, x.sinks, dom.counter) %>% layout(
       scene = decision.scene
     )
   } else if (mode == "objective.space") {
     if (n == 3) {
-      plotly3DLayersObjectiveSpace(x.boundaries, fn, marker) %>% layout(
+      plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter) %>% layout(
         scene = objective.scene
       )
     } else {
@@ -105,20 +105,25 @@ plotly3DLayers = function(grid, fn, mode = "decision.space", no.steps = 20, impu
 
 }
 
-plotly3DLayersObjectiveSpace = function(x, fn, marker.style, scene="scene") {
-  p = smoof::getNumberOfObjectives(fn)
+plotly3DLayersObjectiveSpace = function(x, fn, x.sinks = NULL, dom.counter = NULL, scene="scene") {
+  n.obj = smoof::getNumberOfObjectives(fn)
+  
+  if (!is.null(x.sinks)) {
+    marker.sinks = plotlyMarker(dom.counter + 1, colorscale = plotlyColorscale(fields::tim.colors(500L)))
+    marker.heatmap = plotlyMarker(x$height, colorscale = plotlyColorscale(gray.colorscale))
+  } else {
+    marker.heatmap = plotlyMarker(x$height, colorscale = plotlyColorscale(fields::tim.colors(500L)))
+  }
 
-  if (p == 2) {
-    plot_ly(data = x,
-            type="scattergl",
-            x=~y1,y=~y2,
-            frame=~frame,
-            ids=~paste(x1,x2,x3),
-            mode = "markers",
-            marker=marker.style
-    ) %>% animation_opts(
-      frame = 1000,
-      transition = 0
+  if (n.obj == 2) {
+    p = plot_ly() %>% add_markers(
+      data = x,
+      type = "scattergl",
+      x = ~y1, y = ~y2,
+      frame = ~frame,
+      ids = ~paste(x1, x2, x3),
+      mode = "markers",
+      marker = marker.heatmap
     ) %>% layout(
       xaxis = list(
         title = "y₁",
@@ -129,33 +134,78 @@ plotly3DLayersObjectiveSpace = function(x, fn, marker.style, scene="scene") {
         constrain = "domain"
       )
     )
-  } else if (p == 3) {
-    plot_ly(data = x,
-            type="scatter3d",
-            x=~y1,y=~y2,z=~y3,
-            frame=~frame,
-            scene=scene,
-            ids=~paste(x1,x2,x3),
-            mode = "markers",
-            marker=marker.style
-    ) %>% animation_opts(
-      frame = 1000,
-      transition = 0
+    
+    if (!is.null(x.sinks)) {
+      p = p %>% add_markers(
+        type="scattergl",
+        data = x.sinks,
+        x = ~y1, y = ~y2,
+        mode = "markers",
+        marker = marker.sinks
+      )
+    }
+  } else if (n.obj == 3) {
+    p = plot_ly(
+      scene = scene
+    ) %>% add_markers(
+      data = x,
+      type = "scatter3d",
+      x=~y1, y=~y2, z=~y3,
+      frame = ~frame,
+      ids = ~paste(x1, x2, x3),
+      mode = "markers",
+      marker = marker.heatmap
     )
+    
+    if (!is.null(x.sinks)) {
+      p = p %>% add_markers(
+        type = "scatter3d",
+        x = ~y1, y = ~y2, z = ~y3,
+        data = x.sinks,
+        mode = "markers",
+        marker = marker.sinks
+      )
+    }
   }
-}
-
-plotly3DLayersDecisionSpace = function(x, fn, marker.style, scene="scene") {
-  plot_ly(data = x,
-          type="scatter3d",
-          x=~x1,y=~x2,z=~x3,
-          scene=scene,
-          frame = ~frame,
-          ids=~paste(x1,x2,x3),
-          mode = "markers",
-          marker=marker.style
-  ) %>% animation_opts(
+  
+  p %>% animation_opts(
     frame = 1000,
     transition = 0
+  ) %>% hide_guides()
+}
+
+plotly3DLayersDecisionSpace = function(x, fn, x.sinks = NULL, dom.counter = NULL, scene="scene") {
+  if (!is.null(x.sinks)) {
+    marker.sinks = plotlyMarker(dom.counter + 1, colorscale = plotlyColorscale(fields::tim.colors(500L)))
+    marker.heatmap = plotlyMarker(x$height, colorscale = plotlyColorscale(gray.colorscale))
+  } else {
+    marker.heatmap = plotlyMarker(x$height, colorscale = plotlyColorscale(fields::tim.colors(500L)))
+  }
+  
+  p = plot_ly(
+    scene = scene
+  ) %>% add_markers(
+    data = x,
+    type = "scatter3d",
+    x = ~x1, y = ~x2, z = ~x3,
+    frame = ~frame,
+    ids = ~paste(x1, x2, x3),
+    mode = "markers",
+    marker = marker.heatmap
   )
+  
+  if (!is.null(x.sinks)) {
+    p = p %>% add_markers(
+      data = x.sinks,
+      type = "scatter3d",
+      x = ~x1, y = ~x2, z = ~x3,
+      mode = "markers",
+      marker = marker.sinks
+    )
+  }
+  
+  p %>% animation_opts(
+    frame = 1000,
+    transition = 0
+  ) %>% hide_guides()
 }

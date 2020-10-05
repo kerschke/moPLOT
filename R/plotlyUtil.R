@@ -28,7 +28,7 @@ imputeZero = function(height) {
 
 plotlyMarker = function(height, colorscale = plotlyColorscale()) {
   list(
-    color=~log(height),
+    color=log(height),
     colorscale=colorscale,
     cmin=log(min(height)),
     cmax=log(max(height))
