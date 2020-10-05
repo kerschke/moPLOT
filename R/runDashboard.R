@@ -17,7 +17,7 @@ runDashboard = function() {
   
   appDir = system.file("dashboard", package = "moPLOT")
   if (appDir == "") {
-    stop("Could not find example directory. Try re-installing `moMPLOT`.", call. = FALSE)
+    stop("Could not find dashboard directory. Try re-installing `moMPLOT`.", call. = FALSE)
   }
   shiny::runApp(appDir, display.mode = "normal")
 }
