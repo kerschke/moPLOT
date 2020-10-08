@@ -332,11 +332,7 @@ server <- function(input, output, session) {
       # Calculate locally efficient points
       plot_data$less <<- localEfficientSetSkeleton(design, gradients, divergence, integration="fast")
       
-      if (smoof::getNumberOfParameters(fn) == 2) {
-        # PLOT only in 2D for now
-        showTab("tabset_plots", "tab_plot")
-      }
-      
+      showTab("tabset_plots", "tab_plot")
       showTab("tabset_plots", "tab_heatmap")
       
       disable("compute_plot")
@@ -385,6 +381,12 @@ server <- function(input, output, session) {
     
     less <- plot_data$less
     
+    if (plot_type == "PLOT") {
+      sinks <- less$sinks
+    } else {
+      sinks <- NULL
+    }
+    
     d = smoof::getNumberOfParameters(fn)
     
     if (d == 2) {
@@ -397,8 +399,8 @@ server <- function(input, output, session) {
     } else if (d == 3) {
       switch (three_d_approach,
               pareto = plotly3DPareto(grid, fn, mode = space),
-              layers = plotly3DLayers(grid, fn, mode = space),
-              scan = plotly3DScan(grid, fn, mode = space, frame = input$scan_direction),
+              layers = plotly3DLayers(grid, fn, sinks, mode = space),
+              scan = plotly3DScan(grid, fn, sinks, mode = space, frame = input$scan_direction),
               NULL # if plot_type is invalid
       )
     } else {
@@ -526,12 +528,7 @@ server <- function(input, output, session) {
       
       if (!is.null(plot_data$less)) {
         showTab("tabset_plots", "tab_heatmap")
-        
-        if (smoof::getNumberOfParameters(get_fn()) == 2) {
-          showTab("tabset_plots", "tab_plot")
-        } else {
-          hideTab("tabset_plots", "tab_plot")
-        }
+        showTab("tabset_plots", "tab_plot")
       } else {
         hideTab("tabset_plots", "tab_plot")
         hideTab("tabset_plots", "tab_heatmap")
