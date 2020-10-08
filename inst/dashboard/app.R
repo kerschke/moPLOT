@@ -1,5 +1,6 @@
 library(shiny)
 library(shinyjs)
+library(fields)
 library(moPLOT)
 
 source("dashboardFunctions.R")
