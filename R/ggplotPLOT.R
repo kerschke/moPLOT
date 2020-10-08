@@ -38,7 +38,7 @@ ggplotPLOT = function(dec.space, obj.space, sinks, height, check.data = TRUE) {
                     var1 = var1, var2 = var2) +
     geom_point(mapping = aes_string(var1, var2, color="rank"), data = sinks.df) +
     scale_color_gradientn(colors = colorscale.efficient, na.value="black", trans = "log") +
-    theme(legend.position = "none", axis.title = element_blank())
+    theme(legend.position = "none")
   
   return(g)
 }
