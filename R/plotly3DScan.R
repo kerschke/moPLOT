@@ -24,7 +24,7 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
     zaxis = list(range = c(lower[3],upper[3]), title='x₃')
   )
   
-  x = cbind.data.frame(grid$dec.space, grid$obj.space)
+  x = cbind.data.frame(grid$dec.space, grid$obj.space, height = grid$height)
   
   if (n == 3) {
     objective.scene = list(
@@ -35,13 +35,52 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
     )
   }
   
-  if (mode == "both") {
-    p.decision = plotly3DScanDecisionSpace(x, fn, grid$height, sinks, dom.counter, frame = frame, scene = "scene") %>% layout(
-      xaxis = list(range = c(min(x$y1),max(x$y1)), title='y₁'),
-      yaxis = list(range = c(min(x$y2),max(x$y2)), title='y₂')
+  if (!is.null(sinks)) {
+    x.sinks = x[sinks,]
+    x.sinks.shared = highlight_key(x.sinks)
+    dom.height = log(dom.counter + 1)
+    marker.sinks = list(
+      color = dom.height,
+      colorscale = plotlyColorscale(fields::tim.colors(500L)),
+      cmin = min(dom.height),
+      cmax = max(dom.height)
     )
     
-    p.objective = plotly3DScanObjectiveSpace(x, fn, grid$height, sinks, dom.counter, frame = frame, scene = "scene2")
+    x.heatmap = x[-sinks,]
+    
+    heatmap.order = switch (
+      frame,
+      "x1" = order(x.heatmap$x1),
+      "x2" = order(x.heatmap$x2),
+      "x3" = order(x.heatmap$x3)
+    )
+    
+    x.heatmap = x.heatmap[heatmap.order,]
+    x.heatmap.shared = highlight_key(x.heatmap)
+    marker.heatmap = plotlyMarker(x.heatmap$height, colorscale = plotlyColorscale(gray.colorscale))
+  } else {
+    x.sinks = NULL
+    x.sinks.shared = NULL
+    marker.sinks = NULL
+    
+    x.heatmap = x
+    
+    heatmap.order = switch (
+      frame,
+      "x1" = order(x.heatmap$x1),
+      "x2" = order(x.heatmap$x2),
+      "x3" = order(x.heatmap$x3)
+    )
+    
+    x.heatmap = x.heatmap[heatmap.order,]
+    x.heatmap.shared = highlight_key(x.heatmap)
+    marker.heatmap = plotlyMarker(x.heatmap$height, colorscale = plotlyColorscale(fields::tim.colors(500L)))
+  }
+  
+  if (mode == "both") {
+    p.decision = plotly3DScanDecisionSpace(x.heatmap.shared, marker.heatmap, x.sinks.shared, marker.sinks, frame = frame, scene = "scene")
+    
+    p.objective = plotly3DScanObjectiveSpace(fn, x.heatmap.shared, marker.heatmap, x.sinks.shared, marker.sinks, frame = frame, scene = "scene2")
     
     domain.left = list(
       x=c(0,0.5),
@@ -64,18 +103,21 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
     subplot(p.decision, p.objective) %>% layout(
       scene = decision.scene,
       scene2 = objective.scene
+    ) %>% animation_opts(
+      frame = 1000,
+      transition = 0
     ) %>% hide_guides()
   } else if (mode == "decision.space") {
-    plotly3DScanDecisionSpace(x, fn, grid$height, sinks, dom.counter, frame = frame) %>% layout(
+    plotly3DScanDecisionSpace(x.heatmap, marker.heatmap, x.sinks, marker.sinks, frame = frame) %>% layout(
       scene = decision.scene
     )
   } else if (mode == "objective.space") {
     if (n == 3) {
-      plotly3DScanObjectiveSpace(x, fn, grid$height, sinks, dom.counter, frame = frame) %>% layout(
+      plotly3DScanObjectiveSpace(fn, x.heatmap, marker.heatmap, x.sinks, marker.sinks, frame = frame) %>% layout(
         scene = objective.scene
       )
     } else {
-      plotly3DScanObjectiveSpace(x, fn, grid$height, sinks, dom.counter, frame = frame) %>% layout(
+      plotly3DScanObjectiveSpace(fn, x.heatmap, marker.heatmap, x.sinks, marker.sinks, frame = frame) %>% layout(
         xaxis = list(range = c(min(x$y1),max(x$y1)), title='y₁'),
         yaxis = list(range = c(min(x$y2),max(x$y2)), title='y₂')
       )
@@ -84,7 +126,7 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
   
 }
 
-plotly3DScanObjectiveSpace = function(x, fn, height, sinks = NULL, dom.counter = NULL, frame="x3", scene="scene") {
+plotly3DScanObjectiveSpace = function(fn, x.heatmap, marker.heatmap, x.sinks = NULL, marker.sinks = NULL, frame="x3", scene="scene") {
   n = smoof::getNumberOfObjectives(fn)
   
   if (frame == "x1") {
@@ -98,19 +140,9 @@ plotly3DScanObjectiveSpace = function(x, fn, height, sinks = NULL, dom.counter =
     ids = ~paste(x1,x2)
   }
   
-  if (!is.null(sinks)) {
-    x.sinks = x[sinks,]
-    x = x[-sinks,]
-    
-    marker.sinks = plotlyMarker(dom.counter + 1, colorscale = plotlyColorscale(fields::tim.colors(500L)))
-    marker.heatmap = plotlyMarker(height[-sinks,], colorscale = plotlyColorscale(gray.colorscale))
-  } else {
-    marker.heatmap = plotlyMarker(height, colorscale = plotlyColorscale(fields::tim.colors(500L)))
-  }
-  
   if (n == 2) {
     p = plot_ly() %>% add_markers(
-      data = x,
+      data = x.heatmap,
       type = "scattergl",
       x = ~y1, y = ~y2,
       frame = frame,
@@ -128,7 +160,7 @@ plotly3DScanObjectiveSpace = function(x, fn, height, sinks = NULL, dom.counter =
       )
     )
     
-    if (!is.null(sinks)) {
+    if (!is.null(x.sinks)) {
       p = p %>% add_markers(
         type="scattergl",
         data = x.sinks,
@@ -141,7 +173,7 @@ plotly3DScanObjectiveSpace = function(x, fn, height, sinks = NULL, dom.counter =
     p = plot_ly(
       scene = scene
     ) %>% add_markers(
-      data = x,
+      data = x.heatmap,
       type = "scatter3d",
       x = ~y1, y = ~y2, z = ~y3,
       frame = frame,
@@ -150,7 +182,7 @@ plotly3DScanObjectiveSpace = function(x, fn, height, sinks = NULL, dom.counter =
       marker = marker.heatmap
     )
     
-    if (!is.null(sinks)) {
+    if (!is.null(x.sinks)) {
       p = p %>% add_markers(
         type = "scatter3d",
         x = ~y1, y = ~y2, z = ~y3,
@@ -167,7 +199,7 @@ plotly3DScanObjectiveSpace = function(x, fn, height, sinks = NULL, dom.counter =
   ) %>% hide_guides()
 }
 
-plotly3DScanDecisionSpace = function(x, fn, height, sinks = NULL, dom.counter = NULL, frame="x3", scene="scene") {
+plotly3DScanDecisionSpace = function(x.heatmap, marker.heatmap, x.sinks = NULL, marker.sinks = NULL, frame="x3", scene="scene") {
   if (frame == "x1") {
     frame = ~x1
     ids = ~paste(x2,x3)
@@ -179,20 +211,10 @@ plotly3DScanDecisionSpace = function(x, fn, height, sinks = NULL, dom.counter = 
     ids = ~paste(x1,x2)
   }
   
-  if (!is.null(sinks)) {
-    x.sinks = x[sinks,]
-    x = x[-sinks,]
-    
-    marker.sinks = plotlyMarker(dom.counter + 1, colorscale = plotlyColorscale(fields::tim.colors(500L)))
-    marker.heatmap = plotlyMarker(height[-sinks,], colorscale = plotlyColorscale(gray.colorscale))
-  } else {
-    marker.heatmap = plotlyMarker(height, colorscale = plotlyColorscale(fields::tim.colors(500L)))
-  }
-  
   p = plot_ly(
     scene = scene
   ) %>% add_markers(
-    data = x,
+    data = x.heatmap,
     type = "scatter3d",
     x = ~x1, y = ~x2, z = ~x3,
     frame = frame,
@@ -201,10 +223,10 @@ plotly3DScanDecisionSpace = function(x, fn, height, sinks = NULL, dom.counter = 
     marker = marker.heatmap
   )
   
-  if (!is.null(sinks)) {
+  if (!is.null(x.sinks)) {
     p = p %>% add_markers(
       data = x.sinks,
-      type="scatter3d",
+      type = "scatter3d",
       mode = "markers",
       x = ~x1, y = ~x2, z = ~x3,
       marker = marker.sinks
@@ -212,7 +234,8 @@ plotly3DScanDecisionSpace = function(x, fn, height, sinks = NULL, dom.counter = 
   }
   
   p %>% animation_opts(
-    frame = 1000
+    frame = 1000,
+    transition = 0
   ) %>% hide_guides()
 }
 
