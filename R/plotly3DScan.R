@@ -13,8 +13,6 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
   
   if (!is.null(sinks)) {
     dom.counter = ecr::doNondominatedSorting(t(grid$obj.space[sinks,]))$dom.counter
-  } else {
-    dom.counter = NULL
   }
   
   decision.scene = list(
@@ -33,6 +31,8 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
       yaxis = list(range = c(min(x$y2),max(x$y2)), title='y₂'),
       zaxis = list(range = c(min(x$y3),max(x$y3)), title='y₃')
     )
+  } else {
+    objective.scene = list()
   }
   
   if (!is.null(sinks)) {
@@ -86,44 +86,39 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
       x=c(0,0.5),
       y=c(0,1)
     )
-    
     decision.scene$domain = domain.left
     
     domain.right = list(
       x=c(0.5,1),
       y=c(0,1)
     )
+    objective.scene$domain = domain.right
     
-    if (n == 3) {
-      objective.scene$domain = domain.right
-    } else {
-      objective.scene = list(domain=domain.right)
-    }
-    
-    subplot(p.decision, p.objective) %>% layout(
+    p = subplot(p.decision, p.objective) %>% layout(
       scene = decision.scene,
       scene2 = objective.scene
-    ) %>% animation_opts(
-      frame = 1000,
-      transition = 0
-    ) %>% hide_guides()
+    )
   } else if (mode == "decision.space") {
-    plotly3DScanDecisionSpace(x.heatmap, marker.heatmap, x.sinks, marker.sinks, frame = frame) %>% layout(
+    p = plotly3DScanDecisionSpace(x.heatmap, marker.heatmap, x.sinks, marker.sinks, frame = frame) %>% layout(
       scene = decision.scene
     )
   } else if (mode == "objective.space") {
     if (n == 3) {
-      plotly3DScanObjectiveSpace(fn, x.heatmap, marker.heatmap, x.sinks, marker.sinks, frame = frame) %>% layout(
+      p = plotly3DScanObjectiveSpace(fn, x.heatmap, marker.heatmap, x.sinks, marker.sinks, frame = frame) %>% layout(
         scene = objective.scene
       )
     } else {
-      plotly3DScanObjectiveSpace(fn, x.heatmap, marker.heatmap, x.sinks, marker.sinks, frame = frame) %>% layout(
+      p = plotly3DScanObjectiveSpace(fn, x.heatmap, marker.heatmap, x.sinks, marker.sinks, frame = frame) %>% layout(
         xaxis = list(range = c(min(x$y1),max(x$y1)), title='y₁'),
         yaxis = list(range = c(min(x$y2),max(x$y2)), title='y₂')
       )
     }
   }
   
+  p %>% animation_opts(
+    frame = 1000,
+    transition = 0
+  ) %>% hide_guides()
 }
 
 plotly3DScanObjectiveSpace = function(fn, x.heatmap, marker.heatmap, x.sinks = NULL, marker.sinks = NULL, frame="x3", scene="scene") {
@@ -193,10 +188,7 @@ plotly3DScanObjectiveSpace = function(fn, x.heatmap, marker.heatmap, x.sinks = N
     }
   }
     
-  p %>% animation_opts(
-    frame = 1000,
-    transition = 0
-  ) %>% hide_guides()
+  p
 }
 
 plotly3DScanDecisionSpace = function(x.heatmap, marker.heatmap, x.sinks = NULL, marker.sinks = NULL, frame="x3", scene="scene") {
@@ -233,9 +225,6 @@ plotly3DScanDecisionSpace = function(x.heatmap, marker.heatmap, x.sinks = NULL, 
     )
   }
   
-  p %>% animation_opts(
-    frame = 1000,
-    transition = 0
-  ) %>% hide_guides()
+  p
 }
 

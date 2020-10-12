@@ -59,11 +59,11 @@ plotly3DLayers = function(grid, fn, sinks = NULL, mode = "decision.space", no.st
       yaxis = list(range = c(min(x.boundaries$y2),max(x.boundaries$y2)), title='y₂'),
       zaxis = list(range = c(min(x.boundaries$y3),max(x.boundaries$y3)), title='y₃')
     )
+  } else {
+    objective.scene = list()
   }
 
   if (mode == "both") {
-    # TODO Currently the animation is broken if mode == "both"
-    
     p.decision = plotly3DLayersDecisionSpace(x.boundaries, fn, x.sinks, dom.counter, scene="scene")
     p.objective = plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter, scene="scene2")
 
@@ -71,38 +71,36 @@ plotly3DLayers = function(grid, fn, sinks = NULL, mode = "decision.space", no.st
       x=c(0,0.5),
       y=c(0,1)
     )
-    
     decision.scene$domain = domain.left
 
     domain.right = list(
       x=c(0.5,1),
       y=c(0,1)
     )
-    
-    if (n == 3) {
-      objective.scene$domain = domain.right
-    } else {
-      objective.scene = list(domain=domain.right)
-    }
+    objective.scene$domain = domain.right
 
-    subplot(p.decision, p.objective) %>% layout(
+    p = subplot(p.decision, p.objective) %>% layout(
       scene = decision.scene,
       scene2 = objective.scene
     ) %>% hide_guides()
   } else if (mode == "decision.space") {
-    plotly3DLayersDecisionSpace(x.boundaries, fn, x.sinks, dom.counter) %>% layout(
+    p = plotly3DLayersDecisionSpace(x.boundaries, fn, x.sinks, dom.counter) %>% layout(
       scene = decision.scene
     )
   } else if (mode == "objective.space") {
     if (n == 3) {
-      plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter) %>% layout(
+      p = plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter) %>% layout(
         scene = objective.scene
       )
     } else {
-      plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter)
+      p = plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter)
     }
   }
 
+  p %>% animation_opts(
+    frame = 1000,
+    transition = 0
+  ) %>% hide_guides()
 }
 
 plotly3DLayersObjectiveSpace = function(x, fn, x.sinks = NULL, dom.counter = NULL, scene="scene") {
@@ -168,10 +166,7 @@ plotly3DLayersObjectiveSpace = function(x, fn, x.sinks = NULL, dom.counter = NUL
     }
   }
   
-  p %>% animation_opts(
-    frame = 1000,
-    transition = 0
-  ) %>% hide_guides()
+  p
 }
 
 plotly3DLayersDecisionSpace = function(x, fn, x.sinks = NULL, dom.counter = NULL, scene="scene") {
@@ -204,8 +199,5 @@ plotly3DLayersDecisionSpace = function(x, fn, x.sinks = NULL, dom.counter = NULL
     )
   }
   
-  p %>% animation_opts(
-    frame = 1000,
-    transition = 0
-  ) %>% hide_guides()
+  p
 }
