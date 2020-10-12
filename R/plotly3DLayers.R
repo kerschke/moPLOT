@@ -99,7 +99,7 @@ plotly3DLayers = function(grid, fn, sinks = NULL, mode = "decision.space", no.st
         scene = objective.scene
       )
     } else {
-      plotly3DLayersObjectiveSpace(x.boundaries, fn, marker)
+      plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter)
     }
   }
 
