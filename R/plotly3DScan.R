@@ -126,13 +126,10 @@ plotly3DScanObjectiveSpace = function(fn, x.heatmap, marker.heatmap, x.sinks = N
   
   if (frame == "x1") {
     frame = ~x1
-    ids = ~paste(x2,x3)
   } else if (frame == "x2") {
     frame = ~x2
-    ids = ~paste(x1,x3)
   } else if (frame == "x3") {
     frame = ~x3
-    ids = ~paste(x1,x2)
   }
   
   if (n == 2) {
@@ -141,7 +138,6 @@ plotly3DScanObjectiveSpace = function(fn, x.heatmap, marker.heatmap, x.sinks = N
       type = "scattergl",
       x = ~y1, y = ~y2,
       frame = frame,
-      ids = ids,
       mode = "markers",
       marker = marker.heatmap
     ) %>% layout(
@@ -172,7 +168,6 @@ plotly3DScanObjectiveSpace = function(fn, x.heatmap, marker.heatmap, x.sinks = N
       type = "scatter3d",
       x = ~y1, y = ~y2, z = ~y3,
       frame = frame,
-      ids = ids,
       mode = "markers",
       marker = marker.heatmap
     )
@@ -194,13 +189,10 @@ plotly3DScanObjectiveSpace = function(fn, x.heatmap, marker.heatmap, x.sinks = N
 plotly3DScanDecisionSpace = function(x.heatmap, marker.heatmap, x.sinks = NULL, marker.sinks = NULL, frame="x3", scene="scene") {
   if (frame == "x1") {
     frame = ~x1
-    ids = ~paste(x2,x3)
   } else if (frame == "x2") {
     frame = ~x2
-    ids = ~paste(x1,x3)
   } else if (frame == "x3") {
     frame = ~x3
-    ids = ~paste(x1,x2)
   }
   
   p = plot_ly(
@@ -210,7 +202,6 @@ plotly3DScanDecisionSpace = function(x.heatmap, marker.heatmap, x.sinks = NULL, 
     type = "scatter3d",
     x = ~x1, y = ~x2, z = ~x3,
     frame = frame,
-    ids = ids,
     mode = "markers",
     marker = marker.heatmap
   )

@@ -1,7 +1,10 @@
 #' @export
-generateDesign = function(fn, points.total = NULL, points.per.dimension = NULL) {
-  upper = smoof::getUpperBoxConstraints(fn)
-  lower = smoof::getLowerBoxConstraints(fn)
+generateDesign = function(fn, points.total = NULL, points.per.dimension = NULL, upper = NULL, lower = NULL) {
+  if (is.null(upper) && is.null(lower)) {
+    upper = smoof::getUpperBoxConstraints(fn)
+    lower = smoof::getLowerBoxConstraints(fn)
+  }
+  
   p = smoof::getNumberOfParameters(fn)
   
   if (!is.null(points.total) & !is.null(points.per.dimension)) {

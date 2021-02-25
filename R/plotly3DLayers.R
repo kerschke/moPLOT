@@ -119,7 +119,6 @@ plotly3DLayersObjectiveSpace = function(x, fn, x.sinks = NULL, dom.counter = NUL
       type = "scattergl",
       x = ~y1, y = ~y2,
       frame = ~frame,
-      ids = ~paste(x1, x2, x3),
       mode = "markers",
       marker = marker.heatmap
     ) %>% layout(
@@ -150,7 +149,6 @@ plotly3DLayersObjectiveSpace = function(x, fn, x.sinks = NULL, dom.counter = NUL
       type = "scatter3d",
       x=~y1, y=~y2, z=~y3,
       frame = ~frame,
-      ids = ~paste(x1, x2, x3),
       mode = "markers",
       marker = marker.heatmap
     )
@@ -184,7 +182,6 @@ plotly3DLayersDecisionSpace = function(x, fn, x.sinks = NULL, dom.counter = NULL
     type = "scatter3d",
     x = ~x1, y = ~x2, z = ~x3,
     frame = ~frame,
-    ids = ~paste(x1, x2, x3),
     mode = "markers",
     marker = marker.heatmap
   )
