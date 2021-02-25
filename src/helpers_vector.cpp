@@ -180,6 +180,8 @@ NumericMatrix imputeBoundary(NumericMatrix moGradMat, List gradMatList, IntegerV
   int p = gradMatList.length();
   int d = dims.size();
   int n = moGradMat.nrow();
+  
+  NumericVector zeros(d);
 
   NumericMatrix moGrad = clone(moGradMat);
 
@@ -228,6 +230,8 @@ NumericMatrix imputeBoundary(NumericMatrix moGradMat, List gradMatList, IntegerV
             } else {
               moGrad(id-1,_) = newGradient;
             }
+          } else {
+            moGrad(id-1,_) = zeros;
           }
         }
       }
