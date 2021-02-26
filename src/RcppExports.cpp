@@ -113,15 +113,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // imputeBoundary
-NumericMatrix imputeBoundary(NumericMatrix moGradMat, List gradMatList, IntegerVector dims);
-RcppExport SEXP _moPLOT_imputeBoundary(SEXP moGradMatSEXP, SEXP gradMatListSEXP, SEXP dimsSEXP) {
+NumericMatrix imputeBoundary(NumericMatrix moGradMat, List gradMatList, IntegerVector dims, bool normalized_scale);
+RcppExport SEXP _moPLOT_imputeBoundary(SEXP moGradMatSEXP, SEXP gradMatListSEXP, SEXP dimsSEXP, SEXP normalized_scaleSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type moGradMat(moGradMatSEXP);
     Rcpp::traits::input_parameter< List >::type gradMatList(gradMatListSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
-    rcpp_result_gen = Rcpp::wrap(imputeBoundary(moGradMat, gradMatList, dims));
+    Rcpp::traits::input_parameter< bool >::type normalized_scale(normalized_scaleSEXP);
+    rcpp_result_gen = Rcpp::wrap(imputeBoundary(moGradMat, gradMatList, dims, normalized_scale));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -237,8 +238,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // getBiObjGradientCPP
-NumericVector getBiObjGradientCPP(NumericVector g1, NumericVector g2, double precNorm, double precAngle);
-RcppExport SEXP _moPLOT_getBiObjGradientCPP(SEXP g1SEXP, SEXP g2SEXP, SEXP precNormSEXP, SEXP precAngleSEXP) {
+NumericVector getBiObjGradientCPP(NumericVector g1, NumericVector g2, double precNorm, double precAngle, bool normalized_scale);
+RcppExport SEXP _moPLOT_getBiObjGradientCPP(SEXP g1SEXP, SEXP g2SEXP, SEXP precNormSEXP, SEXP precAngleSEXP, SEXP normalized_scaleSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -246,7 +247,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type g2(g2SEXP);
     Rcpp::traits::input_parameter< double >::type precNorm(precNormSEXP);
     Rcpp::traits::input_parameter< double >::type precAngle(precAngleSEXP);
-    rcpp_result_gen = Rcpp::wrap(getBiObjGradientCPP(g1, g2, precNorm, precAngle));
+    Rcpp::traits::input_parameter< bool >::type normalized_scale(normalized_scaleSEXP);
+    rcpp_result_gen = Rcpp::wrap(getBiObjGradientCPP(g1, g2, precNorm, precAngle, normalized_scale));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -266,8 +268,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // getBiObjGradientGridCPP
-NumericMatrix getBiObjGradientGridCPP(NumericMatrix gradMat1, NumericMatrix gradMat2, double precNorm, double precAngle);
-RcppExport SEXP _moPLOT_getBiObjGradientGridCPP(SEXP gradMat1SEXP, SEXP gradMat2SEXP, SEXP precNormSEXP, SEXP precAngleSEXP) {
+NumericMatrix getBiObjGradientGridCPP(NumericMatrix gradMat1, NumericMatrix gradMat2, double precNorm, double precAngle, bool normalized_scale);
+RcppExport SEXP _moPLOT_getBiObjGradientGridCPP(SEXP gradMat1SEXP, SEXP gradMat2SEXP, SEXP precNormSEXP, SEXP precAngleSEXP, SEXP normalized_scaleSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -275,7 +277,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type gradMat2(gradMat2SEXP);
     Rcpp::traits::input_parameter< double >::type precNorm(precNormSEXP);
     Rcpp::traits::input_parameter< double >::type precAngle(precAngleSEXP);
-    rcpp_result_gen = Rcpp::wrap(getBiObjGradientGridCPP(gradMat1, gradMat2, precNorm, precAngle));
+    Rcpp::traits::input_parameter< bool >::type normalized_scale(normalized_scaleSEXP);
+    rcpp_result_gen = Rcpp::wrap(getBiObjGradientGridCPP(gradMat1, gradMat2, precNorm, precAngle, normalized_scale));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -318,7 +321,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_moPLOT_convertIndices2CellIDCPP", (DL_FUNC) &_moPLOT_convertIndices2CellIDCPP, 2},
     {"_moPLOT_convertCellID2IndicesCPP", (DL_FUNC) &_moPLOT_convertCellID2IndicesCPP, 2},
     {"_moPLOT_getNeighbourhood", (DL_FUNC) &_moPLOT_getNeighbourhood, 2},
-    {"_moPLOT_imputeBoundary", (DL_FUNC) &_moPLOT_imputeBoundary, 3},
+    {"_moPLOT_imputeBoundary", (DL_FUNC) &_moPLOT_imputeBoundary, 4},
     {"_moPLOT_getCriticalPointsCellCPP", (DL_FUNC) &_moPLOT_getCriticalPointsCellCPP, 6},
     {"_moPLOT_connectedComponentsGrid", (DL_FUNC) &_moPLOT_connectedComponentsGrid, 2},
     {"_moPLOT_integrateVectorField", (DL_FUNC) &_moPLOT_integrateVectorField, 3},
@@ -327,9 +330,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_moPLOT_changeOfBasin", (DL_FUNC) &_moPLOT_changeOfBasin, 2},
     {"_moPLOT_gridBasedGradientCPP", (DL_FUNC) &_moPLOT_gridBasedGradientCPP, 5},
     {"_moPLOT_cumulateGradientsCPP", (DL_FUNC) &_moPLOT_cumulateGradientsCPP, 7},
-    {"_moPLOT_getBiObjGradientCPP", (DL_FUNC) &_moPLOT_getBiObjGradientCPP, 4},
+    {"_moPLOT_getBiObjGradientCPP", (DL_FUNC) &_moPLOT_getBiObjGradientCPP, 5},
     {"_moPLOT_getTriObjGradientCPP", (DL_FUNC) &_moPLOT_getTriObjGradientCPP, 5},
-    {"_moPLOT_getBiObjGradientGridCPP", (DL_FUNC) &_moPLOT_getBiObjGradientGridCPP, 4},
+    {"_moPLOT_getBiObjGradientGridCPP", (DL_FUNC) &_moPLOT_getBiObjGradientGridCPP, 5},
     {"_moPLOT_getTriObjGradientGridCPP", (DL_FUNC) &_moPLOT_getTriObjGradientGridCPP, 5},
     {"_moPLOT_calculateMaxDisplayHeightCPP", (DL_FUNC) &_moPLOT_calculateMaxDisplayHeightCPP, 3},
     {NULL, NULL, 0}

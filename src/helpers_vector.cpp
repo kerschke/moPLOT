@@ -21,6 +21,10 @@ double computeVectorLengthCPP(NumericVector vec) {
   return sqrt(sum(vec * vec)) ;
 }
 
+double dot(NumericVector a, NumericVector b) {
+  return sum(a * b);
+}
+
 // [[Rcpp::export]]
 NumericVector normalizeVectorCPP(NumericVector vec, double prec) {
   // normalizes vector vec by its length
@@ -176,12 +180,17 @@ IntegerMatrix getNeighbourhood(int d, bool include_diagonals) {
 }
 
 // [[Rcpp::export]]
-NumericMatrix imputeBoundary(NumericMatrix moGradMat, List gradMatList, IntegerVector dims) {
+NumericMatrix imputeBoundary(NumericMatrix moGradMat, List gradMatList, IntegerVector dims, bool normalized_scale = true) {
   int p = gradMatList.length();
   int d = dims.size();
   int n = moGradMat.nrow();
   
   NumericVector zeros(d);
+  
+  if (p != 2 && !normalized_scale) {
+    warning("Need to use normalized scale if p != 2!");
+    return moGradMat;
+  }
 
   NumericMatrix moGrad = clone(moGradMat);
 
@@ -218,17 +227,22 @@ NumericMatrix imputeBoundary(NumericMatrix moGradMat, List gradMatList, IntegerV
           bool legal = true;
 
           for (int f_id = 0; f_id < p; f_id++) {
-            if (sum(gradMat[f_id](id-1,_) * newGradient) < 0) {
+            if (sum(gradMat[f_id](id-1,_) * newGradient) <= 0) {
               legal = false;
               break;
             }
           }
 
-          if (legal) {
-            if (is_false(all(newGradient == 0))) {
+          if (legal && is_false(all(newGradient == 0))) {
+            if (normalized_scale) {
               moGrad(id-1,_) = newGradient / computeVectorLengthCPP(newGradient) * length;
             } else {
-              moGrad(id-1,_) = newGradient;
+              newGradient = newGradient / computeVectorLengthCPP(newGradient);
+              
+              // TODO: Currently only supported for p=2!
+              moGrad(id-1,_) = newGradient *
+                                 sqrt(dot(newGradient, gradMat[0](id-1,_))) *
+                                 sqrt(dot(newGradient, gradMat[1](id-1,_)));
             }
           } else {
             moGrad(id-1,_) = zeros;
@@ -1227,33 +1241,43 @@ List cumulateGradientsCPP(NumericMatrix centers, NumericMatrix gradients, Intege
 }
 
 // [[Rcpp::export]]
-NumericVector getBiObjGradientCPP(NumericVector g1, NumericVector g2, double precNorm, double precAngle) {
+NumericVector getBiObjGradientCPP(NumericVector g1, NumericVector g2, double precNorm, double precAngle, bool normalized_scale = true) {
   // Multiobjective gradient for two objectives
   int len = g1.length();
   NumericVector zeros (len);
   zeros.attr("dim") = R_NilValue;
 
-  g1 = normalizeVectorCPP(g1, precNorm);
-  if (is_true(all(g1 == 0))) {
+  NumericVector g1_norm = normalizeVectorCPP(g1, precNorm);
+  if (is_true(all(g1_norm == 0))) {
     // if the gradient of fn1 is zero, this has to be a local efficient point
     return(zeros);
   }
 
-  g2 = normalizeVectorCPP(g2, precNorm);
-  if (is_true(all(g2 == 0))) {
+  NumericVector g2_norm = normalizeVectorCPP(g2, precNorm);
+  if (is_true(all(g2_norm == 0))) {
     // if the gradient of fn2 is zero, this has to be a local efficient point
     return(zeros);
   }
 
-  double angle1 = computeAngleCPP(g1, g2, precNorm);
+  double angle1 = computeAngleCPP(g1_norm, g2_norm, precNorm);
 
   if (abs(180 - angle1) < precAngle) {
     // if the angle between both gradients is (approximately) 180 degree,
     // this has to be a local efficient point
     return(zeros);
   }
-
-  return(0.5 * (g1 + g2));
+  
+  NumericVector normalized_mog = 0.5 * (g1_norm + g2_norm);
+  
+  if (normalized_scale) {
+    // Length related to the size of the domination cone, i.e. unrelated to gradient lengths
+    return(normalized_mog);
+  } else {
+    // Length related to the geometric mean of the expected improvements (sqrt(HV improvement))
+    // of the function values when following the MOG in the steepest descent direction.
+    return(normalized_mog * sqrt(computeVectorLengthCPP(g1)) * sqrt(computeVectorLengthCPP(g2)));
+  }
+  
 }
 
 // [[Rcpp::export]]
@@ -1301,7 +1325,7 @@ NumericVector getTriObjGradientCPP(NumericVector g1, NumericVector g2, NumericVe
 
   if (len >= 3) {
     NumericVector n = normalizeVectorCPP(compute3DcrossProductCPP(g1-g2,g1-g3), 0);
-    NumericVector moNorm = n * sum(n * g1); // n * (n dot g1) = n * (distance to plane created by g1,g2,g3)
+    NumericVector moNorm = n * dot(n, g1); // n * (n dot g1) = n * (distance to plane created by g1,g2,g3)
 
     double normAngle1 = computeAngleCPP(g1 - moNorm, g2 - moNorm, precNorm);
     double normAngle2 = computeAngleCPP(g1 - moNorm, g3 - moNorm, precNorm);
@@ -1337,12 +1361,12 @@ NumericVector getTriObjGradientCPP(NumericVector g1, NumericVector g2, NumericVe
 }
 
 // [[Rcpp::export]]
-NumericMatrix getBiObjGradientGridCPP(NumericMatrix gradMat1, NumericMatrix gradMat2, double precNorm, double precAngle) {
+NumericMatrix getBiObjGradientGridCPP(NumericMatrix gradMat1, NumericMatrix gradMat2, double precNorm, double precAngle, bool normalized_scale = true) {
   int n = gradMat1.rows();
   int d = gradMat1.cols();
   NumericMatrix moGradMat(n, d);
   for (int i = 0; i < n; i++) {
-    moGradMat(i,_) = getBiObjGradientCPP(gradMat1(i,_), gradMat2(i,_), precNorm, precAngle);
+    moGradMat(i,_) = getBiObjGradientCPP(gradMat1(i,_), gradMat2(i,_), precNorm, precAngle, normalized_scale);
   }
   return moGradMat;
 }

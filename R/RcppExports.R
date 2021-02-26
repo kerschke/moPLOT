@@ -37,8 +37,8 @@ getNeighbourhood <- function(d, include_diagonals) {
     .Call(`_moPLOT_getNeighbourhood`, d, include_diagonals)
 }
 
-imputeBoundary <- function(moGradMat, gradMatList, dims) {
-    .Call(`_moPLOT_imputeBoundary`, moGradMat, gradMatList, dims)
+imputeBoundary <- function(moGradMat, gradMatList, dims, normalized_scale = TRUE) {
+    .Call(`_moPLOT_imputeBoundary`, moGradMat, gradMatList, dims, normalized_scale)
 }
 
 getCriticalPointsCellCPP <- function(moGradMat, gradMatList, div, locallyNondominated, dims, sinks_only) {
@@ -73,16 +73,16 @@ cumulateGradientsCPP <- function(centers, gradients, stopCells, precVectorLength
     .Call(`_moPLOT_cumulateGradientsCPP`, centers, gradients, stopCells, precVectorLength, precNorm, fixDiagonals, cumulateGradientLength)
 }
 
-getBiObjGradientCPP <- function(g1, g2, precNorm, precAngle) {
-    .Call(`_moPLOT_getBiObjGradientCPP`, g1, g2, precNorm, precAngle)
+getBiObjGradientCPP <- function(g1, g2, precNorm, precAngle, normalized_scale = TRUE) {
+    .Call(`_moPLOT_getBiObjGradientCPP`, g1, g2, precNorm, precAngle, normalized_scale)
 }
 
 getTriObjGradientCPP <- function(g1, g2, g3, precNorm, precAngle) {
     .Call(`_moPLOT_getTriObjGradientCPP`, g1, g2, g3, precNorm, precAngle)
 }
 
-getBiObjGradientGridCPP <- function(gradMat1, gradMat2, precNorm, precAngle) {
-    .Call(`_moPLOT_getBiObjGradientGridCPP`, gradMat1, gradMat2, precNorm, precAngle)
+getBiObjGradientGridCPP <- function(gradMat1, gradMat2, precNorm, precAngle, normalized_scale = TRUE) {
+    .Call(`_moPLOT_getBiObjGradientGridCPP`, gradMat1, gradMat2, precNorm, precAngle, normalized_scale)
 }
 
 getTriObjGradientGridCPP <- function(gradMat1, gradMat2, gradMat3, precNorm, precAngle) {

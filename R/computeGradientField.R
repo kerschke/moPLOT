@@ -89,12 +89,14 @@ computeGradientField = function(points, fn, prec.grad = 1e-6,
 }
 
 #' @export
-computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, impute.boundary = TRUE) {
+computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, impute.boundary = TRUE, normalized.scale = TRUE) {
 
+  obj = ncol(grid$obj.space)
+  
   assertList(grid, min.len = 3L, names = "named")
   assertSubset(c("dims", "step.sizes", "obj.space"), choices = names(grid))
-  
-  obj = ncol(grid$obj.space)
+  # currently need normalization, if number of objectives != 2
+  assertTRUE(normalized.scale || obj == 2)
   
   cat("Estimating single-objective gradients ...\n")
 
@@ -106,7 +108,7 @@ computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, i
   cat("Estimating multi-objective gradients ...\n")
   
   if (obj == 2L) {
-    multi.objective = getBiObjGradientGridCPP(gradMat1 = single.objective[[1L]], gradMat2 = single.objective[[2L]], precNorm = prec.norm, precAngle = prec.angle)
+    multi.objective = getBiObjGradientGridCPP(gradMat1 = single.objective[[1L]], gradMat2 = single.objective[[2L]], precNorm = prec.norm, precAngle = prec.angle, normalized_scale = normalized.scale)
   } else if (obj == 3L) {
     multi.objective = getTriObjGradientGridCPP(gradMat1 = single.objective[[1L]], gradMat2 = single.objective[[2L]], gradMat3 = single.objective[[3L]], precNorm = prec.norm, precAngle = prec.angle)
   } else {
@@ -118,7 +120,7 @@ computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, i
   if (impute.boundary) {
     cat("Imputing multi-objective gradient at boundary\n")
     
-    multi.objective = imputeBoundary(multi.objective, single.objective, grid$dims)
+    multi.objective = imputeBoundary(multi.objective, single.objective, grid$dims, normalized_scale = normalized.scale)
   }
   
   return(list(
