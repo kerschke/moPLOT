@@ -186,8 +186,27 @@ makeSGKFunction = function() {
     par.set = ParamHelpers::makeNumericParamSet(len = 2, lower = lower, upper = upper))
 }
 
+makeBiRosenbrockFunction = function() {
+  f1 <- function(x) {
+    (1 - x[1]) ** 2 + 1 * (x[2] - x[1] ** 2) ** 2
+  }
+  
+  f2 <- function(x) {
+    (1 + x[1]) ** 2 + 1 * (-(x[2] - 3) - x[1] ** 2) ** 2
+  }
+  
+  f <- function(x) {
+    c(f1(x), f2(x))
+  }
+  
+  smoof::makeMultiObjectiveFunction(
+    name = "Bi-Rosenbrock", id = "bi_rosenbrock_function", description = "", fn = f,
+    par.set = ParamHelpers::makeNumericParamSet(len = 2, lower = c(-2, 0), upper = c(2, 3)))
+}
+
 other_functions = list(
   "Aspar" = makeAsparFunction,
+  "BiRosenbrock" = makeBiRosenbrockFunction,
   "BiSphere" = smoof::makeBiSphereFunction, # does not work as expected and is kinda boring
   "BK1" = smoof::makeBK1Function,
   "Dent" = smoof::makeDentFunction,
