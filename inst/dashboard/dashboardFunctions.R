@@ -164,26 +164,46 @@ makeAsparFunction <- function(dimensions = 2, n.objectives = 2) {
 
 # SGK Function
 
-makeSGKFunction = function() {
-  g = function(x, h, c1, c2) {
-    h / (1 + 4 * ((x[1] - c1) ** 2 + (x[2] - c2) ** 2))
+makeSGKFunction = function(dimensions = 2) {
+  g = function(x, h, center) {
+    h / (1 + 4 * (sum((x - center) ** 2)))
   }
   
+  if (dimensions == 2) {
+    unimodal_center = c(2 / 3, 1)
+    unimodal_h = 1
+    
+    centers = list(
+      c(0.5, 0),
+      c(0.25, 2 / 3),
+      c(1, 1)
+    )
+    hs = c(1.5, 2, 3)
+  } else if (dimensions == 3) {
+    unimodal_center = c(2 / 3, 1, 0)
+    unimodal_h = 1
+    
+    centers = list(
+      c(0.5, 0, 0.75),
+      c(0.25, 2 / 3, 0.5),
+      c(1, 1, 0)
+    )
+    hs = c(1.5, 2, 3)
+  }
+  
+  lower = rep(-0.25, dimensions)
+  upper = rep(1.25, dimensions)
+  
   f = function(x) c(
-    1 - 1 / (1 + 4 * ((x[1] - 2 / 3) ** 2 + (x[2] - 1) ** 2)),
+    1 - g(x, unimodal_h, unimodal_center),
     1 - max(
-      g(x, 1.5, 0.5, 0),
-      g(x, 2, 0.25, 2 / 3),
-      g(x, 3, 1, 1)
+      sapply(seq_along(centers), function(i) g(x, hs[i], centers[[i]]))
     )
   )
   
-  lower = c(-0.25, -0.25)
-  upper = c(1.25, 1.25)
-  
   smoof::makeMultiObjectiveFunction(
     name = "SGK Function", id = "sgk_function", description = "", fn = f,
-    par.set = ParamHelpers::makeNumericParamSet(len = 2, lower = lower, upper = upper))
+    par.set = ParamHelpers::makeNumericParamSet(len = dimensions, lower = lower, upper = upper))
 }
 
 makeBiRosenbrockFunction = function() {
