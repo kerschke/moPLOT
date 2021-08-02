@@ -5,13 +5,14 @@ Date: 2020-06-14
 Authors@R: 
     c(person(given = "Pascal",
              family = "Kerschke", 
-             email = "kerschke@uni-muenster.de", 
+             email = "pascal.kerschke@tu-dresden.de", 
              role = c("aut", "cre"), 
              comment = c(ORCID = "0000-0003-2862-1418")), 
       person(given = "Lennart",
              family = "Schaepermeier",
-             email = "schaepermeier@uni-muenster.de",
-             role = "aut"))
+             email = "lennart.schaepermeier@tu-dresden.de",
+             role = "aut", 
+             comment = c(ORCID = "0000-0003-3929-7465")))
 Description: This package provides various tools for plotting the landscapes of multi-objective
     continuous optimization problems and thereby enables insights into its structural characteristics.
 Depends:
@@ -21,12 +22,12 @@ Imports:
     ecr,
     ggplot2 (>= 3.0.0),
     plotly,
-    pracma,
     Rcpp (>= 0.12.18),
-    smoof (>= 1.5.1),
-    viridisLite
+    smoof (>= 1.5.1)
 Suggests:
-    fields (>= 9.6)
+    fields (>= 9.6),
+    pracma,
+    viridisLite
 LinkingTo: Rcpp
 License: BSD_2_clause + file LICENSE
 URL: https://github.com/kerschke/moPLOT

@@ -41,8 +41,9 @@ runDashboard()
 ## Citation
 
 If you use our package to visualize your multi-objective problems using
-* our multi-objective PLOTs (see our [PPSN 2020 paper](https://link.springer.com/chapter/10.1007%2F978-3-030-58115-2_11) ([arXiv](https://arxiv.org/abs/2006.11547)) for details), or
 * our gradient-field heatmaps (see our [EMO 2017 paper](http://link.springer.com/chapter/10.1007/978-3-319-54157-0_23) for details),
+* our multi-objective PLOTs (see our [PPSN 2020 paper](https://link.springer.com/chapter/10.1007%2F978-3-030-58115-2_11) ([arXiv](https://arxiv.org/abs/2006.11547)) for details), or
+* the `moPLOT` dashboard and the 3D-visualizations (see our [EMO 2021 paper](https://link.springer.com/chapter/10.1007/978-3-030-72062-9_50) for details),
 
 please cite the respective publications.
 
@@ -64,18 +65,29 @@ please cite the respective publications.
 }
 
 @InProceedings{schaepermeier2020plot,
-  Title     = {{One PLOT to Show Them All: Visualization of Efficient Sets in Multi-Objective Landscapes}},
-  Author    = {Schaepermeier, Lennart and Grimme, Christian and Kerschke, Pascal},
-  Booktitle = {{Proceedings of the 16th International Conference on Parallel Problem Solving from Nature (PPSN XVI)}},
-  Year      = {2020},
-  Month     = {September},
-  Pages     = {},
-  Location  = {Leiden, The Netherlands},
-  Publisher = {{Springer}},
-  Note      = {accepted}
+  author="Sch{\"a}permeier, Lennart and Grimme, Christian and Kerschke, Pascal",
+  editor="B{\"a}ck, Thomas and Preuss, Mike and Deutz, Andr{\'e} and Wang, Hao and Doerr, Carola and Emmerich, Michael and Trautmann, Heike",
+  title="One PLOT to Show Them All: Visualization of Efficient Sets in Multi-objective Landscapes",
+  booktitle="Parallel Problem Solving from Nature -- PPSN XVI",
+  year="2020",
+  publisher="Springer International Publishing",
+  address="Cham",
+  pages="154--167",
+  isbn="978-3-030-58115-2"
+}
+
+@InProceedings{schaepermeier2021dashboard,
+  author="Sch{\"a}permeier, Lennart and Grimme, Christian and Kerschke, Pascal",
+  editor="Ishibuchi, Hisao and Zhang, Qingfu and Cheng, Ran and Li, Ke and Li, Hui and Wang, Handing and Zhou, Aimin",
+  title="To Boldly Show What No One Has Seen Before: A Dashboard for Visualizing Multi-objective Landscapes",
+  booktitle="Evolutionary Multi-Criterion Optimization",
+  year="2021",
+  publisher="Springer International Publishing",
+  address="Cham",
+  pages="632--644",
+  isbn="978-3-030-72062-9"
 }
 ```
-
 
 ## Contact
 
