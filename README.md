@@ -43,7 +43,7 @@ runDashboard()
 If you use our package to visualize your multi-objective problems using
 * our gradient-field heatmaps (see our [EMO 2017 paper](http://link.springer.com/chapter/10.1007/978-3-319-54157-0_23) for details),
 * our multi-objective PLOTs (see our [PPSN 2020 paper](https://link.springer.com/chapter/10.1007%2F978-3-030-58115-2_11) ([arXiv](https://arxiv.org/abs/2006.11547)) for details), or
-* the `moPLOT` dashboard and the 3D-visualizations (see our [EMO 2021 paper](https://link.springer.com/chapter/10.1007/978-3-030-72062-9_50) for details),
+* the `moPLOT` dashboard and the 3D-visualizations (see our [EMO 2021 paper](https://link.springer.com/chapter/10.1007/978-3-030-72062-9_50) ([arXiv](https://arxiv.org/abs/2011.14395)) for details),
 
 please cite the respective publications.
 
