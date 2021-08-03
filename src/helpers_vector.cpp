@@ -799,7 +799,7 @@ List integrateVectorField(NumericMatrix gradMat, IntegerVector dims, IntegerVect
   double target;
 
   std::vector<double> height(n);
-  std::vector<int> last_visited(n);
+  std::vector<int> last_visited(n, -1);
   std::vector<double> gradientLengths(n);
   std::vector< std::vector<double> > gradients(n);
 
@@ -985,13 +985,14 @@ IntegerVector changeOfSignCPP(NumericVector fnVec, IntegerVector dims, bool incl
 }
 
 // [[Rcpp::export]]
-IntegerVector changeOfBasin(IntegerVector basins, IntegerVector dims) {
+List changeOfBasin(IntegerVector basins, IntegerVector dims, IntegerVector locallyEfficientIDs) {
   int n = basins.size();
   int d = dims.size();
 
   std::vector<int> ridges;
-
-  IntegerMatrix neighbourhood = getNeighbourhood(d, false);
+  IntegerVector set_transitions(n, -1);
+  
+  IntegerMatrix neighbourhood = getNeighbourhood(d, true);
 
   int neighbours_amt = neighbourhood.nrow();
 
@@ -1018,7 +1019,8 @@ IntegerVector changeOfBasin(IntegerVector basins, IntegerVector dims) {
       if (basins(id - 1) != basins(neighbourID - 1)) {
         // some neighbour is in a different basin!
         basin_change = true;
-        break;
+        
+        set_transitions(id - 1) = max(basins(neighbourID - 1), set_transitions(id - 1));
       }
     }
 
@@ -1027,7 +1029,7 @@ IntegerVector changeOfBasin(IntegerVector basins, IntegerVector dims) {
     }
   }
 
-  return wrap(ridges);
+  return List::create(_["ridges"] = wrap(ridges), _["set_transitions"] = set_transitions);
 }
 
 // [[Rcpp::export]]

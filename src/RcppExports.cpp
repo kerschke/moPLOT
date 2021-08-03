@@ -194,14 +194,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // changeOfBasin
-IntegerVector changeOfBasin(IntegerVector basins, IntegerVector dims);
-RcppExport SEXP _moPLOT_changeOfBasin(SEXP basinsSEXP, SEXP dimsSEXP) {
+List changeOfBasin(IntegerVector basins, IntegerVector dims, IntegerVector locallyEfficientIDs);
+RcppExport SEXP _moPLOT_changeOfBasin(SEXP basinsSEXP, SEXP dimsSEXP, SEXP locallyEfficientIDsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< IntegerVector >::type basins(basinsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
-    rcpp_result_gen = Rcpp::wrap(changeOfBasin(basins, dims));
+    Rcpp::traits::input_parameter< IntegerVector >::type locallyEfficientIDs(locallyEfficientIDsSEXP);
+    rcpp_result_gen = Rcpp::wrap(changeOfBasin(basins, dims, locallyEfficientIDs));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -327,7 +328,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_moPLOT_integrateVectorField", (DL_FUNC) &_moPLOT_integrateVectorField, 3},
     {"_moPLOT_locallyNondominatedCPP", (DL_FUNC) &_moPLOT_locallyNondominatedCPP, 3},
     {"_moPLOT_changeOfSignCPP", (DL_FUNC) &_moPLOT_changeOfSignCPP, 3},
-    {"_moPLOT_changeOfBasin", (DL_FUNC) &_moPLOT_changeOfBasin, 2},
+    {"_moPLOT_changeOfBasin", (DL_FUNC) &_moPLOT_changeOfBasin, 3},
     {"_moPLOT_gridBasedGradientCPP", (DL_FUNC) &_moPLOT_gridBasedGradientCPP, 5},
     {"_moPLOT_cumulateGradientsCPP", (DL_FUNC) &_moPLOT_cumulateGradientsCPP, 7},
     {"_moPLOT_getBiObjGradientCPP", (DL_FUNC) &_moPLOT_getBiObjGradientCPP, 5},

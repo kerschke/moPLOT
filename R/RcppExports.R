@@ -61,8 +61,8 @@ changeOfSignCPP <- function(fnVec, dims, includeDiagonals) {
     .Call(`_moPLOT_changeOfSignCPP`, fnVec, dims, includeDiagonals)
 }
 
-changeOfBasin <- function(basins, dims) {
-    .Call(`_moPLOT_changeOfBasin`, basins, dims)
+changeOfBasin <- function(basins, dims, locallyEfficientIDs) {
+    .Call(`_moPLOT_changeOfBasin`, basins, dims, locallyEfficientIDs)
 }
 
 gridBasedGradientCPP <- function(fnVec, dims, stepSizes, precNorm, precAngle) {

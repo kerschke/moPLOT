@@ -23,7 +23,8 @@ localEfficientSetSkeleton = function(design, gradients, divergence, integration 
   less$height[is.na(less$height)] = 0
 
   if (with.basins) {
-    integration.sinks = sort(unique(integrated$last.visited))
+    # integration.sinks = sort(unique(integrated$last.visited))
+    integration.sinks = sinks
 
     ccs = connectedComponentsGrid(integration.sinks, design$dims)
     valid.ccs.ids = (ccs != 0 & !(ccs %in% as.numeric(names(table(ccs)))[table(ccs) < 4]))
@@ -32,20 +33,35 @@ localEfficientSetSkeleton = function(design, gradients, divergence, integration 
 
     less$sinks = valid.sinks
 
-    cat('3/3 Calculating basins of attraction ...\n')
+    cat('Calculating basins of attraction ...\n')
     sink.to.basin = rep(-1, prod(design$dims))
     sink.to.basin[valid.sinks] = valid.ccs
 
     basins = sapply(1:length(integrated$last.visited), function(i) {
       ifelse(integrated$last.visited[i] != -1, sink.to.basin[integrated$last.visited[i]], -1)
     })
+    
+    # Update Basin ID to be (-1,) 1, 2, 3, ...
+    
+    old_basins <- sort(unique(basins[basins != -1]))
+    new_basins <- c(1:(length(old_basins)))
+    
+    basin_map <- rep(0, max(basins))
+    basin_map[old_basins] <- new_basins
+    
+    basins <- sapply(basins, function(b) {
+      ifelse(b == -1, -1, basin_map[b])
+    })
 
     less$basins = basins
 
-    ridges = changeOfBasin(basins, design$dims)
-    ridges = union(ridges, which(basins == -1))
-
+    basins_list = changeOfBasin(basins, design$dims, sinks)
+    
+    ridges = union(basins_list$ridges, which(basins == -1))
     less$ridges = ridges
+    
+    less$set_transitions = basins_list$set_transitions
+    
   } else {
     less$sinks = sinks
   }
