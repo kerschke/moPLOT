@@ -213,10 +213,10 @@ server <- function(input, output, session) {
     hide("evaluate_grid_panel")
     
     if (smoof::getNumberOfParameters(fn) == 2) {
-      updateSliderInput("grid_size", session = session, value = 200, min=50, max=3000, step=50)
+      updateSliderInput("grid_size", session = session, value = 300, min=50, max=600, step=50)
       hide("three_d_only")
     } else {
-      updateSliderInput("grid_size", session = session, value = 50, min=20, max=200, step=10)
+      updateSliderInput("grid_size", session = session, value = 50, min=20, max=60, step=10)
       show("three_d_only")
     }
     
