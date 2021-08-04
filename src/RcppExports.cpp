@@ -311,6 +311,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// computeLocalDominance
+List computeLocalDominance(NumericMatrix objectiveValues, IntegerVector dims);
+RcppExport SEXP _moPLOT_computeLocalDominance(SEXP objectiveValuesSEXP, SEXP dimsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type objectiveValues(objectiveValuesSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
+    rcpp_result_gen = Rcpp::wrap(computeLocalDominance(objectiveValues, dims));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_moPLOT_compute3DcrossProductCPP", (DL_FUNC) &_moPLOT_compute3DcrossProductCPP, 2},
@@ -336,6 +348,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_moPLOT_getBiObjGradientGridCPP", (DL_FUNC) &_moPLOT_getBiObjGradientGridCPP, 5},
     {"_moPLOT_getTriObjGradientGridCPP", (DL_FUNC) &_moPLOT_getTriObjGradientGridCPP, 5},
     {"_moPLOT_calculateMaxDisplayHeightCPP", (DL_FUNC) &_moPLOT_calculateMaxDisplayHeightCPP, 3},
+    {"_moPLOT_computeLocalDominance", (DL_FUNC) &_moPLOT_computeLocalDominance, 2},
     {NULL, NULL, 0}
 };
 

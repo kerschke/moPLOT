@@ -1,6 +1,7 @@
 #include <Rcpp.h>
 #include <cmath>
 #include <iostream>
+#include <numeric>
 #include <math.h>
 using namespace Rcpp;
 using namespace std;
@@ -177,6 +178,15 @@ IntegerMatrix getNeighbourhood(int d, bool include_diagonals) {
     }
     return deltas;
   }
+}
+
+inline bool isLegal(IntegerVector coordinates, IntegerVector dims) {
+  return (is_true(all(coordinates <= dims)) && is_true(all(coordinates >= 1)));
+}
+
+inline bool dominates(NumericVector lhs, NumericVector rhs) {
+  return (is_true(any(lhs < rhs)) &&
+          is_true(all(lhs <= rhs)));
 }
 
 // [[Rcpp::export]]
@@ -1414,4 +1424,94 @@ NumericVector calculateMaxDisplayHeightCPP(NumericVector heights, IntegerVector 
     maxHeights(id-1) = maxNeighbour;
   }
   return maxHeights;
+}
+
+// [[Rcpp::export]]
+List computeLocalDominance(NumericMatrix objectiveValues, IntegerVector dims) {
+  int n_observations = objectiveValues.nrow();
+  int n_objectives = objectiveValues.ncol();
+  int d = dims.size();
+  
+  /* Step 1: Identify locally efficient points (w.r.t. grid) */
+  
+  IntegerVector locally_efficient_ids = locallyNondominatedCPP(objectiveValues, dims, true);
+  
+  /* Step 2: Identify connected components -> Locally efficient sets */
+  
+  IntegerVector locally_efficient_sets = connectedComponentsGrid(locally_efficient_ids, dims);
+  
+  /* Step 3: Initialize assigned basins as vector */
+  
+  // -1: multiple target basins
+  // 0: unprocessed
+  // 1-n: basins
+  // IntegerVector assigned_basin(n_observations, 0);
+  // assigned_basin[locally_efficient_ids - 1] = locally_efficient_sets;
+  
+  vector<set<int>> reachable_sets(n_observations);
+  
+  for (int i = 0; i < locally_efficient_ids.size(); i++) {
+    reachable_sets[locally_efficient_ids[i] - 1].insert(locally_efficient_sets[i]);
+  }
+  
+  /* Step 4: Prepare further iteration through points */
+  
+  // Create vector of indices, sorted ascending by objectives
+  // This is a safe processing order for the local dominance plot!
+  
+  IntegerVector processing_order(n_observations);
+  iota(processing_order.begin(), processing_order.end(), 1);
+
+  for (int objective = 0; objective < n_objectives; objective++) {
+    stable_sort(processing_order.begin(), processing_order.end(),
+                [&objectiveValues, &objective](int lhs, int rhs) {return objectiveValues(lhs - 1, objective) < objectiveValues(rhs - 1, objective); });
+  }
+
+  IntegerMatrix neighbourhood = getNeighbourhood(d, true);
+  int n_neighbours = neighbourhood.nrow();
+
+  /* Step 5: Iterate over all further points */
+  
+  cout << "Processing Descent" << endl;
+  
+  for (int id : processing_order) {
+    // Look at each neighbouring ID and if it dominates the given point.
+    // If yes, store the assigned basin.
+    // If we have already assigned a different basin, set to -1 and skip rest
+    
+    // Only continue, if we did not process the point yet
+    // if (assigned_basin[id - 1] == 0) {
+      for (int i_neighbour = 0; i_neighbour < n_neighbours; i_neighbour++) {
+        IntegerVector neighbour_indices = convertCellID2IndicesCPP(id, dims) + neighbourhood(i_neighbour,_);
+        int neighbour_id = convertIndices2CellIDCPP(neighbour_indices, dims);
+        
+        if (isLegal(neighbour_indices, dims)) {
+          if (dominates(objectiveValues(neighbour_id - 1,_),
+                        objectiveValues(id - 1,_))) {
+            // if (assigned_basin[id - 1] != 0 &&
+            //     assigned_basin[id - 1] != assigned_basin[neighbour_id - 1]) {
+            //   // different basins found!
+            //   assigned_basin[id - 1] = -1;
+            // } else {
+            //   assigned_basin[id - 1] = assigned_basin[neighbour_id - 1];
+            // }
+            reachable_sets[id - 1].insert(reachable_sets[neighbour_id - 1].begin(),
+                                          reachable_sets[neighbour_id - 1].end());
+          }
+        }
+      }
+    // }
+  }
+  
+  cout << "Aggregating Data" << endl;
+  
+  List reachable_basins(n_observations);
+  
+  for (int i = 0; i < reachable_sets.size(); i++) {
+    reachable_basins[i] = wrap(reachable_sets[i]);
+  }
+
+  return List::create(_["basins"] = reachable_basins,
+                      _["locally_efficient_ids"] = locally_efficient_ids,
+                      _["processing_order"] = processing_order);
 }

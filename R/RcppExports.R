@@ -93,3 +93,7 @@ calculateMaxDisplayHeightCPP <- function(heights, dims, includeDiagonals) {
     .Call(`_moPLOT_calculateMaxDisplayHeightCPP`, heights, dims, includeDiagonals)
 }
 
+computeLocalDominance <- function(objectiveValues, dims) {
+    .Call(`_moPLOT_computeLocalDominance`, objectiveValues, dims)
+}
+
