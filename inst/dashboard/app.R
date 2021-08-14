@@ -280,15 +280,17 @@ server <- function(input, output, session) {
       if (input$benchmark_set == "biobj_bbob") {
         if (argument_name == "fid") {
           input_args$label = "Function ID"
-          input_args$value = 1
-          input_args$min = 1
-          input_args$max = 55
+          input_args$value = 1L
+          input_args$min = 1L
+          # input_args$max = 55L
+          input_args$max = 92L # Extended Bi-Objective BBOB
         }
         
         if (argument_name == "iid") {
           input_args$label = "Instance ID"
-          input_args$value = 1
-          input_args$min = 1
+          input_args$value = 1L
+          input_args$min = 1L
+          input_args$max = 15L # Only the verified instances
         }
       }
       

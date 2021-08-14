@@ -1,5 +1,5 @@
 benchmark_sets <- c(
-  "Bi-objective BBOB" = "biobj_bbob",
+  "(Extended) Bi-objective BBOB" = "biobj_bbob",
   "DTLZ Functions" = "dtlz",
   "MinDist Functions" = "mindist",
   "MMF Functions" = "mmf",
@@ -10,7 +10,8 @@ benchmark_sets <- c(
 )
 
 biobj_bbob_functions <- list(
-  "Bi-objective BBOB" = smoof::makeBiObjBBOBFunction
+  # "Bi-objective BBOB" = smoof::makeBiObjBBOBFunction
+  "(Extended) Bi-objective BBOB" = makeExtendedBiObjBBOBFunction
 )
 
 dtlz_functions <- list(
