@@ -8,7 +8,6 @@
 #' @importFrom grDevices axisTicks terrain.colors
 #' @importFrom ecr nondominated
 #' @importFrom Rcpp evalCpp
-#' @importFrom pracma qpspecial
 #' @importFrom stats ecdf runif qnorm quantile
 #' @importFrom utils installed.packages
 #' @importFrom viridisLite viridis
