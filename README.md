@@ -24,6 +24,15 @@ install.packages("devtools")
 devtools::install_github("kerschke/moPLOT")
 ```
 
+You are also recommended to install the most recent version of the
+[R-package `smoof`](http://jakobbossek.github.io/smoof/), which is used to retrieve
+definitions of a wide variety of MO benchmark functions, from the corresponding
+[GitHub repository](https://github.com/jakobbossek/smoof):
+
+```r
+install.packages("devtools")
+devtools::install_github("jakobbossek/smoof")
+```
 
 ## Quickstart
 
