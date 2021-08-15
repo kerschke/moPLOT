@@ -66,6 +66,11 @@ ui <- fluidPage(
                value = "tab_heatmap"
              ),
              tabPanel(
+               "Contours",
+               plotly::plotlyOutput("contours", height = "500px"),
+               value = "tab_contours"
+             ),
+             tabPanel(
                "Cost Landscape",
                plotly::plotlyOutput("cost_landscape", height = "500px"),
                value = "tab_cost_landscape"
@@ -82,7 +87,8 @@ ui <- fluidPage(
                                   selectInput("scan_direction", "Scan direction", c("x₁" = "x1", "x₂" = "x2", "x₃" = "x3"), selected = "x3")
                  ),
                  id = "three_d_only"
-               )
+               ),
+               selectInput("show_nondominated", "Contour mode", c("Show nondominated points" = "TRUE", "Contours only" = "FALSE"), selected = "TRUE")
              ),
              id = "plot_options"
            )
@@ -101,6 +107,7 @@ server <- function(input, output, session) {
     
     hideTab("tabset_plots", "tab_plot")
     hideTab("tabset_plots", "tab_heatmap")
+    hideTab("tabset_plots", "tab_contours")
     hideTab("tabset_plots", "tab_cost_landscape")
     
     enable("compute_plot")
@@ -351,6 +358,10 @@ server <- function(input, output, session) {
       disable("compute_cost_landscape")
     }
     
+    if (ncol(design$dec.space) == 2) {
+      showTab("tabset_plots", "tab_contours")
+    }
+    
     show("tabset_plots")
     show("plot_options")
     
@@ -434,6 +445,19 @@ server <- function(input, output, session) {
     }, quoted = TRUE)()
   })
   
+  output$contours = plotly::renderPlotly({
+    reactive({
+      req(plot_data$design)
+      
+      disable("contours")
+      print("Updating Contours")
+      
+      p <- plotly2DContours(plot_data$design, show.nondominated = input$show_nondominated == "TRUE")
+      enable("contours")
+      p
+    }, quoted = TRUE)()
+  })
+  
   output$cost_landscape = plotly::renderPlotly({
     reactive({
       disable("cost_landscape")
@@ -443,6 +467,16 @@ server <- function(input, output, session) {
       enable("cost_landscape")
       p
     }, quoted = TRUE)()
+  })
+  
+  observeEvent(input$tabset_plots, {
+    if (input$tabset_plots == "tab_contours") {
+      hide("space")
+      show("show_nondominated")
+    } else {
+      show("space")
+      hide("show_nondominated")
+    }
   })
   
   # Up- and Download
