@@ -408,7 +408,7 @@ server <- function(input, output, session) {
           else NA
         })
         
-        chob <- changeOfBasin(basins, grid$dims, ld_data$locally_efficient_ids)
+        chob <- moPLOT:::changeOfBasin(basins, grid$dims, ld_data$locally_efficient_ids)
         basins[setdiff(chob$ridges, ld_data$locally_efficient_ids)] <- NA
         
         display_height <- rep(0.5, length(ld_data$basins))
