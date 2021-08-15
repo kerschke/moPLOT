@@ -11,6 +11,10 @@ plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = TRUE
     grid$height = imputeZero(grid$height)
   }
   
+  if (log.scale) {
+    grid$height = log(grid$height)
+  }
+  
   x = cbind.data.frame(grid$dec.space, grid$height, grid$obj.space)
   x = x[order(x$height, decreasing=T),] # relevant for obj.space
   
@@ -22,12 +26,12 @@ plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = TRUE
       zaxis = list(range = c(min(x[,'y3']),max(x[,'y3'])), title='y₃')
     )
   }
-  
+
   marker = plotlyMarker(grid$height, colorscale = colorscale)
   
   if (mode == "both") {
     x.shared = highlight_key(x)
-    p.decision = plotly2DHeatmapDecisionSpace(x.shared, fn, colorscale, log.scale)
+    p.decision = plotly2DHeatmapDecisionSpace(x.shared, fn, colorscale)
     p.objective = plotly2DHeatmapObjectiveSpace(x.shared, fn, marker, scene="scene")
     
     domain.left = list(
@@ -55,7 +59,7 @@ plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = TRUE
       color = "red"
     ) %>% hide_guides()
   } else if (mode == "decision.space") {
-    plotly2DHeatmapDecisionSpace(x, fn, colorscale, log.scale) %>%
+    plotly2DHeatmapDecisionSpace(x, fn, colorscale) %>%
       hide_guides()
   } else if (mode == "objective.space") {
     if (n == 3) {
@@ -99,11 +103,7 @@ plotly2DHeatmapObjectiveSpace = function(x, fn, marker.style, scene="scene") {
   }
 }
 
-plotly2DHeatmapDecisionSpace = function(x, fn, colorscale, log.scale = TRUE) {
-  if (log.scale) {
-    x$height <- log(x$height)
-  }
-  
+plotly2DHeatmapDecisionSpace = function(x, fn, colorscale) {
   plot_ly(data = x,
           type="heatmap",
           x=~x1,y=~x2,z=~height,
