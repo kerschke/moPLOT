@@ -269,28 +269,18 @@ int isCritical(std::vector<NumericVector> vectors, IntegerVector on_boundary) {
   int d = vectors[0].size();
   
   if (is_true(any(on_boundary != 0))) {
-    std::vector<NumericVector> additional_vectors;
-    
-    for (NumericVector v: vectors) {
-      NumericVector new_v(v.begin(), v.end());
-      additional_vectors.push_back(new_v);
-    }
-    
     for (int i = 0; i < on_boundary.size(); i++) {
+      NumericVector new_vector(d);
       if (on_boundary[i] < 0) {
-        // lower bound --> zero anything negative
-        for (NumericVector v : additional_vectors) {
-          v[i] = max(0.0, v[i]);
-        }
+        // lower bound --> one vector showing into positive direction here
+        new_vector[i] = 1;
       } else if (on_boundary[i] > 0) {
-        // upper bound --> zero anything positive
-        for (NumericVector v : additional_vectors) {
-          v[i] = min(0.0, v[i]);
-        }
+        // upper bound --> one vector showing into negative direction here
+        new_vector[i] = -1;
       }
+      
+      vectors.push_back(new_vector);
     }
-    
-    vectors.insert(vectors.end(), additional_vectors.begin(), additional_vectors.end());
   }
   
   LogicalVector positive(d, false);
