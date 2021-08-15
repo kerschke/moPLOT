@@ -439,7 +439,7 @@ server <- function(input, output, session) {
               heatmap = plotly2DHeatmap(grid, fn, mode = space),
               cost_landscape = plotly2DHeatmap(grid, fn, mode = space),
               PLOT = plotly2DPLOT(grid$dec.space, grid$obj.space, less$sinks, less$height, fn, mode = space),
-              local_dominance = plotly2DHeatmap(grid, fn, mode = space, colorscale = plotlyColorscale(gray.colorscale), impute.zero = FALSE, log.scale = FALSE),
+              local_dominance = plotly2DHeatmap(grid, fn, mode = space, colorscale = moPLOT:::plotlyColorscale(gray.colorscale), impute.zero = FALSE, log.scale = FALSE),
               NULL # if plot_type is invalid
       )
     } else if (d == 3) {
