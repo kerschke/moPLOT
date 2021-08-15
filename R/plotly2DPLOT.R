@@ -1,5 +1,5 @@
 #' @export
-plotly2DPLOT = function(dec.space, obj.space, sinks, height, fn, mode = "decision.space", impute.zero = T) {
+plotly2DPLOT = function(dec.space, obj.space, sinks, height, fn, mode = "decision.space", impute.zero = TRUE) {
   # fn: smoof function, 2 dimensional decision space
   
   n = smoof::getNumberOfObjectives(fn)

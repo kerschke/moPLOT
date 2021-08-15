@@ -226,10 +226,10 @@ server <- function(input, output, session) {
     hide("evaluate_grid_panel")
     
     if (smoof::getNumberOfParameters(fn) == 2) {
-      updateSliderInput("grid_size", session = session, value = 300, min=50, max=600, step=50)
+      updateSliderInput("grid_size", session = session, value = 500L, min = 50L, max = 600L, step = 50L)
       hide("three_d_only")
     } else {
-      updateSliderInput("grid_size", session = session, value = 50, min=20, max=60, step=10)
+      updateSliderInput("grid_size", session = session, value = 50L, min = 20L, max = 60L, step = 10L)
       show("three_d_only")
     }
     
@@ -342,7 +342,7 @@ server <- function(input, output, session) {
     if (input$compute_plot && is.null(plot_data$less)) {
       design <- plot_data$design
       
-      gradients <- computeGradientFieldGrid(design) #, prec.angle = 1
+      gradients <- computeGradientFieldGrid(design, prec.norm = 0)
       
       divergence <- computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
       

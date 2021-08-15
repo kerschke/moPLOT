@@ -12,7 +12,6 @@ plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = TRUE
   }
   
   x = cbind.data.frame(grid$dec.space, grid$height, grid$obj.space)
-  print(table(x$height))
   x = x[order(x$height, decreasing=T),] # relevant for obj.space
   
   if (n == 3) {
