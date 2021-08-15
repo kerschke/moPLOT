@@ -11,8 +11,8 @@ plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = TRUE
     grid$height = imputeZero(grid$height)
   }
   
-  if (log.scale) {
-    grid$height = log(grid$height)
+  if (!log.scale) {
+    grid$height = exp(grid$height)
   }
   
   x = cbind.data.frame(grid$dec.space, grid$height, grid$obj.space)
@@ -26,7 +26,7 @@ plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = TRUE
       zaxis = list(range = c(min(x[,'y3']),max(x[,'y3'])), title='y₃')
     )
   }
-
+  
   marker = plotlyMarker(grid$height, colorscale = colorscale)
   
   if (mode == "both") {
@@ -106,7 +106,7 @@ plotly2DHeatmapObjectiveSpace = function(x, fn, marker.style, scene="scene") {
 plotly2DHeatmapDecisionSpace = function(x, fn, colorscale) {
   plot_ly(data = x,
           type="heatmap",
-          x=~x1,y=~x2,z=~height,
+          x=~x1,y=~x2,z=~log(height),
           colorscale=colorscale
   ) %>% layout(
     xaxis = list(
