@@ -230,7 +230,7 @@ makeBiRosenbrockFunction = function() {
   
   smoof::makeMultiObjectiveFunction(
     name = "Bi-Rosenbrock Function", id = "bi_rosenbrock_function", description = "", fn = f,
-    par.set = ParamHelpers::makeNumericParamSet(len = 2, lower = c(-2, 0), upper = c(2, 3)))
+    par.set = ParamHelpers::makeNumericParamSet(len = 2, lower = c(-1.5, 0), upper = c(1.5, 3)))
 }
 
 # Summary of "other" functions ====
