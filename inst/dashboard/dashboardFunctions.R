@@ -9,10 +9,14 @@ benchmark_sets <- c(
   "Other" = "other"
 )
 
+# (Extended) Bi-objective BBOB ====
+
 biobj_bbob_functions <- list(
   # "Bi-objective BBOB" = smoof::makeBiObjBBOBFunction
   "(Extended) Bi-objective BBOB" = makeExtendedBiObjBBOBFunction
 )
+
+# Benchmark Sets extracted from Smoof ====
 
 dtlz_functions <- list(
   "DTLZ1" = smoof::makeDTLZ1Function,
@@ -66,6 +70,8 @@ mop_functions = list(
   "MOP6" = smoof::makeMOP6Function,
   "MOP7" = smoof::makeMOP7Function
 )
+
+# MinDist Function ====
 
 makeMinDistFunction = function(centers.f1 = list(c(-2, -1), c(2, 1)),
                                centers.f2 = list(c(-2, 1), c(2, -1)),
@@ -133,7 +139,7 @@ mpm2_functions = list(
   "Tri-objective MPM2" = makeTriObjMPM2Function
 )
 
-# Aspar functions
+# Aspar Function ====
 
 f1_1 = function(x) (x[1]**4 - 2*x[1]**2 + x[2]**2 + 1)
 f2_1 = function(x) ((x[1] + 0.5)**2 + (x[2]-2)**2)
@@ -149,21 +155,21 @@ f_3d3d = function(x) c(f1_2(x), f2_2(x), f3_2(x))
 
 makeAsparFunction <- function(dimensions = 2, n.objectives = 2) {
   if (dimensions == 2 && n.objectives == 2) {
-    smoof::makeMultiObjectiveFunction(name = "2D->2D Test Function", id = "test_2d2d", description = "", fn = f_2d2d,
+    smoof::makeMultiObjectiveFunction(name = "Aspar Function: 2D->2D", id = "aspar_2d2d", description = "", fn = f_2d2d,
                                       par.set = ParamHelpers::makeNumericParamSet(len = 2, lower = c(-2,-1), upper = c(2,3)))
   } else if (dimensions == 2 && n.objectives == 3) {
-    smoof::makeMultiObjectiveFunction(name = "2D->3D Test Function", id = "test_2d3d", description = "", fn = f_2d3d,
+    smoof::makeMultiObjectiveFunction(name = "Aspar Function: 2D->3D", id = "aspar_2d3d", description = "", fn = f_2d3d,
                                       par.set = ParamHelpers::makeNumericParamSet(len = 2, lower = c(-2,-1), upper = c(2,3)))
   } else if (dimensions == 3 && n.objectives == 2) {
-    smoof::makeMultiObjectiveFunction(name = "3D->2D Test Function", id = "test_3d2d", description = "", fn = f_3d2d,
+    smoof::makeMultiObjectiveFunction(name = "Aspar Function: 3D->2D", id = "aspar_3d2d", description = "", fn = f_3d2d,
                                       par.set = ParamHelpers::makeNumericParamSet(len = 3, lower = c(-2,-1,-2), upper = c(2,3,2)))
   } else if (dimensions == 3 && n.objectives == 3) {
-    smoof::makeMultiObjectiveFunction(name = "3D->3D Test Function", id = "test_3d3d", description = "", fn = f_3d3d,
+    smoof::makeMultiObjectiveFunction(name = "Aspar Function: 3D->3D", id = "aspar_3d3d", description = "", fn = f_3d3d,
                                       par.set = ParamHelpers::makeNumericParamSet(len = 3, lower = c(-2,-1,-2), upper = c(2,3,2)))
   }
 }
 
-# SGK Function
+# SGK Function ====
 
 makeSGKFunction = function(dimensions = 2) {
   g = function(x, h, center) {
@@ -207,6 +213,8 @@ makeSGKFunction = function(dimensions = 2) {
     par.set = ParamHelpers::makeNumericParamSet(len = dimensions, lower = lower, upper = upper))
 }
 
+# Bi-Rosenbrock Function ====
+
 makeBiRosenbrockFunction = function() {
   f1 <- function(x) {
     (1 - x[1]) ** 2 + 1 * (x[2] - x[1] ** 2) ** 2
@@ -221,9 +229,11 @@ makeBiRosenbrockFunction = function() {
   }
   
   smoof::makeMultiObjectiveFunction(
-    name = "Bi-Rosenbrock", id = "bi_rosenbrock_function", description = "", fn = f,
+    name = "Bi-Rosenbrock Function", id = "bi_rosenbrock_function", description = "", fn = f,
     par.set = ParamHelpers::makeNumericParamSet(len = 2, lower = c(-2, 0), upper = c(2, 3)))
 }
+
+# Summary of "other" functions ====
 
 other_functions = list(
   "Aspar" = makeAsparFunction,
