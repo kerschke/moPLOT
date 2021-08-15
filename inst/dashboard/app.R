@@ -71,6 +71,11 @@ ui <- fluidPage(
                value = "tab_contours"
              ),
              tabPanel(
+               "Local Dominance",
+               plotly::plotlyOutput("local_dominance", height = "500px"),
+               value = "tab_local_dominance"
+             ),
+             tabPanel(
                "Cost Landscape",
                plotly::plotlyOutput("cost_landscape", height = "500px"),
                value = "tab_cost_landscape"
@@ -108,6 +113,7 @@ server <- function(input, output, session) {
     hideTab("tabset_plots", "tab_plot")
     hideTab("tabset_plots", "tab_heatmap")
     hideTab("tabset_plots", "tab_contours")
+    hideTab("tabset_plots", "tab_local_dominance")
     hideTab("tabset_plots", "tab_cost_landscape")
     
     enable("compute_plot")
@@ -362,6 +368,8 @@ server <- function(input, output, session) {
       showTab("tabset_plots", "tab_contours")
     }
     
+    showTab("tabset_plots", "tab_local_dominance")
+    
     show("tabset_plots")
     show("plot_options")
     
@@ -391,13 +399,35 @@ server <- function(input, output, session) {
       PLOT = {
         req(plot_data$less)
         plot_data$less$height
-      }
+      },
+      local_dominance = {
+        ld_data <- moPLOT:::computeLocalDominance(grid$obj.space, grid$dims)
+        
+        basins <- sapply(ld_data$basins, function(v) {
+          if (length(v) == 1) v
+          else NA
+        })
+        
+        chob <- changeOfBasin(basins, grid$dims, ld_data$locally_efficient_ids)
+        basins[setdiff(chob$ridges, ld_data$locally_efficient_ids)] <- NA
+        
+        display_height <- rep(0.5, length(ld_data$basins))
+        display_height[ld_data$locally_efficient_ids] <- 0
+        display_height[is.na(basins)] <- 1
+        
+        display_height <- matrix(display_height, ncol = 1)
+        colnames(display_height) <- c("height")
+        display_height
+      },
+      NULL # if plot_type is invalid
     )
     
     less <- plot_data$less
     
     if (plot_type == "PLOT") {
       sinks <- less$sinks
+    } else if (plot_type == "local_dominance") {
+      sinks <- ld_data$locally_efficient_ids
     } else {
       sinks <- NULL
     }
@@ -409,13 +439,24 @@ server <- function(input, output, session) {
               heatmap = plotly2DHeatmap(grid, fn, mode = space),
               cost_landscape = plotly2DHeatmap(grid, fn, mode = space),
               PLOT = plotly2DPLOT(grid$dec.space, grid$obj.space, less$sinks, less$height, fn, mode = space),
+              local_dominance = plotly2DHeatmap(grid, fn, mode = space, colorscale = plotlyColorscale(gray.colorscale), impute.zero = FALSE, log.scale = FALSE),
               NULL # if plot_type is invalid
       )
     } else if (d == 3) {
+      if (plot_type == "local_dominance") {
+        colorscale.sinks = plotlyColorscale(c("#000000", "#000000"))
+        colorscale.heatmap = plotlyColorscale(gray.colorscale)
+      } else {
+        colorscale.sinks = plotlyColorscale()
+        colorscale.heatmap = plotlyColorscale(gray.colorscale)
+      }
+      
       switch (three_d_approach,
               pareto = plotly3DPareto(grid, fn, mode = space),
-              layers = plotly3DLayers(grid, fn, sinks, mode = space),
-              scan = plotly3DScan(grid, fn, sinks, mode = space, frame = input$scan_direction),
+              layers = plotly3DLayers(grid, fn, sinks, mode = space,
+                                      colorscale.sinks = colorscale.sinks, colorscale.heatmap = colorscale.heatmap),
+              scan = plotly3DScan(grid, fn, sinks, mode = space, frame = input$scan_direction,
+                                  colorscale.sinks = colorscale.sinks, colorscale.heatmap = colorscale.heatmap),
               NULL # if plot_type is invalid
       )
     } else {
@@ -454,6 +495,17 @@ server <- function(input, output, session) {
       
       p <- plotly2DContours(plot_data$design, show.nondominated = input$show_nondominated == "TRUE")
       enable("contours")
+      p
+    }, quoted = TRUE)()
+  })
+  
+  output$local_dominance = plotly::renderPlotly({
+    reactive({
+      disable("local_dominance")
+      print("Updating Local Dominance")
+      
+      p <- get_plot("local_dominance", input$space, input$three_d_approach)
+      enable("local_dominance")
       p
     }, quoted = TRUE)()
   })

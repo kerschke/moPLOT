@@ -1,5 +1,5 @@
 #' @export
-plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = T) {
+plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = TRUE, colorscale = plotlyColorscale(), log.scale = TRUE) {
   # grid: list of obj.space, dims, dec.space, step.sizes
   # fn: smoof function, 2 dimensional decision space
   
@@ -12,6 +12,7 @@ plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = T) {
   }
   
   x = cbind.data.frame(grid$dec.space, grid$height, grid$obj.space)
+  print(table(x$height))
   x = x[order(x$height, decreasing=T),] # relevant for obj.space
   
   if (n == 3) {
@@ -23,11 +24,11 @@ plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = T) {
     )
   }
   
-  marker = plotlyMarker(grid$height)
+  marker = plotlyMarker(grid$height, colorscale = colorscale)
   
   if (mode == "both") {
     x.shared = highlight_key(x)
-    p.decision = plotly2DHeatmapDecisionSpace(x.shared, fn, marker)
+    p.decision = plotly2DHeatmapDecisionSpace(x.shared, fn, colorscale, log.scale)
     p.objective = plotly2DHeatmapObjectiveSpace(x.shared, fn, marker, scene="scene")
     
     domain.left = list(
@@ -55,7 +56,7 @@ plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = T) {
       color = "red"
     ) %>% hide_guides()
   } else if (mode == "decision.space") {
-    plotly2DHeatmapDecisionSpace(x, fn, marker) %>%
+    plotly2DHeatmapDecisionSpace(x, fn, colorscale, log.scale) %>%
       hide_guides()
   } else if (mode == "objective.space") {
     if (n == 3) {
@@ -99,11 +100,15 @@ plotly2DHeatmapObjectiveSpace = function(x, fn, marker.style, scene="scene") {
   }
 }
 
-plotly2DHeatmapDecisionSpace = function(x, fn, marker.style) {
+plotly2DHeatmapDecisionSpace = function(x, fn, colorscale, log.scale = TRUE) {
+  if (log.scale) {
+    x$height <- log(x$height)
+  }
+  
   plot_ly(data = x,
           type="heatmap",
-          x=~x1,y=~x2,z=~log(height),
-          colorscale=plotlyColorscale()
+          x=~x1,y=~x2,z=~height,
+          colorscale=colorscale
   ) %>% layout(
     xaxis = list(
       title = "x₁",

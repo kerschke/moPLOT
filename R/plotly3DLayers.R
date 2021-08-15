@@ -1,5 +1,6 @@
 #' @export
-plotly3DLayers = function(grid, fn, sinks = NULL, mode = "decision.space", no.steps = 20, impute.zero = T) {
+plotly3DLayers = function(grid, fn, sinks = NULL, mode = "decision.space", no.steps = 20L, impute.zero = TRUE,
+                          colorscale.sinks = plotlyColorscale(), colorscale.heatmap = plotlyColorscale(gray.colorscale)) {
   # grid: list of obj.space, dims, dec.space, step.sizes
   # fn: smoof function, 3 dimensional decision space
 
@@ -64,8 +65,10 @@ plotly3DLayers = function(grid, fn, sinks = NULL, mode = "decision.space", no.st
   }
 
   if (mode == "both") {
-    p.decision = plotly3DLayersDecisionSpace(x.boundaries, fn, x.sinks, dom.counter, scene="scene")
-    p.objective = plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter, scene="scene2")
+    p.decision = plotly3DLayersDecisionSpace(x.boundaries, fn, x.sinks, dom.counter, scene="scene",
+                                             colorscale.sinks = colorscale.sinks, colorscale.heatmap = colorscale.heatmap)
+    p.objective = plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter, scene="scene2",
+                                               colorscale.sinks = colorscale.sinks, colorscale.heatmap = colorscale.heatmap)
 
     domain.left = list(
       x=c(0,0.5),
@@ -84,16 +87,19 @@ plotly3DLayers = function(grid, fn, sinks = NULL, mode = "decision.space", no.st
       scene2 = objective.scene
     ) %>% hide_guides()
   } else if (mode == "decision.space") {
-    p = plotly3DLayersDecisionSpace(x.boundaries, fn, x.sinks, dom.counter) %>% layout(
+    p = plotly3DLayersDecisionSpace(x.boundaries, fn, x.sinks, dom.counter,
+                                    colorscale.sinks = colorscale.sinks, colorscale.heatmap = colorscale.heatmap) %>% layout(
       scene = decision.scene
     )
   } else if (mode == "objective.space") {
     if (n == 3) {
-      p = plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter) %>% layout(
+      p = plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter,
+                                       colorscale.sinks = colorscale.sinks, colorscale.heatmap = colorscale.heatmap) %>% layout(
         scene = objective.scene
       )
     } else {
-      p = plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter)
+      p = plotly3DLayersObjectiveSpace(x.boundaries, fn, x.sinks, dom.counter,
+                                       colorscale.sinks = colorscale.sinks, colorscale.heatmap = colorscale.heatmap)
     }
   }
 
@@ -103,14 +109,15 @@ plotly3DLayers = function(grid, fn, sinks = NULL, mode = "decision.space", no.st
   ) %>% hide_guides()
 }
 
-plotly3DLayersObjectiveSpace = function(x, fn, x.sinks = NULL, dom.counter = NULL, scene="scene") {
+plotly3DLayersObjectiveSpace = function(x, fn, x.sinks = NULL, dom.counter = NULL, scene = "scene",
+                                        colorscale.sinks, colorscale.heatmap) {
   n.obj = smoof::getNumberOfObjectives(fn)
   
   if (!is.null(x.sinks)) {
-    marker.sinks = plotlyMarker(dom.counter + 1, colorscale = plotlyColorscale(fields::tim.colors(500L)))
-    marker.heatmap = plotlyMarker(x$height, colorscale = plotlyColorscale(gray.colorscale))
+    marker.sinks = plotlyMarker(dom.counter + 1, colorscale = colorscale.sinks)
+    marker.heatmap = plotlyMarker(x$height, colorscale = colorscale.heatmap)
   } else {
-    marker.heatmap = plotlyMarker(x$height, colorscale = plotlyColorscale(fields::tim.colors(500L)))
+    marker.heatmap = plotlyMarker(x$height, colorscale = colorscale.heatmap)
   }
 
   if (n.obj == 2) {
@@ -167,12 +174,13 @@ plotly3DLayersObjectiveSpace = function(x, fn, x.sinks = NULL, dom.counter = NUL
   p
 }
 
-plotly3DLayersDecisionSpace = function(x, fn, x.sinks = NULL, dom.counter = NULL, scene="scene") {
+plotly3DLayersDecisionSpace = function(x, fn, x.sinks = NULL, dom.counter = NULL, scene="scene",
+                                       colorscale.sinks, colorscale.heatmap) {
   if (!is.null(x.sinks)) {
-    marker.sinks = plotlyMarker(dom.counter + 1, colorscale = plotlyColorscale(fields::tim.colors(500L)))
-    marker.heatmap = plotlyMarker(x$height, colorscale = plotlyColorscale(gray.colorscale))
+    marker.sinks = plotlyMarker(dom.counter + 1, colorscale = colorscale.sinks)
+    marker.heatmap = plotlyMarker(x$height, colorscale = colorscale.heatmap)
   } else {
-    marker.heatmap = plotlyMarker(x$height, colorscale = plotlyColorscale(fields::tim.colors(500L)))
+    marker.heatmap = plotlyMarker(x$height, colorscale = colorscale.sinks)
   }
   
   p = plot_ly(

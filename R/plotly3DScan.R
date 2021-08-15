@@ -1,5 +1,6 @@
 #' @export
-plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame = "x3", impute.zero = T) {
+plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame = "x3", impute.zero = TRUE,
+                        colorscale.sinks = plotlyColorscale(), colorscale.heatmap = plotlyColorscale(gray.colorscale)) {
   # grid: list of obj.space, dims, dec.space, step.sizes
   # fn: smoof function, 3 dimensional decision space
   
@@ -41,12 +42,13 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
     dom.height = log(dom.counter + 1)
     marker.sinks = list(
       color = dom.height,
-      colorscale = plotlyColorscale(fields::tim.colors(500L)),
+      colorscale = colorscale.sinks,
       cmin = min(dom.height),
       cmax = max(dom.height)
     )
     
-    x.heatmap = x[-sinks,]
+    # x.heatmap = x[-sinks,]
+    x.heatmap = x
     
     heatmap.order = switch (
       frame,
@@ -57,7 +59,7 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
     
     x.heatmap = x.heatmap[heatmap.order,]
     x.heatmap.shared = highlight_key(x.heatmap)
-    marker.heatmap = plotlyMarker(x.heatmap$height, colorscale = plotlyColorscale(gray.colorscale))
+    marker.heatmap = plotlyMarker(x.heatmap$height, colorscale = colorscale.heatmap)
   } else {
     x.sinks = NULL
     x.sinks.shared = NULL
@@ -74,7 +76,7 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
     
     x.heatmap = x.heatmap[heatmap.order,]
     x.heatmap.shared = highlight_key(x.heatmap)
-    marker.heatmap = plotlyMarker(x.heatmap$height, colorscale = plotlyColorscale(fields::tim.colors(500L)))
+    marker.heatmap = plotlyMarker(x.heatmap$height, colorscale = colorscale.sinks)
   }
   
   if (mode == "both") {
