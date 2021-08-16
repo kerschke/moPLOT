@@ -18,43 +18,57 @@ ui <- fluidPage(
     
     column(4L,
            tabsetPanel(
+             type = "pills",
+             id = "fn_select",
+             
              tabPanel(
                "Select MOP",
+               value = "smoof_mop",
                p(),
                wellPanel(
                  selectInput("benchmark_set", "Benchmark set", c("Select a benchmark set"="", benchmark_sets)),
                  selectInput("fn_name", "Function", c("Select a benchmark set first"="")),
-                 uiOutput("fn_args")
-               ),
-               
-               div(
-                 h3("Generate Data"),
-                 wellPanel(
+                 uiOutput("fn_args"),
+                 div(
+                   id = "evaluate_design_panel",
                    numericInput("grid_size", "Resolution per dimension", 100, min=20, max=3000, step=1),
-                   checkboxInput("compute_plot", "Compute PLOT and heatmap", TRUE),
-                   checkboxInput("compute_cost_landscape", "Compute cost landscape", FALSE),
                    splitLayout(
-                     actionButton("evaluate_grid", "Evaluate", style = "width: 100%"), # icon = icon('th')
+                     actionButton("evaluate_design", "Evaluate", style = "width: 100%; bottom: 0"),
                      downloadButton("download_data", "Download", style = "width: 100%")
                    )
-                 ),
-                 id = "evaluate_grid_panel"
-               )
+                 )
+               ),
              ),
+             
              tabPanel(
                "Upload Data",
+               value = "upload_data",
                p(),
                wellPanel(
-                 fileInput("upload_data", "Upload Data", accept = c(".Rds"))
+                 fileInput("upload_data", "Upload Data", accept = c(".csv")),
+                 helpText("Please provide a CSV with a column for each decision space dimension (x1, x2 [and x3])",
+                          "and the corresponding objective values (y1, y2 [and y3]), with decision space variables",
+                          "covering a grid of evenly spaced values per dimension.")
                )
-             ),
-             type = "pills",
-             id = "fn_select"
+             )
            ),
+           
+           div(
+             h3("Visualization Options"),
+             wellPanel(
+               checkboxInput("compute_plot", "Enable PLOT and heatmap", TRUE),
+               checkboxInput("compute_local_dominance", "Enable local dominance", TRUE),
+               checkboxInput("compute_cost_landscape", "Enable cost landscape", FALSE),
+             ),
+             id = "evaluate_viz_panel"
+           )
+           
     ),
     
     column(8,
            tabsetPanel(
+             id = "tabset_plots",
+             selected = "tab_plot",
              tabPanel(
                "PLOT",
                plotly::plotlyOutput("plot", height = "500px"),
@@ -79,8 +93,7 @@ ui <- fluidPage(
                "Cost Landscape",
                plotly::plotlyOutput("cost_landscape", height = "500px"),
                value = "tab_cost_landscape"
-             ),
-             id = "tabset_plots"
+             )
            ),
            div(
              h3("Plot Options"),
@@ -109,24 +122,22 @@ server <- function(input, output, session) {
   reset_plots <- function() {
     hide("tabset_plots")
     hide("plot_options")
-    
-    hideTab("tabset_plots", "tab_plot")
-    hideTab("tabset_plots", "tab_heatmap")
-    hideTab("tabset_plots", "tab_contours")
-    hideTab("tabset_plots", "tab_local_dominance")
-    hideTab("tabset_plots", "tab_cost_landscape")
-    
+
     enable("compute_plot")
     enable("compute_cost_landscape")
+    enable(selector = "button")
     
     plot_data$design <- NULL
     plot_data$less <- NULL
     plot_data$domination_counts <- NULL
+    plot_data$dummy_fn_upload <- NULL
+    plot_data$ld_height <- NULL
   }
   
   # Hide some parts per default
   
-  hide("evaluate_grid_panel")
+  hide("evaluate_design_panel")
+  hide("evaluate_viz_panel")
   hide("fn_name")
   
   reset_plots()
@@ -201,29 +212,81 @@ server <- function(input, output, session) {
   })
   
   get_fn <- reactive({
-    generator_fn <- get_generator_fn()
-    args <- get_selected_args()
-    
-    req(generator_fn)
-    req(args)
-    
-    tryCatch({
-      do.call(generator_fn, args)
-    }, error = function(e) {
-      print(e)
+    if (input$fn_select == "upload_data") {
+      # We just need to return a dummy function that has the
+      # correct lower, upper bounds and a suitable name
+      plot_data$dummy_fn_upload
+    } else {
+      generator_fn <- get_generator_fn()
+      args <- get_selected_args()
       
-      NULL
-    })
+      req(generator_fn)
+      req(args)
+      
+      tryCatch({
+        do.call(generator_fn, args)
+      }, error = function(e) {
+        print(e)
+        
+        NULL
+      })
+    }
   })
   
-  # Observers that change the UI dynamically
+  # Compute PLOT Data ====
+  
+  compute_plot_data <- reactive({
+    design <- plot_data$design
+    
+    gradients <- computeGradientFieldGrid(design, prec.norm = 0)
+    
+    divergence <- computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
+    
+    # Calculate locally efficient points
+    localEfficientSetSkeleton(design, gradients, divergence, integration="fast")
+  })
+  
+  # Compute Local Dominance Data ====
+  
+  compute_ld_height <- reactive({
+    design <- plot_data$design
+    
+    ld_data <- moPLOT:::computeLocalDominance(design$obj.space, design$dims)
+    
+    basins <- sapply(ld_data$basins, function(v) {
+      if (length(v) == 1) v
+      else NA
+    })
+    
+    chob <- moPLOT:::changeOfBasin(basins, design$dims, ld_data$locally_efficient_ids)
+    basins[setdiff(chob$ridges, ld_data$locally_efficient_ids)] <- NA
+    
+    display_height <- rep(0.5, length(ld_data$basins))
+    display_height[ld_data$locally_efficient_ids] <- 0
+    display_height[is.na(basins)] <- 1
+    
+    display_height <- matrix(display_height, ncol = 1)
+    colnames(display_height) <- c("height")
+    
+    display_height
+  })
+  
+  # Compute Dominance Counts ====
+  
+  compute_dominance_counts <- reactive({
+    nds <- ecr::doNondominatedSorting(t(plot_data$design$obj.space))
+    dom_counts <- cbind(height = nds$dom.counter + 1)
+    dom_counts
+  })
+  
+  # Observers that change the UI dynamically ====
   
   observe({
     fn <- get_fn()
     
     req(fn)
     
-    hide("evaluate_grid_panel")
+    hide("evaluate_design_panel")
     
     if (smoof::getNumberOfParameters(fn) == 2) {
       updateSliderInput("grid_size", session = session, value = 500L, min = 50L, max = 600L, step = 50L)
@@ -233,7 +296,7 @@ server <- function(input, output, session) {
       show("three_d_only")
     }
     
-    show("evaluate_grid_panel")
+    show("evaluate_design_panel")
   })
   
   observe({
@@ -248,7 +311,37 @@ server <- function(input, output, session) {
     }
   })
   
-  # Dynamically created view with function parameters
+  # Which tabs to show? ====
+  
+  observe({
+    if (!is.null(plot_data$design) && ncol(plot_data$design$dec.space) == 2) {
+      showTab("tabset_plots", "tab_contours")
+    } else {
+      hideTab("tabset_plots", "tab_contours")
+    }
+    
+    if (input$compute_plot) {
+      showTab("tabset_plots", "tab_plot")
+      showTab("tabset_plots", "tab_heatmap")
+    } else {
+      hideTab("tabset_plots", "tab_plot")
+      hideTab("tabset_plots", "tab_heatmap")
+    }
+    
+    if (input$compute_cost_landscape) {
+      showTab("tabset_plots", "tab_cost_landscape")
+    } else {
+      hideTab("tabset_plots", "tab_cost_landscape")
+    }
+    
+    if (input$compute_local_dominance) {
+      showTab("tabset_plots", "tab_local_dominance")
+    } else {
+      hideTab("tabset_plots", "tab_local_dominance")
+    }
+  })
+  
+  # Dynamically created view with function parameters ====
   
   output$fn_args = renderUI({
     args <- get_default_args()
@@ -317,14 +410,18 @@ server <- function(input, output, session) {
     do.call(flowLayout, ui_inputs)
   })
   
-  # Generating data
+  # Generating data ====
   
   observeEvent(c(input$grid_size, get_fn()), {
-    # reset stored plot data when resolution or function changes
-    reset_plots()
+    if (input$fn_select == "smoof_mop") {
+      # reset stored plot data when resolution or function changes
+      reset_plots()
+      
+      hide("evaluate_viz_panel")
+    }
   })
   
-  observeEvent(input$evaluate_grid, {
+  observeEvent(input$evaluate_design, {
     fn <- get_fn()
     req(fn)
     
@@ -339,41 +436,14 @@ server <- function(input, output, session) {
       plot_data$design <<- design
     }
     
-    if (input$compute_plot && is.null(plot_data$less)) {
-      design <- plot_data$design
-      
-      gradients <- computeGradientFieldGrid(design, prec.norm = 0)
-      
-      divergence <- computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
-      
-      # Calculate locally efficient points
-      plot_data$less <<- localEfficientSetSkeleton(design, gradients, divergence, integration="fast")
-      
-      showTab("tabset_plots", "tab_plot")
-      showTab("tabset_plots", "tab_heatmap")
-      
-      disable("compute_plot")
-    }
-    
-    if (input$compute_cost_landscape && is.null(plot_data$domination_counts)) {
-      nds <- ecr::doNondominatedSorting(t(plot_data$design$obj.space))
-      plot_data$domination_counts <<- cbind(height = nds$dom.counter + 1)
-      
-      showTab("tabset_plots", "tab_cost_landscape")
-      
-      disable("compute_cost_landscape")
-    }
-    
-    if (ncol(design$dec.space) == 2) {
-      showTab("tabset_plots", "tab_contours")
-    }
-    
-    showTab("tabset_plots", "tab_local_dominance")
+    enable(selector = "button")
     
     show("tabset_plots")
     show("plot_options")
     
-    enable(selector = "button")
+    disable("evaluate_design")
+    
+    show("evaluate_viz_panel")
   })
   
   # Plotting-related functions
@@ -401,23 +471,8 @@ server <- function(input, output, session) {
         plot_data$less$height
       },
       local_dominance = {
-        ld_data <- moPLOT:::computeLocalDominance(grid$obj.space, grid$dims)
-        
-        basins <- sapply(ld_data$basins, function(v) {
-          if (length(v) == 1) v
-          else NA
-        })
-        
-        chob <- moPLOT:::changeOfBasin(basins, grid$dims, ld_data$locally_efficient_ids)
-        basins[setdiff(chob$ridges, ld_data$locally_efficient_ids)] <- NA
-        
-        display_height <- rep(0.5, length(ld_data$basins))
-        display_height[ld_data$locally_efficient_ids] <- 0
-        display_height[is.na(basins)] <- 1
-        
-        display_height <- matrix(display_height, ncol = 1)
-        colnames(display_height) <- c("height")
-        display_height
+        req(plot_data$ld_height)
+        plot_data$ld_height
       },
       NULL # if plot_type is invalid
     )
@@ -466,7 +521,14 @@ server <- function(input, output, session) {
   
   output$plot = plotly::renderPlotly(
     reactive({
+      req(plot_data$design)
+      
       disable("plot")
+      
+      if (is.null(plot_data$less) && input$compute_plot) {
+        plot_data$less <<- compute_plot_data()
+      }
+      
       print("Updating PLOT")
       
       p <- get_plot("PLOT", input$space, input$three_d_approach)
@@ -477,7 +539,14 @@ server <- function(input, output, session) {
   
   output$heatmap = plotly::renderPlotly({
     reactive({
+      req(plot_data$design)
+      
       disable("heatmap")
+      
+      if (is.null(plot_data$less) && input$compute_plot) {
+        plot_data$less <<- compute_plot_data()
+      }
+      
       print("Updating Heatmap")
       
       p <- get_plot("heatmap", input$space, input$three_d_approach)
@@ -501,7 +570,14 @@ server <- function(input, output, session) {
   
   output$local_dominance = plotly::renderPlotly({
     reactive({
+      req(plot_data$design)
+      
       disable("local_dominance")
+      
+      if (is.null(plot_data$ld_height) && input$compute_local_dominance) {
+        plot_data$ld_height <<- compute_ld_height()
+      }
+      
       print("Updating Local Dominance")
       
       p <- get_plot("local_dominance", input$space, input$three_d_approach)
@@ -512,7 +588,14 @@ server <- function(input, output, session) {
   
   output$cost_landscape = plotly::renderPlotly({
     reactive({
+      req(plot_data$design)
+      
       disable("cost_landscape")
+      
+      if (is.null(plot_data$domination_counts) && input$compute_cost_landscape) {
+        plot_data$domination_counts <<- compute_dominance_counts()
+      }
+      
       print("Updating Cost Landscape")
       
       p <- get_plot("cost_landscape", input$space, input$three_d_approach)
@@ -538,99 +621,74 @@ server <- function(input, output, session) {
       fn = get_fn()
       req(fn)
       
-      paste0(smoof::getName(fn), "-data-", input$grid_size, '.Rds')
+      paste0(smoof::getName(fn), '.csv')
     },
     
     content = function(file) {
-      input_list <- reactiveValuesToList(input)
-      plot_data_list <- reactiveValuesToList(plot_data)
+      req(plot_data$design)
       
-      data = list()
+      df <- cbind(plot_data$design$dec.space, plot_data$design$obj.space)
       
-      data$input <- input_list
-      data$plot_data <- plot_data_list
-      
-      saveRDS(data, file)
+      write.csv(df, file)
     }
   )
   
   observeEvent(input$upload_data, {
-    if (!endsWith(input$upload_data$datapath, ".Rds")) {
+    if (!endsWith(input$upload_data$datapath, ".csv")) {
       print(input$upload_data)
       return()
     }
     
-    data <- readRDS(input$upload_data$datapath)
+    df <- as.matrix(read.csv(input$upload_data$datapath))
     
     reset_plots()
     
-    updateTabsetPanel(session, "fn_select", selected = "Select MOP")
-    updateSelectInput(session, "benchmark_set", selected = data$input$benchmark_set)
-
-    updateNumericInput(session, "grid_size", value = data$input$grid_size)
-    updateCheckboxInput(session, "compute_plot", value = data$input$compute_plot)
-    updateCheckboxInput(session, "compute_cost_landscape", value = data$input$compute_cost_landscape)
+    design <- list()
     
-    delay(500, {
-      updateSelectInput(session, "fn_name", selected = data$input$fn_name)
-    })
+    # design$dec.space
     
-    delay(1000, {
-      
-      # Set values of dynamic UI
-      
-      args <- get_args_names_ui()
-      
-      lapply(args, function(arg_name) {
-        session$sendInputMessage(arg_name, list(value = data$input[[arg_name]]))
-      })
-    })
+    if (all(c("x1", "x2", "x3") %in% colnames(df))) {
+      design$dec.space <- df[,c("x1", "x2", "x3")]
+    } else if (all(c("x1", "x2") %in% colnames(df))) {
+      design$dec.space <- df[,c("x1", "x2")]
+    } else {
+      # ERROR!
+      return()
+    }
     
-    delay(1500, {
-      
-      # Set data generation enabled / disabled accordingly
-      
-      if (data$input$compute_plot) {
-        disable("compute_plot")
-      } else {
-        enable("compute_plot")
-      }
-      
-      if (data$input$compute_cost_landscape) {
-        disable("compute_cost_landscape")
-      } else {
-        enable("compute_cost_landscape")
-      }
-      
-      # Update plot_data object
-      
-      plot_data$design <<- data$plot_data$design
-      plot_data$less <<- data$plot_data$less
-      plot_data$domination_counts <<- data$plot_data$domination_counts
-      
-      if (!is.null(plot_data$design)) {
-        show("tabset_plots")
-        show("plot_options")
-      } else {
-        hide("tabset_plots")
-        hide("plot_options")
-      }
-      
-      if (!is.null(plot_data$less)) {
-        showTab("tabset_plots", "tab_heatmap")
-        showTab("tabset_plots", "tab_plot")
-      } else {
-        hideTab("tabset_plots", "tab_plot")
-        hideTab("tabset_plots", "tab_heatmap")
-      }
-      
-      if (!is.null(plot_data$domination_counts)) {
-        showTab("tabset_plots", "tab_cost_landscape")
-      } else {
-        hideTab("tabset_plots", "tab_cost_landscape")
-      }
-      
-    })
+    # design$obj.space
+    
+    if (all(c("y1", "y2", "y3") %in% colnames(df))) {
+      design$obj.space <- df[,c("y1", "y2", "y3")]
+    } else if (all(c("y1", "y2") %in% colnames(df))) {
+      design$obj.space <- df[,c("y1", "y2")]
+    } else {
+      # ERROR!
+      return()
+    }
+    
+    # Miscellaneous
+    
+    design$dims <- apply(design$dec.space, 2, function(x) length(unique(x)))
+    lower <- apply(design$dec.space, 2, function(x) min(x))
+    upper <- apply(design$dec.space, 2, function(x) max(x))
+    design$step.sizes <- (upper - lower) / (design$dims - 1)
+    
+    # Define a dummy function with the name and correct bounds
+    
+    param_set <- ParamHelpers::makeNumericParamSet(
+      len = ncol(design$dec.space), lower = lower, upper = upper)
+    
+    plot_data$dummy_fn_upload <<- smoof::makeMultiObjectiveFunction(
+      name = basename(input$upload_data$datapath),
+      id = basename(input$upload_data$datapath),
+      par.set = param_set,
+      fn = function(x) rep(0, ncol(design$obj.space))
+    )
+    
+    plot_data$design <<- design
+    
+    show("evaluate_viz_panel")
   })
 }
 
