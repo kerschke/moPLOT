@@ -80,6 +80,11 @@ ui <- fluidPage(
                value = "tab_heatmap"
              ),
              tabPanel(
+               "Set Transitions",
+               plotOutput("set_transitions", height = "500px"),
+               value = "tab_set_transitions"
+             ),
+             tabPanel(
                "Contours",
                plotly::plotlyOutput("contours", height = "500px"),
                value = "tab_contours"
@@ -243,7 +248,7 @@ server <- function(input, output, session) {
     divergence <- computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
     
     # Calculate locally efficient points
-    localEfficientSetSkeleton(design, gradients, divergence, integration="fast")
+    localEfficientSetSkeleton(design, gradients, divergence, integration="fast", with.basins = TRUE)
   })
   
   # Compute Local Dominance Data ====
@@ -314,18 +319,14 @@ server <- function(input, output, session) {
   # Which tabs to show? ====
   
   observe({
-    if (!is.null(plot_data$design) && ncol(plot_data$design$dec.space) == 2) {
-      showTab("tabset_plots", "tab_contours")
-    } else {
-      hideTab("tabset_plots", "tab_contours")
-    }
-    
     if (input$compute_plot) {
       showTab("tabset_plots", "tab_plot")
       showTab("tabset_plots", "tab_heatmap")
+      showTab("tabset_plots", "tab_set_transitions")
     } else {
       hideTab("tabset_plots", "tab_plot")
       hideTab("tabset_plots", "tab_heatmap")
+      hideTab("tabset_plots", "tab_set_transitions")
     }
     
     if (input$compute_cost_landscape) {
@@ -438,6 +439,12 @@ server <- function(input, output, session) {
     
     enable(selector = "button")
     
+    if (!is.null(plot_data$design) && ncol(plot_data$design$dec.space) == 2) {
+      showTab("tabset_plots", "tab_contours")
+    } else {
+      hideTab("tabset_plots", "tab_contours")
+    }
+    
     show("tabset_plots")
     show("plot_options")
     
@@ -500,10 +507,10 @@ server <- function(input, output, session) {
     } else if (d == 3) {
       if (plot_type == "local_dominance") {
         colorscale.sinks = moPLOT:::plotlyColorscale(c("#000000", "#000000"))
-        colorscale.heatmap = moPLOT:::plotlyColorscale(gray.colorscale)
+        colorscale.heatmap = moPLOT:::plotlyColorscale(moPLOT:::gray.colorscale)
       } else {
         colorscale.sinks = moPLOT:::plotlyColorscale()
-        colorscale.heatmap = moPLOT:::plotlyColorscale(gray.colorscale)
+        colorscale.heatmap = moPLOT:::plotlyColorscale(moPLOT:::gray.colorscale)
       }
       
       switch (three_d_approach,
@@ -601,6 +608,85 @@ server <- function(input, output, session) {
       p <- get_plot("cost_landscape", input$space, input$three_d_approach)
       enable("cost_landscape")
       p
+    }, quoted = TRUE)()
+  })
+  
+  output$set_transitions = renderPlot({
+    reactive({
+      req(plot_data$design)
+      
+      if (is.null(plot_data$less) && input$compute_plot) {
+        plot_data$less <<- compute_plot_data()
+      }
+      
+      less <- plot_data$less
+      basins <- plot_data$less$basins
+      
+      n_descent_target <- table(basins[basins != -1])
+      transition_sinks <- intersect(which(less$set_transitions != -1), less$sinks)
+      
+      set_transitions <- t(sapply(transition_sinks, function(s) {
+        c(from = basins[s], to = less$set_transitions[s])
+      }))
+      set_transitions <- set_transitions[!duplicated(set_transitions),,drop=FALSE]
+      
+      sets <- lapply(sort(unique(basins[basins != -1])), function(b) {
+        set_ids <- intersect(which(basins == b), less$sinks)
+        list(
+          dec_space = design$dec.space[set_ids,],
+          obj_space = design$obj.space[set_ids,]
+        )
+      })
+      
+      # === Set Visualization ===
+      
+      compute_reach_proportions <- function(graph, weights) {
+        sapply(igraph::V(graph), function(v) {
+          reachable_v <- igraph::subcomponent(graph, v, "in")
+          sum(weights[reachable_v]) / sum(weights)
+        })
+      }
+      
+      compute_nondominated_sets <- function(sets) {
+        obj_space <- Reduce(rbind, lapply(sets, function(set) set$obj_space))
+        
+        # When do we change between different sets of the trace?
+        set_change <- cumsum(sapply(sets, function(set) nrow(set$obj_space)))
+        
+        nd <- obj_space %>% t %>% ecr::nondominated()
+        
+        sapply(seq_along(set_change), function(i) {
+          if (i == 1) {
+            lower = 1
+          } else {
+            lower = set_change[i - 1] + 1
+          }
+          
+          sum(nd[lower:set_change[i]])
+        })
+      }
+      
+      library(tidygraph)
+      library(ggraph)
+      
+      if (length(set_transitions) != 0) {
+        tbl_transitions <- as_tbl_graph(set_transitions)
+        prop <- compute_reach_proportions(tbl_transitions, n_descent_target)
+      } else {
+        tbl_transitions <- NULL
+        prop <- n_descent_target / sum(n_descent_target)
+      }
+      
+      set_nd_counts <- compute_nondominated_sets(sets)
+      node_color <- ifelse(set_nd_counts > 0, "green", "red")
+      
+      print((1 / prop[set_nd_counts > 0]) %>% sort(decreasing = TRUE))
+      
+      ggraph(tbl_transitions, layout = "stress") +
+        geom_edge_fan(arrow = arrow(length = unit(4, "mm")),
+                      end_cap = circle(4, "mm")) +
+        geom_node_point(aes(size = prop), color = node_color) +
+        scale_radius(limits = c(0,1))
     }, quoted = TRUE)()
   })
   

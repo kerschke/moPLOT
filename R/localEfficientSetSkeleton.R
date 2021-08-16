@@ -1,5 +1,5 @@
 #' @export
-localEfficientSetSkeleton = function(design, gradients, divergence, integration = "fast", with.basins = FALSE) {
+localEfficientSetSkeleton = function(design, gradients, divergence, integration = "fast", with.basins = FALSE, use.integration.sinks = FALSE) {
   less = list()
   
   cat('Finding critical points ...\n')
@@ -23,13 +23,18 @@ localEfficientSetSkeleton = function(design, gradients, divergence, integration 
   less$height[is.na(less$height)] = 0
 
   if (with.basins) {
-    # integration.sinks = sort(unique(integrated$last.visited))
-    integration.sinks = sinks
+    if (use.integration.sinks) {
+      integration.sinks = sort(unique(integrated$last.visited))
+    } else {
+      integration.sinks = sinks
+    }
 
     ccs = connectedComponentsGrid(integration.sinks, design$dims)
-    valid.ccs.ids = (ccs != 0 & !(ccs %in% as.numeric(names(table(ccs)))[table(ccs) < 4]))
-    valid.ccs = ccs[valid.ccs.ids]
-    valid.sinks = integration.sinks[valid.ccs.ids]
+    # valid.ccs.ids = (ccs != 0 & !(ccs %in% as.numeric(names(table(ccs)))[table(ccs) < 4]))
+    # valid.ccs = ccs[valid.ccs.ids]
+    # valid.sinks = integration.sinks[valid.ccs.ids]
+    valid.ccs <- ccs
+    valid.sinks <- integration.sinks
 
     less$sinks = valid.sinks
 

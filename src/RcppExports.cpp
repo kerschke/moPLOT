@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // compute3DcrossProductCPP
 NumericVector compute3DcrossProductCPP(NumericVector y, NumericVector z);
 RcppExport SEXP _moPLOT_compute3DcrossProductCPP(SEXP ySEXP, SEXP zSEXP) {
