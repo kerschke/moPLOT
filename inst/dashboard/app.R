@@ -499,11 +499,11 @@ server <- function(input, output, session) {
       )
     } else if (d == 3) {
       if (plot_type == "local_dominance") {
-        colorscale.sinks = plotlyColorscale(c("#000000", "#000000"))
-        colorscale.heatmap = plotlyColorscale(gray.colorscale)
+        colorscale.sinks = moPLOT:::plotlyColorscale(c("#000000", "#000000"))
+        colorscale.heatmap = moPLOT:::plotlyColorscale(gray.colorscale)
       } else {
-        colorscale.sinks = plotlyColorscale()
-        colorscale.heatmap = plotlyColorscale(gray.colorscale)
+        colorscale.sinks = moPLOT:::plotlyColorscale()
+        colorscale.heatmap = moPLOT:::plotlyColorscale(gray.colorscale)
       }
       
       switch (three_d_approach,
