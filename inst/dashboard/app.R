@@ -621,6 +621,7 @@ server <- function(input, output, session) {
       
       less <- plot_data$less
       basins <- plot_data$less$basins
+      design <- plot_data$design
       
       n_descent_target <- table(basins[basins != -1])
       transition_sinks <- intersect(which(less$set_transitions != -1), less$sinks)
