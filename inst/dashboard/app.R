@@ -489,6 +489,7 @@ server <- function(input, output, session) {
     if (plot_type == "PLOT") {
       sinks <- less$sinks
     } else if (plot_type == "local_dominance") {
+      ld_data <- plot_data$ld_data
       sinks <- ld_data$locally_efficient_ids
     } else {
       sinks <- NULL
