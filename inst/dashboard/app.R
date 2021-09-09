@@ -60,7 +60,7 @@ ui <- fluidPage(
                checkboxInput("compute_local_dominance", "Enable local dominance", TRUE),
                checkboxInput("compute_cost_landscape", "Enable cost landscape", FALSE),
              ),
-             id = "evaluate_viz_panel"
+             id = "viz_options_panel"
            )
            
     ),
@@ -142,7 +142,6 @@ server <- function(input, output, session) {
   # Hide some parts per default
   
   hide("evaluate_design_panel")
-  hide("evaluate_viz_panel")
   hide("fn_name")
   
   reset_plots()
@@ -319,6 +318,15 @@ server <- function(input, output, session) {
   # Which tabs to show? ====
   
   observe({
+    fn <- get_fn()
+    req(fn)
+    
+    if (smoof::getNumberOfParameters(fn) == 2) {
+      showTab("tabset_plots", "tab_contours")
+    } else {
+      hideTab("tabset_plots", "tab_contours")
+    }
+    
     if (input$compute_plot) {
       showTab("tabset_plots", "tab_plot")
       showTab("tabset_plots", "tab_heatmap")
@@ -417,8 +425,6 @@ server <- function(input, output, session) {
     if (input$fn_select == "smoof_mop") {
       # reset stored plot data when resolution or function changes
       reset_plots()
-      
-      hide("evaluate_viz_panel")
     }
   })
   
@@ -439,18 +445,10 @@ server <- function(input, output, session) {
     
     enable(selector = "button")
     
-    if (!is.null(plot_data$design) && ncol(plot_data$design$dec.space) == 2) {
-      showTab("tabset_plots", "tab_contours")
-    } else {
-      hideTab("tabset_plots", "tab_contours")
-    }
-    
     show("tabset_plots")
     show("plot_options")
     
     disable("evaluate_design")
-    
-    show("evaluate_viz_panel")
   })
   
   # Plotting-related functions
@@ -775,8 +773,6 @@ server <- function(input, output, session) {
     )
     
     plot_data$design <<- design
-    
-    show("evaluate_viz_panel")
   })
 }
 
