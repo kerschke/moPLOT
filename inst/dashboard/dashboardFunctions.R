@@ -121,7 +121,22 @@ makeBiObjMPM2Function = function(dimensions = 2, n.peaks.1 = 3, topology.1 = "ra
   f1 <- smoof::makeMPM2Function(n.peaks.1, dimensions, topology.1, seed.1)
   f2 <- smoof::makeMPM2Function(n.peaks.2, dimensions, topology.2, seed.2)
   
-  smoof::makeGOMOPFunction(dimensions = dimensions, funs = list(f1, f2))
+  smoof::makeMultiObjectiveFunction(
+    name = paste0("Bi-MPM2 (", smoof::getName(f1), ", ", smoof::getName(f2), ")"),
+    id = paste0("bi_mpm2_", smoof::getID(f1), "_", smoof::getID(f2)),
+    fn = function(x) {
+      if (is.matrix(x)) {
+        # input matrix is expected to be col-wise per decision point
+        cbind(apply(x, 2, f1), apply(x, 2, f2))
+      } else {
+        cbind(f1(x), f2(x))
+      }
+    },
+    par.set = ParamHelpers::makeNumericParamSet("x", len = dimensions, lower = 0, upper = 1),
+    vectorized = TRUE
+  )
+  
+  # smoof::makeGOMOPFunction(dimensions = dimensions, funs = list(f1, f2))
 }
 
 makeTriObjMPM2Function = function(dimensions = 2, n.peaks.1 = 3, topology.1 = "random", seed.1 = 4,
@@ -131,7 +146,22 @@ makeTriObjMPM2Function = function(dimensions = 2, n.peaks.1 = 3, topology.1 = "r
   f2 <- smoof::makeMPM2Function(n.peaks.2, dimensions, topology.2, seed.2)
   f3 <- smoof::makeMPM2Function(n.peaks.3, dimensions, topology.3, seed.3)
   
-  smoof::makeGOMOPFunction(dimensions = dimensions, funs = list(f1, f2, f3))
+  smoof::makeMultiObjectiveFunction(
+    name = paste0("Tri-MPM2 (", smoof::getName(f1), ", ", smoof::getName(f2), ", ", smoof::getName(f3), ")"),
+    id = paste0("tri_mpm2_", smoof::getID(f1), "_", smoof::getID(f2), "_", smoof::getID(f3)),
+    fn = function(x) {
+      if (is.matrix(x)) {
+        # input matrix is expected to be col-wise per decision point
+        cbind(apply(x, 2, f1), apply(x, 2, f2), apply(x, 2, f3))
+      } else {
+        cbind(f1(x), f2(x), f3(x))
+      }
+    },
+    par.set = ParamHelpers::makeNumericParamSet("x", len = dimensions, lower = 0, upper = 1),
+    vectorized = TRUE
+  )
+  
+  # smoof::makeGOMOPFunction(dimensions = dimensions, funs = list(f1, f2, f3))
 }
 
 mpm2_functions = list(
