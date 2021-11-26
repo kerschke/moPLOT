@@ -15,9 +15,13 @@ runDashboard = function() {
     stop("The package `shiny` is required for the dashboard. Please install it.", call. = FALSE)
   }
   
+  if (!requireNamespace("reticulate", quietly = TRUE)) {
+    stop("The package `reticulate` is required for the dashboard. Please install it.", call. = FALSE)
+  }
+  
   appDir = system.file("dashboard", package = "moPLOT")
   if (appDir == "") {
-    stop("Could not find dashboard directory. Try re-installing `moMPLOT`.", call. = FALSE)
+    stop("Could not find dashboard directory. Try re-installing `moPLOT`.", call. = FALSE)
   }
   shiny::runApp(appDir, display.mode = "normal")
 }
