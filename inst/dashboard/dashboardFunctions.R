@@ -125,12 +125,7 @@ makeBiObjMPM2Function = function(dimensions = 2, n.peaks.1 = 3, topology.1 = "ra
     name = paste0("Bi-MPM2 (", smoof::getName(f1), ", ", smoof::getName(f2), ")"),
     id = paste0("bi_mpm2_", smoof::getID(f1), "_", smoof::getID(f2)),
     fn = function(x) {
-      if (is.matrix(x)) {
-        # input matrix is expected to be col-wise per decision point
-        cbind(apply(x, 2, f1), apply(x, 2, f2))
-      } else {
-        cbind(f1(x), f2(x))
-      }
+      drop(cbind(f1(x), f2(x)))
     },
     par.set = ParamHelpers::makeNumericParamSet("x", len = dimensions, lower = 0, upper = 1),
     vectorized = TRUE
@@ -150,12 +145,7 @@ makeTriObjMPM2Function = function(dimensions = 2, n.peaks.1 = 3, topology.1 = "r
     name = paste0("Tri-MPM2 (", smoof::getName(f1), ", ", smoof::getName(f2), ", ", smoof::getName(f3), ")"),
     id = paste0("tri_mpm2_", smoof::getID(f1), "_", smoof::getID(f2), "_", smoof::getID(f3)),
     fn = function(x) {
-      if (is.matrix(x)) {
-        # input matrix is expected to be col-wise per decision point
-        cbind(apply(x, 2, f1), apply(x, 2, f2), apply(x, 2, f3))
-      } else {
-        cbind(f1(x), f2(x), f3(x))
-      }
+      drop(cbind(f1(x), f2(x), f3(x)))
     },
     par.set = ParamHelpers::makeNumericParamSet("x", len = dimensions, lower = 0, upper = 1),
     vectorized = TRUE

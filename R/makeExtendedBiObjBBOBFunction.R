@@ -63,7 +63,7 @@ makeExtendedBiObjBBOBFunction <- function(dimensions, fid, iid) {
     description = sprintf("%i-th noiseless Extended Bi-Objective BBOB function\n(FID: %i, IID: %i, DIMENSION: %i)",
                           fid, fid, iid, dimensions),
     fn = function(x) {
-      cbind(fn_1(x), fn_2(x))
+      drop(cbind(fn_1(x), fn_2(x)))
     },
     par.set = param_set,
     n.objectives = 2L,
