@@ -1,9 +1,22 @@
 library(shiny)
 library(shinyjs)
 library(fields)
+library(smoof)
 library(moPLOT)
 
 source("dashboardFunctions.R")
+
+# Setup reticulate for MPM2 function interfaces
+
+if (!reticulate::virtualenv_exists("moPLOT")) {
+  reticulate::virtualenv_create("moPLOT")
+}
+
+reticulate::use_virtualenv("moPLOT")
+
+if (!reticulate::py_numpy_available()) {
+  reticulate::py_install("numpy")
+}
 
 # Maximum Upload Size = 50MB
 # Might need to be changed for larger files
@@ -296,7 +309,7 @@ server <- function(input, output, session) {
       updateSliderInput("grid_size", session = session, value = 500L, min = 50L, max = 600L, step = 50L)
       hide("three_d_only")
     } else {
-      updateSliderInput("grid_size", session = session, value = 50L, min = 20L, max = 60L, step = 10L)
+      updateSliderInput("grid_size", session = session, value = 50L, min = 20L, max = 100L, step = 10L)
       show("three_d_only")
     }
     
@@ -325,6 +338,7 @@ server <- function(input, output, session) {
       showTab("tabset_plots", "tab_contours")
     } else {
       hideTab("tabset_plots", "tab_contours")
+      updateTabsetPanel(inputId = "tabset_plots", selected = NULL)
     }
     
     if (input$compute_plot) {
