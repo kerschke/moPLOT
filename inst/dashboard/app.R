@@ -539,7 +539,7 @@ server <- function(input, output, session) {
     }
   }
   
-  output$plot = plotly::renderPlotly(
+  output$plot = plotly::renderPlotly({
     reactive({
       req(plot_data$design)
       
@@ -555,7 +555,7 @@ server <- function(input, output, session) {
       enable("plot")
       p
     }, quoted = TRUE)()
-  )
+  })
   
   output$heatmap = plotly::renderPlotly({
     reactive({

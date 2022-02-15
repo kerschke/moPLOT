@@ -10,5 +10,4 @@
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats ecdf runif qnorm quantile
 #' @importFrom utils installed.packages
-#' @importFrom viridisLite viridis
 NULL
