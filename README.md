@@ -56,7 +56,7 @@ If you use our package to visualize your multi-objective problems using
 
 please cite the respective publications.
 
-```
+```bibtex
 @inproceedings{KerschkeGrimme2017Expedition,
   author    = {Pascal Kerschke and Christian Grimme},
   title     = {{An Expedition to Multimodal Multi-Objective Optimization Landscapes}},
@@ -101,4 +101,4 @@ please cite the respective publications.
 ## Contact
 
 If you have any suggestions or ideas, or run into problems while running the code, please
-use the [issue tracker](https://github.com/kerschke/moPLOT/issues) or send me an e-mail (<kerschke@uni-muenster.de>).
+use the [issue tracker](https://github.com/kerschke/moPLOT/issues) or send me an e-mail (<pascal.kerschke@tu-dresden.de>).
