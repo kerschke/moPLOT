@@ -563,7 +563,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
     // Loop over cell indices
     // Each anchor index refers to the hypercube defined by itself and +1 into each dimension
     if (anchor_id % 1000 == 0) {
-      cout << anchor_id << '\r';
+      Rcout << anchor_id << '\r';
     }
 
     anchor_index = convertCellID2IndicesCPP(anchor_id, dims);
@@ -814,7 +814,7 @@ List integrateVectorField(NumericMatrix gradMat, IntegerVector dims, IntegerVect
 
   for (int id = 1; id <= n; id++) {
     if (id % 1000 == 0) {
-      cout << '\r' << id;
+      Rcout << '\r' << id;
     }
 
     std::unordered_set<int> seen;
@@ -1462,7 +1462,7 @@ List computeLocalDominance(NumericMatrix objectiveValues, IntegerVector dims) {
 
   /* Step 5: Iterate over all further points */
   
-  cout << "Processing Descent" << endl;
+  Rcout << "Processing Descent" << endl;
   
   for (int id : processing_order) {
     // Look at each neighbouring ID and if it dominates the given point.
@@ -1493,7 +1493,7 @@ List computeLocalDominance(NumericMatrix objectiveValues, IntegerVector dims) {
     // }
   }
   
-  cout << "Aggregating Data" << endl;
+  Rcout << "Aggregating Data" << endl;
   
   List reachable_basins(n_observations);
   
