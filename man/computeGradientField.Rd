@@ -17,7 +17,7 @@ computeGradientField(
 )
 }
 \arguments{
-\item{points}{\link{\code{\link{matrix}}}\cr
+\item{points}{[\code{\link[=matrix]{matrix()}}]\cr
 Matrix of points, for which the multi-objective gradient should be computed.
 Each row of the matrix will be considered as a separate point, thus the number
 of rows corresponds to the number of observations and the number of columns
@@ -35,7 +35,7 @@ The default is \code{1e-6}.}
 Precision threshold used for comparing whether the angle (in degree) between two
 vectors is zero. The default is \code{1e-4}.}
 
-\item{parallelize}{\link{\code{\link{logical}(1L)}}\cr
+\item{parallelize}{[\verb{[logical](1L)}]\cr
 Should the computation of the gradient vectors be parallelized (with \code{parallel::mclapply})?
 The default is \code{FALSE}.}
 
@@ -51,7 +51,7 @@ The first objective used for computing the multi-objective gradient.}
 \item{fn2}{\link{\code{\link{function}}}\cr
 The second objective used for computing the multi-objective gradient.}
 
-\item{fn3}{\link{\code{\link{function}}}\cr
+\item{fn3}{[\code{\link[=function]{function()}}]\cr
 The third objective used for computing the multi-objective gradient. If not provided
 (\code{fn3 = NULL}), the gradient field will only consider fn1 and fn2.}
 
@@ -60,7 +60,7 @@ Scaling factor for the step size in the direction of the multi-objective gradien
 The default is \code{0.5}.}
 }
 \value{
-\link{\code{\link{matrix}}}\cr
+[\code{\link[=matrix]{matrix()}}]\cr
 Returns \code{matrix} of multi-objective gradients. The i-th row of the matrix
 contains the multi-objective gradient vector of the i-th observation (= row)
 of the input matrix \code{points}.
@@ -69,10 +69,5 @@ of the input matrix \code{points}.
 Computes the multi-objective gradients for a matrix of \code{points}.
 }
 \examples{
-# Define bi-objective test problems:
-fn = function(x) c(sum((x - c(0.2, 1))^2), sum(x))
 
-# Create a grid of points, for which the gradients should be computed:
-points = expand.grid(x1 = seq(0, 1, 0.01), x2 = seq(0, 1, 0.05))
-gradient.field = computeGradientField(points, fn)
 }

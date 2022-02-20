@@ -2,59 +2,42 @@
 #'
 #' @description
 #'   Use the coloring of the cumulated path lengths (see
-#'   \code{\link{computeCumulatedPathLengths}}) and visualize the
+#'   [computeCumulatedPathLengths()]) and visualize the
 #'   corresponding points in the objective space.
 #'
-#' @param df [\code{\link{data.frame}}]\cr
+#' @param df [[data.frame()]]\cr
 #'   Data frame containing the positions of the individuals (per row) and their
-#'   corresponding cumulated path length (denoted: \code{"height"}) as returned by
-#'   \code{\link{computeCumulatedPathLengths}}.
-#' @param var1 [\code{\link{character}(1L)}]\cr
-#'   Name of the variable indicating the first objective (default: \code{"y1"}).
-#' @param var2 [\code{\link{character}(1L)}]\cr
-#'   Name of the variable indicating the second objective (default: \code{"y2"}).
-#' @param log.scale [\code{\link{logical}(1L)}]\cr
-#'   Should the resulting heights be displayed on a log-scale? The default is \code{TRUE}.
-#' @param impute.zero [\code{\link{logical}(1L)}]\cr
+#'   corresponding cumulated path length (denoted: `"height"`) as returned by
+#'   [computeCumulatedPathLengths()].
+#' @param var1 [`[character](1L)`]\cr
+#'   Name of the variable indicating the first objective (default: `"y1"`).
+#' @param var2 [`[character](1L)`]\cr
+#'   Name of the variable indicating the second objective (default: `"y2"`).
+#' @param log.scale [`[logical](1L)`]\cr
+#'   Should the resulting heights be displayed on a log-scale? The default is `TRUE`.
+#' @param impute.zero [`[logical](1L)`]\cr
 #'   Should height values, which are exactly zero be imputed by a value half the magnitude
 #'   of the smallest non-zero height? Otherwise ggplot will automatically color the
-#'   corresponding tiles by a color representing \code{NA} values (usually grey).
-#'   Note that this parameter is only relevant in case of \code{log.scale = TRUE}.
-#'   The default is \code{TRUE}.
-#' @param minimalistic.image [\code{\link{logical}(1L)}]\cr
+#'   corresponding tiles by a color representing `NA` values (usually grey).
+#'   Note that this parameter is only relevant in case of `log.scale = TRUE`.
+#'   The default is `TRUE`.
+#' @param minimalistic.image [`[logical](1L)`]\cr
 #'   Should all information surrounding the image (axes, legends, background, etc.) be discarded?
-#'   The default is \code{FALSE}.
-#' @param color.palette [\code{\link{character}}]\cr
+#'   The default is `FALSE`.
+#' @param color.palette [[character()]]\cr
 #'   Vector of colors used for visualizing the different heights of the landscape. By default,
-#'   this function tries to use the color palettes from \code{fields::tim.color} or
-#'   \code{viridis}. However, if neither of these packages is installed, it will use
-#'   \code{terrain.colors}.
-#' @param legend.position [\code{\link{character}(1L)}]\cr
+#'   this function tries to use the color palettes from `fields::tim.color` or
+#'   `viridis`. However, if neither of these packages is installed, it will use
+#'   `terrain.colors`.
+#' @param legend.position [`[character](1L)`]\cr
 #'   On which side of the plot, should the legend be located? If this information is not provided
-#'   and \code{minimalisitic.image = FALSE}, the legend will be placed on the right side.
+#'   and `minimalisitic.image = FALSE`, the legend will be placed on the right side.
 #' @param ... [any]\cr
-#'   Further arguments to be passed to the \code{geom_tile} function of \code{ggplot}.
-#' @return [\code{ggplot}]\cr
-#'   A \code{ggplot} object displaying the multi-objective gradient landscape.
+#'   Further arguments to be passed to the `geom_tile` function of `ggplot`.
+#' @return [`ggplot`]\cr
+#'   A `ggplot` object displaying the multi-objective gradient landscape.
 #' @examples
-#' # Define two single-objective test problems and a grid of points:
-#' fn1 = function(x) sum((x - c(0.2, 1))^2)
-#' fn2 = function(x) sum((x - c(0.5, 0.5))^2)
-#' points = as.matrix(expand.grid(x1 = seq(0, 0.7, 0.01), x2 = seq(0, 1.25, 0.01)))
 #' 
-#' # Compute the corresponding gradients and the cumulated path lengths:
-#' gradients = computeGradientField(points, fn1, fn2)
-#' x = computeCumulatedPathLengths(points, gradients)
-#' 
-#' # Next, compute the image of the grid points in the objective space:
-#' obj.space = apply(points, 1, function(x) c(y1 = fn1(x), y2 = fn2(x)))
-#' obj.space = as.data.frame(t(obj.space))
-#' 
-#' # Append the cumulated path lengths:
-#' obj.space$height = x$height
-#'
-#' # Finally, visualize the resulting objective space:
-#' ggplotObjectiveSpace(obj.space)
 #' @export
 ggplotObjectiveSpace = function(df, var1 = "y1", var2 = "y2", log.scale = TRUE,
   impute.zero = TRUE, minimalistic.image = FALSE,

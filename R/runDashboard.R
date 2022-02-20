@@ -1,6 +1,6 @@
 #' Run the moPLOT dashboard
 #'
-#' \code{runDashboard} starts a \href{https://CRAN.R-project.org/package=shiny}{\code{shiny}}
+#' `runDashboard` starts a [`shiny`](https://CRAN.R-project.org/package=shiny)
 #' application, which allows the interactive exploration of the optimization landscape
 #' of many integrated benchmark suites.
 #'

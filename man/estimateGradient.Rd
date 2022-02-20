@@ -28,13 +28,13 @@ estimateGradientBothDirections(
 )
 }
 \arguments{
-\item{fn}{\link{\code{\link{function}}}\cr
+\item{fn}{[\code{\link[=function]{function()}}]\cr
 Single-objective function, whose gradient will be approximated.}
 
 \item{ind}{\link{\code{\link{numeric}(d)}}\cr
 d-dimensional individual.}
 
-\item{side}{\link{\code{\link{logical}(d)}}\cr
+\item{side}{[\verb{[logical](d)}]\cr
 Logical vector of the same length as \code{x}, stating per element whether to
 approximate the gradient into the positive (\code{TRUE}) or negative (\code{FALSE})
 direction of \code{x}. The default is \code{rep(TRUE, length(x))}.}
@@ -56,7 +56,7 @@ Vector of upper bounds.}
 \item{...}{Further arguments to be passed to \code{fn}.}
 }
 \value{
-\link{\code{\link{numeric}(d)}}
+[\verb{[numeric](d)}]
 }
 \description{
 \code{estimateGradient} approximates the gradient of a single-objective function

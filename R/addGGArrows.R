@@ -7,33 +7,20 @@
 #' @template arg_ggplot
 #' @template arg_centers
 #' @template arg_gradients
-#' @param fac [\code{\link{numeric}(1L)}]\cr
-#'   Factor used for scaling the lengths of the gradient vectors. The default is \code{0.025}.
-#' @param arrow_len [\code{\link{unit}(1L)}]\cr
-#'   Length of the arrow tips (default: \code{unit(0.075 / 2, "inches")}).
-#' @param nColumns [\code{\link{integer}(1L)}]\cr
-#'   How many columns of arrows should be drawn? The default is \code{10}.
-#' @param nRows [\code{\link{integer}(1L)}]\cr
-#'   How many rows of arrows should be drawn? The default is \code{10}.
+#' @param fac [`[numeric](1L)`]\cr
+#'   Factor used for scaling the lengths of the gradient vectors. The default is `0.025`.
+#' @param arrow_len [`[unit](1L)`]\cr
+#'   Length of the arrow tips (default: `unit(0.075 / 2, "inches")`).
+#' @param nColumns [`[integer](1L)`]\cr
+#'   How many columns of arrows should be drawn? The default is `10`.
+#' @param nRows [`[integer](1L)`]\cr
+#'   How many rows of arrows should be drawn? The default is `10`.
 #' @param ... [any]\cr
-#'   Further arguments to be passed to the \code{geom_tile} function of \code{ggplot}.
-#' @return [\code{ggplot}]\cr
-#'   A \code{ggplot} object displaying the multi-objective gradient landscape.
+#'   Further arguments to be passed to the `geom_tile` function of `ggplot`.
+#' @return [`ggplot`]\cr
+#'   A `ggplot` object displaying the multi-objective gradient landscape.
 #' @examples
-#' # Define a bi-objective test problems and a grid of points:
-#' fn = function(x) c(sum((x - c(0.2, 1))^2), sum((x - c(0.5, 0.5))^2))
-#' points = as.matrix(expand.grid(x1 = seq(0, 0.7, 0.005), x2 = seq(0, 1.25, 0.005)))
-#'
-#' # Compute the corresponding gradients and the cumulated path lengths:
-#' gradients = computeGradientField(points, fn)
-#' x = computeCumulatedPathLengths(points, gradients)
-#'
-#' # Visualize the resulting multi-objective "landscape":
-#' g = ggplotHeatmap(x)
-#' g
-#'
-#' # Add white arrows of the gradient field to the plot:
-#' addGGArrows(g, points, gradients, color = "white")
+#' 
 #' @export
 addGGArrows = function(g, centers, gradients, fac = 0.025,
   arrow_len = unit(0.075 / 2, "inches"), nColumns = 10L, nRows = 10L, ...) {

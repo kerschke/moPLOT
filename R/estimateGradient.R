@@ -1,41 +1,41 @@
 #' Approximate gradient of a single-objective function.
 #'
 #' @description
-#'   \code{estimateGradient} approximates the gradient of a single-objective function
-#'   \code{fn} in position \code{x} based on small changes in one direction per
-#'   dimension of \code{x}.
+#'   `estimateGradient` approximates the gradient of a single-objective function
+#'   `fn` in position `x` based on small changes in one direction per
+#'   dimension of `x`.
 #'   \deqn{\nabla f(\mathbf{x}) = \frac{f(\mathbf{x} + \boldsymbol{\varepsilon}) - f(\mathbf{x})}{||\boldsymbol{\varepsilon}||}}
 #'   The gradient approximation is performed separately for each dimension of the search space.
-#'   That is, the i-th element of the gradient results from a slight step (step size: \code{prec.grad})
-#'   of the i-th element of \code{x}, while all remaining elements of \code{x} are not altered.\cr
+#'   That is, the i-th element of the gradient results from a slight step (step size: `prec.grad`)
+#'   of the i-th element of `x`, while all remaining elements of `x` are not altered.\cr
 #'
-#'   In contrast to the aforementioned function, \code{estimateGradientBothDirections}
-#'   performs a small step in both directions (of the i-th element) of \code{x}.
+#'   In contrast to the aforementioned function, `estimateGradientBothDirections`
+#'   performs a small step in both directions (of the i-th element) of `x`.
 #'   \deqn{\nabla f(\mathbf{x}) = \frac{f(\mathbf{x} + \boldsymbol{\varepsilon}) - f(\mathbf{x} - \boldsymbol{\varepsilon})}{2 \cdot ||\boldsymbol{\varepsilon}||}}
 #'
 #' @note
 #'   This function basically is a slightly modified version of
-#'   \code{numDeriv::grad(..., method = "simple")} and was mainly developed for
+#'   `numDeriv::grad(..., method = "simple")` and was mainly developed for
 #'   internal usage to have a speed up over the aforementioned version. However,
 #'   this speed up will only have an effect, if you call this function very
 #'   frequently and if you turn off the sanity checks.\cr
 #'
-#'   ATTENTION: Only turn off the sanity checks (\code{check.data = FALSE}),
+#'   ATTENTION: Only turn off the sanity checks (`check.data = FALSE`),
 #'   if you can ensure that all input parameters are provided in the correct format.
 #'
-#' @param fn [\code{\link{function}}]\cr
+#' @param fn [[function()]]\cr
 #'   Single-objective function, whose gradient will be approximated.
 #' @template arg_ind
-#' @param side [\code{\link{logical}(d)}]\cr
-#'   Logical vector of the same length as \code{x}, stating per element whether to
-#'   approximate the gradient into the positive (\code{TRUE}) or negative (\code{FALSE})
-#'   direction of \code{x}. The default is \code{rep(TRUE, length(x))}.
+#' @param side [`[logical](d)`]\cr
+#'   Logical vector of the same length as `x`, stating per element whether to
+#'   approximate the gradient into the positive (`TRUE`) or negative (`FALSE`)
+#'   direction of `x`. The default is `rep(TRUE, length(x))`.
 #' @template arg_precgrad
 #' @template arg_checkdata
 #' @template arg_lower
 #' @template arg_upper
-#' @param ... Further arguments to be passed to \code{fn}.
-#' @return [\code{\link{numeric}(d)}]
+#' @param ... Further arguments to be passed to `fn`.
+#' @return [`[numeric](d)`]
 #' @name estimateGradient
 #' @rdname estimateGradient
 #' @examples

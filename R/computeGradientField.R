@@ -1,37 +1,32 @@
 #' Compute the multi-objective gradient vector for a set of points.
 #'
 #' @description
-#'   Computes the multi-objective gradients for a matrix of \code{points}.
+#'   Computes the multi-objective gradients for a matrix of `points`.
 #'
-#' @param points [\code{\link{matrix}}]\cr
+#' @param points [[matrix()]]\cr
 #'   Matrix of points, for which the multi-objective gradient should be computed.
 #'   Each row of the matrix will be considered as a separate point, thus the number
 #'   of rows corresponds to the number of observations and the number of columns
 #'   to the dimensionality of the search space.
 #' @template arg_fni
-#' @param fn3 [\code{\link{function}}]\cr
+#' @param fn3 [[function()]]\cr
 #'   The third objective used for computing the multi-objective gradient. If not provided
-#'   (\code{fn3 = NULL}), the gradient field will only consider fn1 and fn2.
+#'   (`fn3 = NULL`), the gradient field will only consider fn1 and fn2.
 #' @template arg_scalestep
 #' @template arg_precgrad
 #' @template arg_precnorm
 #' @template arg_precangle
 #' @template arg_lower
 #' @template arg_upper
-#' @param parallelize [\code{\link{logical}(1L)}]\cr
-#'   Should the computation of the gradient vectors be parallelized (with \code{parallel::mclapply})?
-#'   The default is \code{FALSE}.
-#' @return [\code{\link{matrix}}]\cr
-#'   Returns \code{matrix} of multi-objective gradients. The i-th row of the matrix
+#' @param parallelize [`[logical](1L)`]\cr
+#'   Should the computation of the gradient vectors be parallelized (with `parallel::mclapply`)?
+#'   The default is `FALSE`.
+#' @return [[matrix()]]\cr
+#'   Returns `matrix` of multi-objective gradients. The i-th row of the matrix
 #'   contains the multi-objective gradient vector of the i-th observation (= row)
-#'   of the input matrix \code{points}.
+#'   of the input matrix `points`.
 #' @examples
-#' # Define bi-objective test problems:
-#' fn = function(x) c(sum((x - c(0.2, 1))^2), sum(x))
-#'
-#' # Create a grid of points, for which the gradients should be computed:
-#' points = expand.grid(x1 = seq(0, 1, 0.01), x2 = seq(0, 1, 0.05))
-#' gradient.field = computeGradientField(points, fn)
+#' 
 #' @export
 computeGradientField = function(points, fn, prec.grad = 1e-6,
   prec.norm = 1e-6, prec.angle = 1e-4, parallelize = FALSE, impute.boundary = TRUE, lower = NULL, upper = NULL) {

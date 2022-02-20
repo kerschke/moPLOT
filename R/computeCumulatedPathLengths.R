@@ -7,7 +7,7 @@
 #'   efficient point.
 #'
 #' @note 
-#'   ATTENTION: Only turn off the sanity checks (\code{check.data = FALSE}),
+#'   ATTENTION: Only turn off the sanity checks (`check.data = FALSE`),
 #'   if you can ensure that all input parameters are provided in the correct format.
 #'
 #' @template arg_centers
@@ -15,25 +15,11 @@
 #' @template arg_precnorm
 #' @template arg_precveclen
 #' @template arg_checkdata
-#' @return [\code{\link{data.frame}}]\cr
-#'   Returns a \code{data.frame}, which appends the cumulated path lengths to the points
-#'   provided by \code{centers}.
+#' @return [[data.frame()]]\cr
+#'   Returns a `data.frame`, which appends the cumulated path lengths to the points
+#'   provided by `centers`.
 #' @examples
-#' # Define two single-objective test problems:
-#' fn1 = function(x) sum((x - c(0.2, 1))^2)
-#' fn2 = function(x) sum((x - c(0.5, 0.5))^2)
-#'
-#' # Define a grid of points:
-#' points = as.matrix(expand.grid(x1 = seq(0, 0.7, 0.005), x2 = seq(0, 1.25, 0.005)))
 #' 
-#' # Compute the corresponding gradients:
-#' gradients = computeGradientField(points, fn1, fn2)
-#'
-#' # Now, compute the cumulated path lengths:
-#' x = computeCumulatedPathLengths(points, gradients)
-#'
-#' # Finally, we can visualize the resulting multi-objective "landscape":
-#' ggplotHeatmap(x, hide.legend = TRUE)
 #' @export
 computeCumulatedPathLengths = function(centers, gradients, local.efficient.ids = numeric(0), prec.vector.length = 1e-3, prec.norm = 1e-6, cumulate.gradient.length = TRUE, fix.diagonals = FALSE, check.data = TRUE) {
 

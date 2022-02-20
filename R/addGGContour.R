@@ -8,39 +8,24 @@
 #' @template arg_lower
 #' @template arg_upper
 #' @template arg_fni
-#' @param fn3 [\code{\link{function}}]\cr
+#' @param fn3 [[function()]]\cr
 #'   The third objective (if existing) used for computing the multi-objective gradient.
-#' @param log.scale [\code{\link{logical}(1L)}]\cr
-#'   Should the resulting heights be displayed on a log-scale? The default is \code{TRUE}.
-#' @param col1 [\code{\link{character}(1L)}]\cr
-#'   Color used for the contour lines of the first objective (default: \code{"goldenrod1"}).
-#' @param col2 [\code{\link{character}(1L)}]\cr
-#'   Color used for the contour lines of the second objective (default: \code{"white"}).
-#' @param col3 [\code{\link{character}(1L)}]\cr
-#'   Color used for the contour lines of the third objective (default: \code{"cyan3"}).
-#' @param n.points [\code{\link{integer}(1L)}]\cr
-#'   Number of points used for computing the contour lines. The default is \code{30L}.
+#' @param log.scale [`[logical](1L)`]\cr
+#'   Should the resulting heights be displayed on a log-scale? The default is `TRUE`.
+#' @param col1 [`[character](1L)`]\cr
+#'   Color used for the contour lines of the first objective (default: `"goldenrod1"`).
+#' @param col2 [`[character](1L)`]\cr
+#'   Color used for the contour lines of the second objective (default: `"white"`).
+#' @param col3 [`[character](1L)`]\cr
+#'   Color used for the contour lines of the third objective (default: `"cyan3"`).
+#' @param n.points [`[integer](1L)`]\cr
+#'   Number of points used for computing the contour lines. The default is `30L`.
 #' @param ... [any]\cr
-#'   Further arguments to be passed to the \code{geom_tile} function of \code{ggplot}.
-#' @return [\code{ggplot}]\cr
-#'   A \code{ggplot} object displaying the multi-objective gradient landscape.
+#'   Further arguments to be passed to the `geom_tile` function of `ggplot`.
+#' @return [`ggplot`]\cr
+#'   A `ggplot` object displaying the multi-objective gradient landscape.
 #' @examples
-#' # Define two single-objective test problems and a grid of points:
-#' fn1 = function(x) sum((x - c(0.2, 1))^2)
-#' fn2 = function(x) sum((x - c(0.5, 0.5))^2)
-#' points = as.matrix(expand.grid(x1 = seq(0, 0.7, 0.005), x2 = seq(0, 1.25, 0.005)))
 #' 
-#' # Compute the corresponding gradients and the cumulated path lengths:
-#' gradients = computeGradientField(points, fn1, fn2)
-#' x = computeCumulatedPathLengths(points, gradients)
-#'
-#' # Visualize the resulting multi-objective "landscape":
-#' g = ggplotHeatmap(x)
-#' g
-#'
-#' # Add dashed contour lines to the plot:
-#' addGGContour(g = g, lower = c(0, 0), upper = c(0.7, 1.25),
-#'   fn1 = fn1, fn2 = fn2, linetype = "dashed")
 #' @export
 addGGContour = function(g, lower, upper, fn1, fn2, fn3, log.scale = TRUE,
   col1 = "goldenrod1", col2 = "white", col3 = "cyan3", n.points = 30L, ...) {

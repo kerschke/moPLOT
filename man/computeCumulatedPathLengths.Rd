@@ -39,7 +39,7 @@ should only be turned off (e.g., for a slight speed up), if you are sure that yo
 provide the input data in the correct format.}
 }
 \value{
-\link{\code{\link{data.frame}}}\cr
+[\code{\link[=data.frame]{data.frame()}}]\cr
 Returns a \code{data.frame}, which appends the cumulated path lengths to the points
 provided by \code{centers}.
 }
@@ -54,19 +54,5 @@ ATTENTION: Only turn off the sanity checks (\code{check.data = FALSE}),
 if you can ensure that all input parameters are provided in the correct format.
 }
 \examples{
-# Define two single-objective test problems:
-fn1 = function(x) sum((x - c(0.2, 1))^2)
-fn2 = function(x) sum((x - c(0.5, 0.5))^2)
 
-# Define a grid of points:
-points = as.matrix(expand.grid(x1 = seq(0, 0.7, 0.005), x2 = seq(0, 1.25, 0.005)))
-
-# Compute the corresponding gradients:
-gradients = computeGradientField(points, fn1, fn2)
-
-# Now, compute the cumulated path lengths:
-x = computeCumulatedPathLengths(points, gradients)
-
-# Finally, we can visualize the resulting multi-objective "landscape":
-ggplotHeatmap(x, hide.legend = TRUE)
 }

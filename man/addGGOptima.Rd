@@ -16,18 +16,18 @@ The first objective used for computing the multi-objective gradient.}
 \item{fn2}{\link{\code{\link{function}}}\cr
 The second objective used for computing the multi-objective gradient.}
 
-\item{fn3}{\link{\code{\link{function}}}\cr
+\item{fn3}{[\code{\link[=function]{function()}}]\cr
 The third objective (if existing) used for computing the multi-objective gradient.}
 
-\item{symbol1}{\link{\code{\link{integer}(1L) | \link{character}(1L)}}\cr
+\item{symbol1}{[\verb{[integer](1L) | [character](1L)}]\cr
 Symbol used for indicating the local optima of the first objective
 (default: \code{21L}, i.e., a filled circle).}
 
-\item{symbol2}{\link{\code{\link{integer}(1L) | \link{character}(1L)}}\cr
+\item{symbol2}{[\verb{[integer](1L) | [character](1L)}]\cr
 Symbol used for indicating the local optima of the second objective
 (default: \code{22L}, i.e., a filled square).}
 
-\item{symbol3}{\link{\code{\link{integer}(1L) | \link{character}(1L)}}\cr
+\item{symbol3}{[\verb{[integer](1L) | [character](1L)}]\cr
 Symbol used for indicating the local optima of the third objective
 (default: \code{24L}, i.e., a filled triangle).}
 
@@ -35,7 +35,7 @@ Symbol used for indicating the local optima of the third objective
 Further arguments to be passed to the \code{geom_tile} function of \code{ggplot}.}
 }
 \value{
-\link{\code{ggplot}}\cr
+\code{\link{ggplot}}\cr
 A \code{ggplot} object displaying the multi-objective gradient landscape.
 }
 \description{
