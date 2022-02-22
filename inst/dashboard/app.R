@@ -806,6 +806,21 @@ server <- function(input, output, session) {
     }, quoted = TRUE)()
   })
   
+  output$set_transitions = renderPlot({
+    reactive({
+      req(plot_data$design)
+      
+      if (is.null(plot_data$less) && input$compute_plot) {
+        plot_data$less <<- compute_plot_data()
+      }
+      
+      less <- plot_data$less
+      design <- plot_data$design
+      
+      return(ggplotSetTransitions(design, less))
+    }, quoted = TRUE)()
+  })
+  
   output$local_pcp = renderPlot({
     reactive({
       req(plot_data$design)
