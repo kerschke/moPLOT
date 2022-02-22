@@ -21,8 +21,6 @@ calculateObjectiveValues = function(points, fn, parallelize = FALSE, parallel.co
     # }, mc.cores = parallel.cores)
     
     obj.space = as.matrix(do.call(rbind, r))
-
-    
   } else {
     obj.space = t(apply(points, 1, fn))
   }
