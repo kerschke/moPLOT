@@ -17,7 +17,10 @@ One column per objective.}
 
 \item{height}{Numeric \link[base:vector]{base::vector} that assigns a height value to each evaluated point.}
 
-\item{check.data}{\link[base:logical]{base::logical}: Whether to check data types of the other arguments.}
+\item{check.data}{[\code{\link{logical}}] \cr
+Should sanity checks be performed? The default is \code{TRUE}. Note that the checks
+should only be turned off (e.g., for a slight speed up), if you are sure that you
+provide the input data in the correct format.}
 }
 \description{
 Returns a PLOT visualization as a \link[ggplot2:ggplot]{ggplot2::ggplot} object for the given visualization data.

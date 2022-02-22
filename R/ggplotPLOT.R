@@ -12,8 +12,7 @@
 #' Integer [base::vector] of (row) indices that identify the _locally efficient_ points.
 #' @param height 
 #' Numeric [base::vector] that assigns a height value to each evaluated point.
-#' @param check.data 
-#' [base::logical]: Whether to check data types of the other arguments.
+#' @template arg_checkdata
 #'
 #' @export
 ggplotPLOT = function(dec.space, obj.space, sinks, height, check.data = TRUE) {
