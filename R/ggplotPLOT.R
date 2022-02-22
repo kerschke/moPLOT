@@ -1,3 +1,20 @@
+#' Create a PLOT Visualization
+#' 
+#' Returns a PLOT visualization as a [ggplot2::ggplot] object for the given visualization data.
+#' 
+#' @param dec.space 
+#' Numeric [base::matrix] that defines the evaluated points in decision space.
+#' One column per dimension.
+#' @param obj.space 
+#' Numeric [base::matrix] that defines the evaluated points in objective space.
+#' One column per objective.
+#' @param sinks
+#' Integer [base::vector] of (row) indices that identify the _locally efficient_ points.
+#' @param height 
+#' Numeric [base::vector] that assigns a height value to each evaluated point.
+#' @param check.data 
+#' [base::logical]: Whether to check data types of the other arguments.
+#'
 #' @export
 ggplotPLOT = function(dec.space, obj.space, sinks, height, check.data = TRUE) {
   if (check.data) {

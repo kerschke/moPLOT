@@ -43,21 +43,5 @@ If the underlying single-objective functions are \code{smoof}-functions,
 extract their local optima and add them to the gradient field heatmap.
 }
 \examples{
-# Define two single-objective test problems and a grid of points:
-fn1 = smoof::makeBBOBFunction(dimension = 2L, fid = 1L, iid = 1L)
-fn2 = smoof::makeBBOBFunction(dimension = 2L, fid = 1L, iid = 2L)
-points = as.matrix(expand.grid(x1 = seq(0, 1, 0.05), x2 = seq(0, 1, 0.05)))
 
-\dontrun{
-# Compute the corresponding gradients and the cumulated path lengths:
-gradients = computeGradientField(points, fn1, fn2)
-x = computeCumulatedPathLengths(points, gradients)
-
-# Visualize the resulting multi-objective "landscape":
-g = ggplotHeatmap(x)
-g
-
-# Add "pink" symbols to the optima of the respective objectives:
-addGGOptima(g, fn1, fn2, size = 6, fill = "hotpink")
-}
 }
