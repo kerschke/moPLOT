@@ -609,8 +609,7 @@ server <- function(input, output, session) {
       # generate design and evaluate objective space
       
       design <- moPLOT::generateDesign(fn, points.per.dimension = input$grid_size)
-      design$obj.space <- calculateObjectiveValues(design$dec.space, fn, parallelize = FALSE)
-      
+
       plot_data$design <<- design
     }
     

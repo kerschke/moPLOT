@@ -2,7 +2,6 @@ fn <- makeExtendedBiObjBBOBFunction(2, 10, 1)
 
 # Generate a design in the (rectangular) decision space of fn
 design = generateDesign(fn, 500**2)
-design$obj.space = calculateObjectiveValues(design$dec.space, fn, parallelize = T)
 
 # Calculate single-objective and multi-objective gradients
 gradients = computeGradientFieldGrid(design, prec.angle = 0, normalized.scale = FALSE)

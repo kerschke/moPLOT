@@ -6,7 +6,6 @@ fn <- makeAsparFunction()
 fn <- smoof::makeDTLZ1Function(2, 2)
 
 design <- generateDesign(fn, 501**2)
-design$obj.space <- calculateObjectiveValues(design$dec.space, fn, parallelize = T)
 
 ld_data <- computeLocalDominance(design$obj.space, design$dims)
 
