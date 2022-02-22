@@ -131,145 +131,146 @@ ui <- fluidPage(
   
   fluidRow(
     
-    column(4L,
-           tabsetPanel(
-             type = "pills",
-             id = "fn_select",
-             
-             tabPanel(
-               "Select MOP",
-               value = "smoof_mop",
-               p(),
-               wellPanel(
-                 selectInput(
-                   "benchmark_set",
-                   "Benchmark set",
-                   c("Select a benchmark set"="", benchmark_sets)
-                 ),
-                 selectInput(
-                   "fn_name",
-                   "Function",
-                   c("Select a benchmark set first"="")
-                 ),
-                 uiOutput("fn_args"),
-                 div(
-                   id = "evaluate_design_panel",
-                   numericInput(
-                     "grid_size",
-                     "Resolution per dimension",
-                     100,
-                     min = 20,
-                     max = 3000,
-                     step = 1
-                   ),
-                   splitLayout(
-                     actionButton("evaluate_design", "Evaluate", style = "width: 100%; bottom: 0"),
-                     downloadButton("download_data", "Download", style = "width: 100%")
-                   )
-                 )
-               ),
-             ),
-             
-             tabPanel(
-               "Upload Data",
-               value = "upload_data",
-               p(),
-               wellPanel(
-                 fileInput("upload_data", "Upload Data", accept = c(".csv")),
-                 helpText("Please provide a CSV with a column for each decision space dimension (x1, x2 [and x3])",
-                          "and the corresponding objective values (y1, y2 [and y3]), with decision space variables",
-                          "covering a grid of evenly spaced values per dimension.")
-               )
-             )
+    column(
+      4L,
+      tabsetPanel(
+       type = "pills",
+       id = "fn_select",
+       
+       tabPanel(
+         "Select MOP",
+         value = "smoof_mop",
+         p(),
+         wellPanel(
+           selectInput(
+             "benchmark_set",
+             "Benchmark set",
+             c("Select a benchmark set"="", benchmark_sets)
            ),
-           
+           selectInput(
+             "fn_name",
+             "Function",
+             c("Select a benchmark set first"="")
+           ),
+           uiOutput("fn_args"),
            div(
-             h3("Visualization Options"),
-             wellPanel(
-               checkboxInput("compute_plot", "Enable PLOT and heatmap", TRUE),
-               checkboxInput("compute_local_dominance", "Enable local dominance", TRUE),
-               checkboxInput("compute_cost_landscape", "Enable cost landscape", FALSE),
+             id = "evaluate_design_panel",
+             numericInput(
+               "grid_size",
+               "Resolution per dimension",
+               100,
+               min = 20,
+               max = 3000,
+               step = 1
              ),
-             id = "viz_options_panel"
+             splitLayout(
+               actionButton("evaluate_design", "Evaluate", style = "width: 100%; bottom: 0"),
+               downloadButton("download_data", "Download", style = "width: 100%")
+             )
            )
-           
+         ),
+       ),
+       
+       tabPanel(
+         "Upload Data",
+         value = "upload_data",
+         p(),
+         wellPanel(
+           fileInput("upload_data", "Upload Data", accept = c(".csv")),
+           helpText("Please provide a CSV with a column for each decision space dimension (x1, x2 [and x3])",
+                    "and the corresponding objective values (y1, y2 [and y3]), with decision space variables",
+                    "covering a grid of evenly spaced values per dimension.")
+         )
+       )
+      ),
+      
+      div(
+       h3("Visualization Options"),
+       wellPanel(
+         checkboxInput("compute_plot", "Enable PLOT and heatmap", TRUE),
+         checkboxInput("compute_local_dominance", "Enable local dominance", TRUE),
+         checkboxInput("compute_cost_landscape", "Enable cost landscape", FALSE),
+       ),
+       id = "viz_options_panel"
+      )
     ),
     
-    column(8,
-           tabsetPanel(
-             id = "tabset_plots",
-             selected = "tab_plot",
-             tabPanel(
-               "PLOT",
-               plotly::plotlyOutput("plot", height = "500px"),
-               value = "tab_plot"
-             ),
-             tabPanel(
-               "Gradient Field Heatmap",
-               plotly::plotlyOutput("heatmap", height = "500px"),
-               value = "tab_heatmap"
-             ),
-             tabPanel(
-               "Set Transitions",
-               plotOutput("set_transitions", height = "500px"),
-               value = "tab_set_transitions"
-             ),
-             tabPanel(
-               "Contours",
-               plotly::plotlyOutput("contours", height = "500px"),
-               value = "tab_contours"
-             ),
-             tabPanel(
-               "Local Dominance",
-               plotly::plotlyOutput("local_dominance", height = "500px"),
-               value = "tab_local_dominance"
-             ),
-             tabPanel(
-               "Cost Landscape",
-               plotly::plotlyOutput("cost_landscape", height = "500px"),
-               value = "tab_cost_landscape"
+    column(
+      8,
+      tabsetPanel(
+       id = "tabset_plots",
+       selected = "tab_plot",
+       tabPanel(
+         "PLOT",
+         plotly::plotlyOutput("plot", height = "500px"),
+         value = "tab_plot"
+       ),
+       tabPanel(
+         "Gradient Field Heatmap",
+         plotly::plotlyOutput("heatmap", height = "500px"),
+         value = "tab_heatmap"
+       ),
+       tabPanel(
+         "Set Transitions",
+         plotOutput("set_transitions", height = "500px"),
+         value = "tab_set_transitions"
+       ),
+       tabPanel(
+         "Contours",
+         plotly::plotlyOutput("contours", height = "500px"),
+         value = "tab_contours"
+       ),
+       tabPanel(
+         "Local Dominance",
+         plotly::plotlyOutput("local_dominance", height = "500px"),
+         value = "tab_local_dominance"
+       ),
+       tabPanel(
+         "Cost Landscape",
+         plotly::plotlyOutput("cost_landscape", height = "500px"),
+         value = "tab_cost_landscape"
+       )
+      ),
+      div(
+       h3("Plot Options"),
+       wellPanel(
+         selectInput(
+           "space",
+           "Space to plot",
+           c(
+             "Decision Space" = "decision.space",
+             "Objective Space" = "objective.space",
+             "Decision + Objective Space" = "both"
+           )
+         ),
+         div(
+           selectInput(
+             "three_d_approach",
+             "3D approach",
+             c(
+               "MRI Scan" = "scan",
+               "Onion Layers" = "layers",
+               "Nondominated" = "pareto"
              )
            ),
-           div(
-             h3("Plot Options"),
-             wellPanel(
-               selectInput(
-                 "space",
-                 "Space to plot",
-                 c(
-                   "Decision Space" = "decision.space",
-                   "Objective Space" = "objective.space",
-                   "Decision + Objective Space" = "both"
-                 )
-               ),
-               div(
-                 selectInput(
-                   "three_d_approach",
-                   "3D approach",
-                   c(
-                     "MRI Scan" = "scan",
-                     "Onion Layers" = "layers",
-                     "Nondominated" = "pareto"
-                   )
-                 ),
-                 conditionalPanel("input.three_d_approach == 'scan'",
-                                  selectInput(
-                                    "scan_direction",
-                                    "Scan direction",
-                                    c("x₁" = "x1", "x₂" = "x2", "x₃" = "x3"),
-                                    selected = "x3"
-                                  )
-                 ),
-                 id = "three_d_only"
-               ),
-               selectInput("show_nondominated",
-                           "Contour mode",
-                           c("Show nondominated points" = "TRUE",
-                             "Contours only" = "FALSE"),
-                           selected = "TRUE")
-             ),
-             id = "plot_options"
-           )
+           conditionalPanel("input.three_d_approach == 'scan'",
+                            selectInput(
+                              "scan_direction",
+                              "Scan direction",
+                              c("x₁" = "x1", "x₂" = "x2", "x₃" = "x3"),
+                              selected = "x3"
+                            )
+           ),
+           id = "three_d_only"
+         ),
+         selectInput("show_nondominated",
+                     "Contour mode",
+                     c("Show nondominated points" = "TRUE",
+                       "Contours only" = "FALSE"),
+                     selected = "TRUE")
+       ),
+       id = "plot_options"
+      )
     )
   )
 )
