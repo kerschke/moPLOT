@@ -33,6 +33,9 @@ inferDesign = function(dec.space, obj.space) {
   
   design = list()
   
+  design$lower = lower
+  design$upper = upper
+  
   design$dec.space = dec.space
   design$obj.space = obj.space
   
