@@ -20,12 +20,15 @@ Imports:
     BBmisc (>= 1.6),
     ecr,
     ggplot2 (>= 3.0.0),
+    ParamHelpers,
     plotly,
     Rcpp (>= 0.12.18),
     smoof (>= 1.5.1)
 Suggests:
     fields (>= 9.6),
     pracma,
+    reticulate,
+    shiny,
     viridisLite
 LinkingTo: 
     Rcpp
