@@ -11,7 +11,7 @@ Authors@R: c(
 Description: This package provides various tools for plotting the
     landscapes of multi-objective continuous optimization problems and
     thereby enables insights into its structural characteristics.
-License: BSD_2_clause + file LICENSE
+License: MIT + file LICENSE
 URL: https://github.com/kerschke/moPLOT
 BugReports: https://github.com/kerschke/moPLOT/issues
 Depends:
