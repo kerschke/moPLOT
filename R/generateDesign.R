@@ -41,6 +41,8 @@ generateDesign = function(fn, points.total = NULL, points.per.dimension = NULL, 
   grid$dec.space = as.matrix(expand.grid(l))
   grid$dims = points.per.dimension
   grid$step.sizes = step.sizes
+  grid$lower = lower
+  grid$upper = upper
   
   return(grid)
 }
