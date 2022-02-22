@@ -18,8 +18,8 @@ Depends:
     checkmate (>= 1.1)
 Imports:
     BBmisc (>= 1.6),
-    GGally,
     ecr,
+    GGally,
     ggplot2 (>= 3.0.0),
     ParamHelpers,
     plotly,
@@ -27,9 +27,12 @@ Imports:
     smoof (>= 1.5.1)
 Suggests:
     fields (>= 9.6),
+    ggraph,
+    igraph,
     pracma,
     reticulate,
     shiny,
+    tidygraph,
     viridisLite
 LinkingTo: 
     Rcpp

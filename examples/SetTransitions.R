@@ -13,6 +13,11 @@ divergence = computeDivergenceGrid(gradients$multi.objective, design$dims, desig
 # Calculate locally efficient points
 less = localEfficientSetSkeleton(design, gradients, divergence, integration="fast", with.basins = TRUE, use.integration.sinks = FALSE)
 
+ggplotSetTransitions(design, less)
+
+
+
+
 basins_df <- cbind.data.frame(
   design$dec.space,
   basins = less$basins,
