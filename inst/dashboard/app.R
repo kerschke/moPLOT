@@ -655,7 +655,7 @@ server <- function(input, output, session) {
       
       p <- get_plot("PLOT", input$space, input$three_d_approach)
       enable("plot")
-      p
+      return(p)
     }, quoted = TRUE)()
   })
   
@@ -673,7 +673,7 @@ server <- function(input, output, session) {
       
       p <- get_plot("heatmap", input$space, input$three_d_approach)
       enable("heatmap")
-      p
+      return(p)
     }, quoted = TRUE)()
   })
   
@@ -686,7 +686,7 @@ server <- function(input, output, session) {
       
       p <- plotly2DContours(plot_data$design, show.nondominated = input$show_nondominated == "TRUE")
       enable("contours")
-      p
+      return(p)
     }, quoted = TRUE)()
   })
   
@@ -704,7 +704,7 @@ server <- function(input, output, session) {
       
       p <- get_plot("local_dominance", input$space, input$three_d_approach)
       enable("local_dominance")
-      p
+      return(p)
     }, quoted = TRUE)()
   })
   
@@ -722,7 +722,7 @@ server <- function(input, output, session) {
       
       p <- get_plot("cost_landscape", input$space, input$three_d_approach)
       enable("cost_landscape")
-      p
+      return(p)
     }, quoted = TRUE)()
   })
   
