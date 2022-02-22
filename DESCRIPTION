@@ -18,6 +18,7 @@ Depends:
     checkmate (>= 1.1)
 Imports:
     BBmisc (>= 1.6),
+    GGally,
     ecr,
     ggplot2 (>= 3.0.0),
     ParamHelpers,
