@@ -1,2 +1,2 @@
-#' @param lower [\code{\link{numeric}(d)}]\cr
+#' @param lower [[`numeric`]]\cr
 #'   Vector of lower bounds.

@@ -12,16 +12,25 @@
 #'
 #' @template arg_centers
 #' @template arg_gradients
-#' @template arg_precnorm
+#' @template arg_efficient_ids
 #' @template arg_precveclen
+#' @template arg_precnorm
+#' @param cumulate.gradient.length
+#' [[`logical`]] \cr
+#' Whether to cumulate gradient lengths or only compute locally efficient ids
+#' @param fix.diagonals
+#' [[`logical`]] \cr
+#' Whether a correction should be used that penalizes diagonals by their additional length
 #' @template arg_checkdata
-#' @return [[data.frame()]]\cr
+#' @return [[data.frame]]\cr
 #'   Returns a `data.frame`, which appends the cumulated path lengths to the points
 #'   provided by `centers`.
 #' @examples
 #' 
 #' @export
-computeCumulatedPathLengths = function(centers, gradients, local.efficient.ids = numeric(0), prec.vector.length = 1e-3, prec.norm = 1e-6, cumulate.gradient.length = TRUE, fix.diagonals = FALSE, check.data = TRUE) {
+computeCumulatedPathLengths = function(
+    centers, gradients, local.efficient.ids = numeric(0), prec.vector.length = 1e-3,
+    prec.norm = 1e-6, cumulate.gradient.length = TRUE, fix.diagonals = FALSE, check.data = TRUE) {
 
   if (check.data) {
     if (is.data.frame(centers)) {

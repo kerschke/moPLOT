@@ -28,35 +28,35 @@ estimateGradientBothDirections(
 )
 }
 \arguments{
-\item{fn}{[\code{\link[=function]{function()}}]\cr
+\item{fn}{[\code{\link{function}}]\cr
 Single-objective function, whose gradient will be approximated.}
 
-\item{ind}{\link{\code{\link{numeric}(d)}}\cr
+\item{ind}{[\code{\link{numeric}}]\cr
 d-dimensional individual.}
 
-\item{side}{[\verb{[logical](d)}]\cr
+\item{side}{[\code{\link{logical}}]\cr
 Logical vector of the same length as \code{x}, stating per element whether to
 approximate the gradient into the positive (\code{TRUE}) or negative (\code{FALSE})
 direction of \code{x}. The default is \code{rep(TRUE, length(x))}.}
 
-\item{prec.grad}{\link{\code{\link{numeric}(1L)}}\cr
+\item{prec.grad}{[\code{\link{numeric}}]\cr
 Precision value (= step size) used for approximating the gradient. The default is \code{1e-6}.}
 
-\item{check.data}{\link{\code{\link{logical}(1L)}}\cr
+\item{check.data}{[\code{\link{logical}}] \cr
 Should sanity checks be performed? The default is \code{TRUE}. Note that the checks
 should only be turned off (e.g., for a slight speed up), if you are sure that you
 provide the input data in the correct format.}
 
-\item{lower}{\link{\code{\link{numeric}(d)}}\cr
+\item{lower}{[\code{\link{numeric}}]\cr
 Vector of lower bounds.}
 
-\item{upper}{\link{\code{\link{numeric}(d)}}\cr
+\item{upper}{[\code{\link{numeric}}]\cr
 Vector of upper bounds.}
 
 \item{...}{Further arguments to be passed to \code{fn}.}
 }
 \value{
-[\verb{[numeric](d)}]
+[\code{\link{numeric}}]
 }
 \description{
 \code{estimateGradient} approximates the gradient of a single-objective function

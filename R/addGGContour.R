@@ -8,21 +8,20 @@
 #' @template arg_lower
 #' @template arg_upper
 #' @template arg_fni
-#' @param fn3 [[function()]]\cr
-#'   The third objective (if existing) used for computing the multi-objective gradient.
-#' @param log.scale [`[logical](1L)`]\cr
+#' @template arg_fn3
+#' @param log.scale [[`logical`]]\cr
 #'   Should the resulting heights be displayed on a log-scale? The default is `TRUE`.
-#' @param col1 [`[character](1L)`]\cr
+#' @param col1 [[`character`]]\cr
 #'   Color used for the contour lines of the first objective (default: `"goldenrod1"`).
-#' @param col2 [`[character](1L)`]\cr
+#' @param col2 [[`character`]]\cr
 #'   Color used for the contour lines of the second objective (default: `"white"`).
-#' @param col3 [`[character](1L)`]\cr
+#' @param col3 [[`character`]]\cr
 #'   Color used for the contour lines of the third objective (default: `"cyan3"`).
-#' @param n.points [`[integer](1L)`]\cr
+#' @param n.points [[`integer`]]\cr
 #'   Number of points used for computing the contour lines. The default is `30L`.
-#' @param ... [any]\cr
+#' @param ... [[any]]\cr
 #'   Further arguments to be passed to the `geom_tile` function of `ggplot`.
-#' @return [`ggplot`]\cr
+#' @return [[`ggplot`]]\cr
 #'   A `ggplot` object displaying the multi-objective gradient landscape.
 #' @examples
 #' 

@@ -1,2 +1,2 @@
-#' @param upper [\code{\link{numeric}(d)}]\cr
+#' @param upper [[`numeric`]]\cr
 #'   Vector of upper bounds.

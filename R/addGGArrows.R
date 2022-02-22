@@ -7,13 +7,13 @@
 #' @template arg_ggplot
 #' @template arg_centers
 #' @template arg_gradients
-#' @param fac [`[numeric](1L)`]\cr
+#' @param fac [`[numeric]`]\cr
 #'   Factor used for scaling the lengths of the gradient vectors. The default is `0.025`.
-#' @param arrow_len [`[unit](1L)`]\cr
+#' @param arrow_len [`[unit]`]\cr
 #'   Length of the arrow tips (default: `unit(0.075 / 2, "inches")`).
-#' @param nColumns [`[integer](1L)`]\cr
+#' @param nColumns [`[integer]`]\cr
 #'   How many columns of arrows should be drawn? The default is `10`.
-#' @param nRows [`[integer](1L)`]\cr
+#' @param nRows [`[integer]`]\cr
 #'   How many rows of arrows should be drawn? The default is `10`.
 #' @param ... [any]\cr
 #'   Further arguments to be passed to the `geom_tile` function of `ggplot`.

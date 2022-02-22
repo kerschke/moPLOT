@@ -17,50 +17,43 @@ computeGradientField(
 )
 }
 \arguments{
-\item{points}{[\code{\link[=matrix]{matrix()}}]\cr
+\item{points}{[\link{matrix}]\cr
 Matrix of points, for which the multi-objective gradient should be computed.
 Each row of the matrix will be considered as a separate point, thus the number
 of rows corresponds to the number of observations and the number of columns
 to the dimensionality of the search space.}
 
-\item{prec.grad}{\link{\code{\link{numeric}(1L)}}\cr
+\item{fn}{[\code{\link{function}}]\cr
+Multi-objective function with up to three objectives.}
+
+\item{prec.grad}{[\code{\link{numeric}}]\cr
 Precision value (= step size) used for approximating the gradient. The default is \code{1e-6}.}
 
-\item{prec.norm}{\link{\code{\link{numeric}(1L)}}\cr
+\item{prec.norm}{[\code{\link{numeric}}]\cr
 Precision threshold when normalizing a vector. That is, every element of the vector,
 whose absolute value is below this threshold, will be replaced by 0.
 The default is \code{1e-6}.}
 
-\item{prec.angle}{\link{\code{\link{numeric}(1L)}}\cr
+\item{prec.angle}{[\code{\link{numeric}}]\cr
 Precision threshold used for comparing whether the angle (in degree) between two
 vectors is zero. The default is \code{1e-4}.}
 
-\item{parallelize}{[\verb{[logical](1L)}]\cr
+\item{parallelize}{[\code{\link{logical}}]\cr
 Should the computation of the gradient vectors be parallelized (with \code{parallel::mclapply})?
 The default is \code{FALSE}.}
 
-\item{lower}{\link{\code{\link{numeric}(d)}}\cr
+\item{impute.boundary}{[\code{\link{logical}}]\cr
+Should values at the boundary be imputed? This is relevant for problems
+that have locally efficient points on the boundary box.}
+
+\item{lower}{[\code{\link{numeric}}]\cr
 Vector of lower bounds.}
 
-\item{upper}{\link{\code{\link{numeric}(d)}}\cr
+\item{upper}{[\code{\link{numeric}}]\cr
 Vector of upper bounds.}
-
-\item{fn1}{\link{\code{\link{function}}}\cr
-The first objective used for computing the multi-objective gradient.}
-
-\item{fn2}{\link{\code{\link{function}}}\cr
-The second objective used for computing the multi-objective gradient.}
-
-\item{fn3}{[\code{\link[=function]{function()}}]\cr
-The third objective used for computing the multi-objective gradient. If not provided
-(\code{fn3 = NULL}), the gradient field will only consider fn1 and fn2.}
-
-\item{scale.step}{\link{\code{\link{numeric}(1L)}}\cr
-Scaling factor for the step size in the direction of the multi-objective gradient.
-The default is \code{0.5}.}
 }
 \value{
-[\code{\link[=matrix]{matrix()}}]\cr
+[\code{\link{matrix}}]\cr
 Returns \code{matrix} of multi-objective gradients. The i-th row of the matrix
 contains the multi-objective gradient vector of the i-th observation (= row)
 of the input matrix \code{points}.

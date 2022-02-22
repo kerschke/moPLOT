@@ -1,2 +1,2 @@
-#' @param ind [\code{\link{numeric}(d)}]\cr
+#' @param ind [[`numeric`]]\cr
 #'   d-dimensional individual.

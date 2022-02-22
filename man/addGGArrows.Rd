@@ -16,26 +16,26 @@ addGGArrows(
 )
 }
 \arguments{
-\item{g}{\link{\code{ggplot}}\cr
+\item{g}{[\code{\link[ggplot2:ggplot]{ggplot2::ggplot}}]\cr
 \code{ggplot}-object as created by \code{\link{ggplotHeatmap}}.}
 
-\item{centers}{\link{\code{\link{matrix}}}\cr
+\item{centers}{[\code{\link{matrix}}]\cr
 Matrix containing the points of a grid of cells, for which the lengths of cumulated
 gradient paths should be computed. Each row corresponds to a single point.}
 
-\item{gradients}{\link{\code{\link{matrix}}}\cr
+\item{gradients}{[\code{\link{matrix}}]\cr
 Matrix containing the multi-objective gradients for each point of \code{centers}.}
 
-\item{fac}{[\verb{[numeric](1L)}]\cr
+\item{fac}{[\verb{[numeric]}]\cr
 Factor used for scaling the lengths of the gradient vectors. The default is \code{0.025}.}
 
-\item{arrow_len}{[\verb{[unit](1L)}]\cr
+\item{arrow_len}{[\verb{[unit]}]\cr
 Length of the arrow tips (default: \code{unit(0.075 / 2, "inches")}).}
 
-\item{nColumns}{[\verb{[integer](1L)}]\cr
+\item{nColumns}{[\verb{[integer]}]\cr
 How many columns of arrows should be drawn? The default is \code{10}.}
 
-\item{nRows}{[\verb{[integer](1L)}]\cr
+\item{nRows}{[\verb{[integer]}]\cr
 How many rows of arrows should be drawn? The default is \code{10}.}
 
 \item{...}{\link{any}\cr

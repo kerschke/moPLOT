@@ -20,44 +20,44 @@ addGGContour(
 )
 }
 \arguments{
-\item{g}{\link{\code{ggplot}}\cr
+\item{g}{[\code{\link[ggplot2:ggplot]{ggplot2::ggplot}}]\cr
 \code{ggplot}-object as created by \code{\link{ggplotHeatmap}}.}
 
-\item{lower}{\link{\code{\link{numeric}(d)}}\cr
+\item{lower}{[\code{\link{numeric}}]\cr
 Vector of lower bounds.}
 
-\item{upper}{\link{\code{\link{numeric}(d)}}\cr
+\item{upper}{[\code{\link{numeric}}]\cr
 Vector of upper bounds.}
 
-\item{fn1}{\link{\code{\link{function}}}\cr
+\item{fn1}{[\code{\link{function}}]\cr
 The first objective used for computing the multi-objective gradient.}
 
-\item{fn2}{\link{\code{\link{function}}}\cr
+\item{fn2}{[\code{\link{function}}]\cr
 The second objective used for computing the multi-objective gradient.}
 
-\item{fn3}{[\code{\link[=function]{function()}}]\cr
+\item{fn3}{[\link{function}]\cr
 The third objective (if existing) used for computing the multi-objective gradient.}
 
-\item{log.scale}{[\verb{[logical](1L)}]\cr
+\item{log.scale}{[\code{\link{logical}}]\cr
 Should the resulting heights be displayed on a log-scale? The default is \code{TRUE}.}
 
-\item{col1}{[\verb{[character](1L)}]\cr
+\item{col1}{[\code{\link{character}}]\cr
 Color used for the contour lines of the first objective (default: \code{"goldenrod1"}).}
 
-\item{col2}{[\verb{[character](1L)}]\cr
+\item{col2}{[\code{\link{character}}]\cr
 Color used for the contour lines of the second objective (default: \code{"white"}).}
 
-\item{col3}{[\verb{[character](1L)}]\cr
+\item{col3}{[\code{\link{character}}]\cr
 Color used for the contour lines of the third objective (default: \code{"cyan3"}).}
 
-\item{n.points}{[\verb{[integer](1L)}]\cr
+\item{n.points}{[\code{\link{integer}}]\cr
 Number of points used for computing the contour lines. The default is \code{30L}.}
 
-\item{...}{\link{any}\cr
+\item{...}{[\link{any}]\cr
 Further arguments to be passed to the \code{geom_tile} function of \code{ggplot}.}
 }
 \value{
-\code{\link{ggplot}}\cr
+[\code{\link{ggplot}}]\cr
 A \code{ggplot} object displaying the multi-objective gradient landscape.
 }
 \description{

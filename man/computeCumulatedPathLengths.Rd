@@ -16,30 +16,39 @@ computeCumulatedPathLengths(
 )
 }
 \arguments{
-\item{centers}{\link{\code{\link{matrix}}}\cr
+\item{centers}{[\code{\link{matrix}}]\cr
 Matrix containing the points of a grid of cells, for which the lengths of cumulated
 gradient paths should be computed. Each row corresponds to a single point.}
 
-\item{gradients}{\link{\code{\link{matrix}}}\cr
+\item{gradients}{[\code{\link{matrix}}]\cr
 Matrix containing the multi-objective gradients for each point of \code{centers}.}
 
-\item{prec.vector.length}{\link{\code{\link{numeric}(1L)}}\cr
+\item{local.efficient.ids}{[\code{\link{numeric}}] \cr
+Vector of (row) indices that identify the \emph{locally efficient} points.}
+
+\item{prec.vector.length}{[\code{\link{numeric}}]\cr
 Precision value (= threshold) for the length of the multi-objective gradient.
 Based on this threshold, the function will classify the corresponding point
 as locally efficient (or not). The default value is \code{1e-3}.}
 
-\item{prec.norm}{\link{\code{\link{numeric}(1L)}}\cr
+\item{prec.norm}{[\code{\link{numeric}}]\cr
 Precision threshold when normalizing a vector. That is, every element of the vector,
 whose absolute value is below this threshold, will be replaced by 0.
 The default is \code{1e-6}.}
 
-\item{check.data}{\link{\code{\link{logical}(1L)}}\cr
+\item{cumulate.gradient.length}{[\code{\link{logical}}] \cr
+Whether to cumulate gradient lengths or only compute locally efficient ids}
+
+\item{fix.diagonals}{[\code{\link{logical}}] \cr
+Whether a correction should be used that penalizes diagonals by their additional length}
+
+\item{check.data}{[\code{\link{logical}}] \cr
 Should sanity checks be performed? The default is \code{TRUE}. Note that the checks
 should only be turned off (e.g., for a slight speed up), if you are sure that you
 provide the input data in the correct format.}
 }
 \value{
-[\code{\link[=data.frame]{data.frame()}}]\cr
+[\link{data.frame}]\cr
 Returns a \code{data.frame}, which appends the cumulated path lengths to the points
 provided by \code{centers}.
 }

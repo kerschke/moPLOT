@@ -3,25 +3,24 @@
 #' @description
 #'   Computes the multi-objective gradients for a matrix of `points`.
 #'
-#' @param points [[matrix()]]\cr
+#' @param points [[matrix]]\cr
 #'   Matrix of points, for which the multi-objective gradient should be computed.
 #'   Each row of the matrix will be considered as a separate point, thus the number
 #'   of rows corresponds to the number of observations and the number of columns
 #'   to the dimensionality of the search space.
-#' @template arg_fni
-#' @param fn3 [[function()]]\cr
-#'   The third objective used for computing the multi-objective gradient. If not provided
-#'   (`fn3 = NULL`), the gradient field will only consider fn1 and fn2.
-#' @template arg_scalestep
+#' @template arg_fn
 #' @template arg_precgrad
 #' @template arg_precnorm
 #' @template arg_precangle
-#' @template arg_lower
-#' @template arg_upper
-#' @param parallelize [`[logical](1L)`]\cr
+#' @param parallelize [[`logical`]]\cr
 #'   Should the computation of the gradient vectors be parallelized (with `parallel::mclapply`)?
 #'   The default is `FALSE`.
-#' @return [[matrix()]]\cr
+#' @param impute.boundary [[`logical`]]\cr
+#'   Should values at the boundary be imputed? This is relevant for problems
+#'   that have locally efficient points on the boundary box.
+#' @template arg_lower
+#' @template arg_upper
+#' @return [[`matrix`]]\cr
 #'   Returns `matrix` of multi-objective gradients. The i-th row of the matrix
 #'   contains the multi-objective gradient vector of the i-th observation (= row)
 #'   of the input matrix `points`.

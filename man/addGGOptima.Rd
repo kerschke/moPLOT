@@ -7,13 +7,13 @@
 addGGOptima(g, fn1, fn2, fn3, symbol1 = 21L, symbol2 = 22L, symbol3 = 24L, ...)
 }
 \arguments{
-\item{g}{\link{\code{ggplot}}\cr
+\item{g}{[\code{\link[ggplot2:ggplot]{ggplot2::ggplot}}]\cr
 \code{ggplot}-object as created by \code{\link{ggplotHeatmap}}.}
 
-\item{fn1}{\link{\code{\link{function}}}\cr
+\item{fn1}{[\code{\link{function}}]\cr
 The first objective used for computing the multi-objective gradient.}
 
-\item{fn2}{\link{\code{\link{function}}}\cr
+\item{fn2}{[\code{\link{function}}]\cr
 The second objective used for computing the multi-objective gradient.}
 
 \item{fn3}{[\code{\link[=function]{function()}}]\cr

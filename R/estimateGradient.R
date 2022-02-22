@@ -23,10 +23,10 @@
 #'   ATTENTION: Only turn off the sanity checks (`check.data = FALSE`),
 #'   if you can ensure that all input parameters are provided in the correct format.
 #'
-#' @param fn [[function()]]\cr
+#' @param fn [[`function`]]\cr
 #'   Single-objective function, whose gradient will be approximated.
 #' @template arg_ind
-#' @param side [`[logical](d)`]\cr
+#' @param side [[`logical`]]\cr
 #'   Logical vector of the same length as `x`, stating per element whether to
 #'   approximate the gradient into the positive (`TRUE`) or negative (`FALSE`)
 #'   direction of `x`. The default is `rep(TRUE, length(x))`.
@@ -35,7 +35,7 @@
 #' @template arg_lower
 #' @template arg_upper
 #' @param ... Further arguments to be passed to `fn`.
-#' @return [`[numeric](d)`]
+#' @return [[`numeric`]]
 #' @name estimateGradient
 #' @rdname estimateGradient
 #' @examples
