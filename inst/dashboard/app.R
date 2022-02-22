@@ -141,12 +141,27 @@ ui <- fluidPage(
                value = "smoof_mop",
                p(),
                wellPanel(
-                 selectInput("benchmark_set", "Benchmark set", c("Select a benchmark set"="", benchmark_sets)),
-                 selectInput("fn_name", "Function", c("Select a benchmark set first"="")),
+                 selectInput(
+                   "benchmark_set",
+                   "Benchmark set",
+                   c("Select a benchmark set"="", benchmark_sets)
+                 ),
+                 selectInput(
+                   "fn_name",
+                   "Function",
+                   c("Select a benchmark set first"="")
+                 ),
                  uiOutput("fn_args"),
                  div(
                    id = "evaluate_design_panel",
-                   numericInput("grid_size", "Resolution per dimension", 100, min=20, max=3000, step=1),
+                   numericInput(
+                     "grid_size",
+                     "Resolution per dimension",
+                     100,
+                     min = 20,
+                     max = 3000,
+                     step = 1
+                   ),
                    splitLayout(
                      actionButton("evaluate_design", "Evaluate", style = "width: 100%; bottom: 0"),
                      downloadButton("download_data", "Download", style = "width: 100%")
@@ -218,15 +233,40 @@ ui <- fluidPage(
            div(
              h3("Plot Options"),
              wellPanel(
-               selectInput("space", "Space to plot", c("Decision Space" = "decision.space", "Objective Space" = "objective.space", "Decision + Objective Space" = "both")),
+               selectInput(
+                 "space",
+                 "Space to plot",
+                 c(
+                   "Decision Space" = "decision.space",
+                   "Objective Space" = "objective.space",
+                   "Decision + Objective Space" = "both"
+                 )
+               ),
                div(
-                 selectInput("three_d_approach", "3D approach", c("MRI Scan" = "scan", "Onion Layers" = "layers", "Nondominated" = "pareto")),
+                 selectInput(
+                   "three_d_approach",
+                   "3D approach",
+                   c(
+                     "MRI Scan" = "scan",
+                     "Onion Layers" = "layers",
+                     "Nondominated" = "pareto"
+                   )
+                 ),
                  conditionalPanel("input.three_d_approach == 'scan'",
-                                  selectInput("scan_direction", "Scan direction", c("x₁" = "x1", "x₂" = "x2", "x₃" = "x3"), selected = "x3")
+                                  selectInput(
+                                    "scan_direction",
+                                    "Scan direction",
+                                    c("x₁" = "x1", "x₂" = "x2", "x₃" = "x3"),
+                                    selected = "x3"
+                                  )
                  ),
                  id = "three_d_only"
                ),
-               selectInput("show_nondominated", "Contour mode", c("Show nondominated points" = "TRUE", "Contours only" = "FALSE"), selected = "TRUE")
+               selectInput("show_nondominated",
+                           "Contour mode",
+                           c("Show nondominated points" = "TRUE",
+                             "Contours only" = "FALSE"),
+                           selected = "TRUE")
              ),
              id = "plot_options"
            )
@@ -554,7 +594,7 @@ server <- function(input, output, session) {
       # generate design and evaluate objective space
       
       design <- moPLOT::generateDesign(fn, points.per.dimension = input$grid_size)
-      design$obj.space <- calculateObjectiveValues(design$dec.space, fn, parallelize = F)
+      design$obj.space <- calculateObjectiveValues(design$dec.space, fn, parallelize = FALSE)
       
       plot_data$design <<- design
     }
@@ -613,10 +653,32 @@ server <- function(input, output, session) {
     
     if (d == 2) {
       switch (plot_type,
-              heatmap = plotly2DHeatmap(grid, fn, mode = space),
-              cost_landscape = plotly2DHeatmap(grid, fn, mode = space),
-              PLOT = plotly2DPLOT(grid$dec.space, grid$obj.space, less$sinks, less$height, fn, mode = space),
-              local_dominance = plotly2DHeatmap(grid, fn, mode = space, colorscale = moPLOT:::plotlyColorscale(moPLOT:::gray.colorscale), impute.zero = FALSE, log.scale = FALSE),
+              heatmap = plotly2DHeatmap(
+                grid,
+                fn,
+                mode = space
+              ),
+              cost_landscape = plotly2DHeatmap(
+                grid,
+                fn,
+                mode = space
+              ),
+              PLOT = plotly2DPLOT(
+                grid$dec.space,
+                grid$obj.space,
+                less$sinks,
+                less$height,
+                fn,
+                mode = space
+              ),
+              local_dominance = plotly2DHeatmap(
+                grid,
+                fn,
+                mode = space,
+                colorscale = moPLOT:::plotlyColorscale(moPLOT:::gray.colorscale),
+                impute.zero = FALSE,
+                log.scale = FALSE
+              ),
               NULL # if plot_type is invalid
       )
     } else if (d == 3) {
@@ -631,9 +693,11 @@ server <- function(input, output, session) {
       switch (three_d_approach,
               pareto = plotly3DPareto(grid, fn, mode = space),
               layers = plotly3DLayers(grid, fn, sinks, mode = space,
-                                      colorscale.sinks = colorscale.sinks, colorscale.heatmap = colorscale.heatmap),
+                                      colorscale.sinks = colorscale.sinks,
+                                      colorscale.heatmap = colorscale.heatmap),
               scan = plotly3DScan(grid, fn, sinks, mode = space, frame = input$scan_direction,
-                                  colorscale.sinks = colorscale.sinks, colorscale.heatmap = colorscale.heatmap),
+                                  colorscale.sinks = colorscale.sinks,
+                                  colorscale.heatmap = colorscale.heatmap),
               NULL # if plot_type is invalid
       )
     } else {
@@ -684,7 +748,8 @@ server <- function(input, output, session) {
       disable("contours")
       print("Updating Contours")
       
-      p <- plotly2DContours(plot_data$design, show.nondominated = input$show_nondominated == "TRUE")
+      p <- plotly2DContours(plot_data$design,
+                            show.nondominated = input$show_nondominated == "TRUE")
       enable("contours")
       return(p)
     }, quoted = TRUE)()
