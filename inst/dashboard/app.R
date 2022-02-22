@@ -229,6 +229,16 @@ ui <- fluidPage(
          "Cost Landscape",
          plotly::plotlyOutput("cost_landscape", height = "500px"),
          value = "tab_cost_landscape"
+       ),
+       tabPanel(
+         "Local PCP",
+         plotOutput("local_pcp", height = "500px"),
+         value = "tab_local_pcp"
+       ),
+       tabPanel(
+         "Global PCP",
+         plotOutput("global_pcp", height = "500px"),
+         value = "tab_global_pcp"
        )
       ),
       div(
@@ -484,14 +494,18 @@ server <- function(input, output, session) {
       updateTabsetPanel(inputId = "tabset_plots", selected = NULL)
     }
     
+    showTab("tabset_plots", "tab_global_pcp")
+    
     if (input$compute_plot) {
       showTab("tabset_plots", "tab_plot")
       showTab("tabset_plots", "tab_heatmap")
       showTab("tabset_plots", "tab_set_transitions")
+      showTab("tabset_plots", "tab_local_pcp")
     } else {
       hideTab("tabset_plots", "tab_plot")
       hideTab("tabset_plots", "tab_heatmap")
       hideTab("tabset_plots", "tab_set_transitions")
+      hideTab("tabset_plots", "tab_local_pcp")
     }
     
     if (input$compute_cost_landscape) {
@@ -792,7 +806,7 @@ server <- function(input, output, session) {
     }, quoted = TRUE)()
   })
   
-  output$set_transitions = renderPlot({
+  output$local_pcp = renderPlot({
     reactive({
       req(plot_data$design)
       
@@ -800,10 +814,22 @@ server <- function(input, output, session) {
         plot_data$less <<- compute_plot_data()
       }
       
+      design <- plot_data$design
       less <- plot_data$less
+
+      return(ggplotLocalPCP(design$obj.space[less$sinks,], less$basins[less$sinks]))
+    }, quoted = TRUE)()
+  })
+  
+  output$global_pcp = renderPlot({
+    reactive({
+      req(plot_data$design)
+      
       design <- plot_data$design
       
-      return(ggplotSetTransitions(design, less))
+      nd_ids <- nondominated(design$obj.space, design$dims)
+
+      return(ggplotGlobalPCP(design$obj.space[nd_ids,]))
     }, quoted = TRUE)()
   })
   
