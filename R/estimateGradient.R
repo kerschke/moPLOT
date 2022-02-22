@@ -54,8 +54,8 @@ estimateGradientSingleDirection = function(fn, ind, side = NULL, prec.grad = 1e-
   }
 
   d = length(ind)
-  if (isSmoofFunction(fn)) {
-    p = getNumberOfObjectives(fn)
+  if (smoof::isSmoofFunction(fn)) {
+    p = smoof::getNumberOfObjectives(fn)
   } else {
     p = length(fn(ind))
   }
@@ -97,8 +97,8 @@ estimateGradientSingleDirection = function(fn, ind, side = NULL, prec.grad = 1e-
 estimateGradientBothDirections = function(fn, ind, prec.grad = 1e-4, check.data = TRUE, lower = NULL, upper = NULL, ...) {
 
   d = length(ind)
-  if (isSmoofFunction(fn)) {
-    p = getNumberOfObjectives(fn)
+  if (smoof::isSmoofFunction(fn)) {
+    p = smoof::getNumberOfObjectives(fn)
   } else {
     p = length(fn(ind))
   }
