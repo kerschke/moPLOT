@@ -832,7 +832,10 @@ server <- function(input, output, session) {
       design <- plot_data$design
       less <- plot_data$less
 
-      return(ggplotLocalPCP(design$obj.space[less$sinks,], less$basins[less$sinks]))
+      g <- ggplotLocalPCP(design$obj.space[less$sinks,], less$basins[less$sinks]) +
+        coord_fixed()
+      
+      return(g)
     }, quoted = TRUE)()
   })
   
@@ -844,7 +847,10 @@ server <- function(input, output, session) {
       
       nd_ids <- nondominated(design$obj.space, design$dims)
 
-      return(ggplotGlobalPCP(design$obj.space[nd_ids,]))
+      g <- ggplotGlobalPCP(design$obj.space[nd_ids,]) +
+        coord_fixed()
+      
+      return(g)
     }, quoted = TRUE)()
   })
   
