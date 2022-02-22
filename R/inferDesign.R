@@ -47,7 +47,7 @@ inferDesign = function(dec.space, obj.space) {
     step.size = unique(round(steps, digits=four_signif))
     
     if (length(step.size) > 1) {
-      stop(paste("Found multiple step sizes:", collapse(step.sizes)))
+      stop(paste("Found multiple step sizes:", collapse(step.size)))
     } else {
       step.size
     }
