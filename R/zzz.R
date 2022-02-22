@@ -3,7 +3,7 @@
 #' @import checkmate
 #' @import ggplot2
 #' @import plotly
-#' @import smoof
+#' @importFrom smoof isSmoofFunction getNumberOfObjectives getNumberOfParameters getLowerBoxConstraints getUpperBoxConstraints
 #' @importFrom graphics abline arrows contour grid image plot points
 #' @importFrom grDevices axisTicks terrain.colors gray.colors
 #' @importFrom ecr nondominated

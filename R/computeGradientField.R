@@ -33,7 +33,7 @@ computeGradientField = function(points, fn, prec.grad = 1e-6,
 
   cat("Estimating single-objective gradients ...\n")
 
-  if (isSmoofFunction(fn)) {
+  if (smoof::isSmoofFunction(fn)) {
     lower = smoof::getLowerBoxConstraints(fn)
     upper = smoof::getUpperBoxConstraints(fn)
   }
