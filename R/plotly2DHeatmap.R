@@ -21,9 +21,9 @@ plotly2DHeatmap = function(grid, fn, mode = "decision.space", impute.zero = TRUE
   if (n == 3) {
     objective.scene = list(
       aspectmode='cube',
-      xaxis = list(range = c(min(x[,'y1']),max(x[,'y1'])), title='y₁'),
-      yaxis = list(range = c(min(x[,'y2']),max(x[,'y2'])), title='y₂'),
-      zaxis = list(range = c(min(x[,'y3']),max(x[,'y3'])), title='y₃')
+      xaxis = list(range = c(min(x[,'y1']),max(x[,'y1'])), title='y<sub>1</sub>'),
+      yaxis = list(range = c(min(x[,'y2']),max(x[,'y2'])), title='y<sub>2</sub>'),
+      zaxis = list(range = c(min(x[,'y3']),max(x[,'y3'])), title='y<sub>3</sub>')
     )
   }
   
@@ -84,11 +84,11 @@ plotly2DHeatmapObjectiveSpace = function(x, fn, marker.style, scene="scene") {
             marker = marker.style
     ) %>% layout(
       xaxis = list(
-        title = "y₁",
+        title = "y<sub>1</sub>",
         constrain = "domain"
       ),
       yaxis = list(
-        title = "y₂",
+        title = "y<sub>2</sub>",
         constrain = "domain"
       )
     )
@@ -110,13 +110,13 @@ plotly2DHeatmapDecisionSpace = function(x, fn, colorscale) {
           colorscale=colorscale
   ) %>% layout(
     xaxis = list(
-      title = "x₁",
+      title = "x<sub>1</sub>",
       constrain = "domain"
     ),
     yaxis = list(
       scaleanchor = "x",
       scaleratio = (max(x$x1) - min(x$x1)) / (max(x$x2) - min(x$x2)),
-      title = "x₂",
+      title = "x<sub>2</sub>",
       constrain = "domain"
     )
   )

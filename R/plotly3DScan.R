@@ -18,9 +18,9 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
   
   decision.scene = list(
     aspectmode='cube',
-    xaxis = list(range = c(lower[1],upper[1]), title='x₁'),
-    yaxis = list(range = c(lower[2],upper[2]), title='x₂'),
-    zaxis = list(range = c(lower[3],upper[3]), title='x₃')
+    xaxis = list(range = c(lower[1],upper[1]), title='x<sub>1</sub>'),
+    yaxis = list(range = c(lower[2],upper[2]), title='x<sub>2</sub>'),
+    zaxis = list(range = c(lower[3],upper[3]), title='x<sub>3</sub>')
   )
   
   x = cbind.data.frame(grid$dec.space, grid$obj.space, height = grid$height)
@@ -28,9 +28,9 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
   if (n == 3) {
     objective.scene = list(
       aspectmode='cube',
-      xaxis = list(range = c(min(x$y1),max(x$y1)), title='y₁'),
-      yaxis = list(range = c(min(x$y2),max(x$y2)), title='y₂'),
-      zaxis = list(range = c(min(x$y3),max(x$y3)), title='y₃')
+      xaxis = list(range = c(min(x$y1),max(x$y1)), title='y<sub>1</sub>'),
+      yaxis = list(range = c(min(x$y2),max(x$y2)), title='y<sub>2</sub>'),
+      zaxis = list(range = c(min(x$y3),max(x$y3)), title='y<sub>3</sub>')
     )
   } else {
     objective.scene = list()
@@ -111,8 +111,8 @@ plotly3DScan = function(grid, fn, sinks = NULL, mode = "decision.space", frame =
       )
     } else {
       p = plotly3DScanObjectiveSpace(fn, x.heatmap, marker.heatmap, x.sinks, marker.sinks, frame = frame) %>% layout(
-        xaxis = list(range = c(min(x$y1),max(x$y1)), title='y₁'),
-        yaxis = list(range = c(min(x$y2),max(x$y2)), title='y₂')
+        xaxis = list(range = c(min(x$y1),max(x$y1)), title='y<sub>1</sub>'),
+        yaxis = list(range = c(min(x$y2),max(x$y2)), title='y<sub>2</sub>')
       )
     }
   }
@@ -144,11 +144,11 @@ plotly3DScanObjectiveSpace = function(fn, x.heatmap, marker.heatmap, x.sinks = N
       marker = marker.heatmap
     ) %>% layout(
       xaxis = list(
-        title = "y₁",
+        title = "y<sub>1</sub>",
         constrain = "domain"
       ),
       yaxis = list(
-        title = "y₂",
+        title = "y<sub>2</sub>",
         constrain = "domain"
       )
     )

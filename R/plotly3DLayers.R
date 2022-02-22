@@ -48,17 +48,17 @@ plotly3DLayers = function(grid, fn, sinks = NULL, mode = "decision.space", no.st
 
   decision.scene = list(
     aspectmode='cube',
-    xaxis = list(range = c(lower[1], upper[1]), title='x₁'),
-    yaxis = list(range = c(lower[2], upper[2]), title='x₂'),
-    zaxis = list(range = c(lower[3], upper[3]), title='x₃')
+    xaxis = list(range = c(lower[1], upper[1]), title='x<sub>1</sub>'),
+    yaxis = list(range = c(lower[2], upper[2]), title='x<sub>2</sub>'),
+    zaxis = list(range = c(lower[3], upper[3]), title='x<sub>3</sub>')
   )
 
   if (n == 3) {
     objective.scene = list(
       aspectmode='cube',
-      xaxis = list(range = c(min(x.boundaries$y1),max(x.boundaries$y1)), title='y₁'),
-      yaxis = list(range = c(min(x.boundaries$y2),max(x.boundaries$y2)), title='y₂'),
-      zaxis = list(range = c(min(x.boundaries$y3),max(x.boundaries$y3)), title='y₃')
+      xaxis = list(range = c(min(x.boundaries$y1),max(x.boundaries$y1)), title='y<sub>1</sub>'),
+      yaxis = list(range = c(min(x.boundaries$y2),max(x.boundaries$y2)), title='y<sub>2</sub>'),
+      zaxis = list(range = c(min(x.boundaries$y3),max(x.boundaries$y3)), title='y<sub>3</sub>')
     )
   } else {
     objective.scene = list()
@@ -130,11 +130,11 @@ plotly3DLayersObjectiveSpace = function(x, fn, x.sinks = NULL, dom.counter = NUL
       marker = marker.heatmap
     ) %>% layout(
       xaxis = list(
-        title = "y₁",
+        title = "y<sub>1</sub>",
         constrain = "domain"
       ),
       yaxis = list(
-        title = "y₂",
+        title = "y<sub>2</sub>",
         constrain = "domain"
       )
     )

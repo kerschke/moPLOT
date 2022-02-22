@@ -54,13 +54,13 @@ plotly2DContours <- function(design, show.nondominated = TRUE) {
     hide_legend() %>%
     layout(
       xaxis = list(
-        title = "x₁",
+        title = "x<sub>1</sub>",
         constrain = "domain"
       ),
       yaxis = list(
         scaleanchor = "x",
         scaleratio = (diff(range(design$dec.space[,1]))) / diff(range(design$dec.space[,2])),
-        title = "x₂",
+        title = "x<sub>2</sub>",
         constrain = "domain"
       )
     )

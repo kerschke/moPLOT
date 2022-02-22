@@ -22,17 +22,17 @@ plotly3DPareto = function(grid, fn, mode = "decision.space", impute.zero = T) {
   
   decision.scene = list(
     aspectmode='cube',
-    xaxis = list(range = c(lower[1],upper[1]), title='x₁'),
-    yaxis = list(range = c(lower[2],upper[2]), title='x₂'),
-    zaxis = list(range = c(lower[3],upper[3]), title='x₃')
+    xaxis = list(range = c(lower[1],upper[1]), title='x<sub>1</sub>'),
+    yaxis = list(range = c(lower[2],upper[2]), title='x<sub>2</sub>'),
+    zaxis = list(range = c(lower[3],upper[3]), title='x<sub>3</sub>')
   )
   
   if (n == 3) {
     objective.scene = list(
       aspectmode='cube',
-      xaxis = list(range = c(min(x.nondom[,'y1']),max(x.nondom[,'y1'])), title='y₁'),
-      yaxis = list(range = c(min(x.nondom[,'y2']),max(x.nondom[,'y2'])), title='y₂'),
-      zaxis = list(range = c(min(x.nondom[,'y3']),max(x.nondom[,'y3'])), title='y₃')
+      xaxis = list(range = c(min(x.nondom[,'y1']),max(x.nondom[,'y1'])), title='y<sub>1</sub>'),
+      yaxis = list(range = c(min(x.nondom[,'y2']),max(x.nondom[,'y2'])), title='y<sub>2</sub>'),
+      zaxis = list(range = c(min(x.nondom[,'y3']),max(x.nondom[,'y3'])), title='y<sub>3</sub>')
     )
   }
   
@@ -103,11 +103,11 @@ plotly3DParetoObjectiveSpace = function(x, fn, marker.style, scene="scene") {
             marker = marker.style
     ) %>% layout(
       xaxis = list(
-        title = "y₁",
+        title = "y<sub>1</sub>",
         constrain = "domain"
       ),
       yaxis = list(
-        title = "y₂",
+        title = "y<sub>2</sub>",
         constrain = "domain"
       )
     )
