@@ -2,12 +2,21 @@
 % Please edit documentation in R/makeExtendedBiObjBBOBFunction.R
 \name{makeExtendedBiObjBBOBFunction}
 \alias{makeExtendedBiObjBBOBFunction}
-\title{Smoof generator function for the extended bi-objective BBOB
-with validated (corrected) instance mapping.}
+\title{Extended Bi-Objective BBOB Functions with Metadata}
 \usage{
 makeExtendedBiObjBBOBFunction(dimensions, fid, iid)
 }
+\arguments{
+\item{dimensions}{\code{2L:40L}\cr
+Number of (decision space) dimensions}
+
+\item{fid}{\code{1L:92L}\cr
+Function ID of the selected bi-objective BBOB problem.}
+
+\item{iid}{\code{1L:10L}\cr
+Instance ID of the selected bi-objective BBOB problem.}
+}
 \description{
-Smoof generator function for the extended bi-objective BBOB
-with validated (corrected) instance mapping.
+Smoof generator function for the extended bi-objective BBOB with validated
+(corrected) instance mapping and returning useful metadata.
 }

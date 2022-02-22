@@ -1,78 +1,24 @@
-benchmark_sets <- c(
-  "(Extended) Bi-objective BBOB" = "biobj_bbob",
-  "DTLZ Functions" = "dtlz",
-  "MinDist Functions" = "mindist",
-  "MMF Functions" = "mmf",
-  "MOP Functions" = "mop",
-  "MPM2 Generator" = "mpm2",
-  "ZDT Functions" = "zdt",
-  "Other" = "other"
-)
-
-# (Extended) Bi-objective BBOB ====
-
-biobj_bbob_functions <- list(
-  # "Bi-objective BBOB" = smoof::makeBiObjBBOBFunction
-  "(Extended) Bi-objective BBOB" = makeExtendedBiObjBBOBFunction
-)
-
-# Benchmark Sets extracted from Smoof ====
-
-dtlz_functions <- list(
-  "DTLZ1" = smoof::makeDTLZ1Function,
-  "DTLZ2" = smoof::makeDTLZ2Function,
-  "DTLZ3" = smoof::makeDTLZ3Function,
-  "DTLZ4" = smoof::makeDTLZ4Function,
-  "DTLZ5" = smoof::makeDTLZ5Function,
-  "DTLZ6" = smoof::makeDTLZ6Function,
-  "DTLZ7" = smoof::makeDTLZ7Function
-)
-
-mmf_functions <- list(
-  "MMF1" = smoof::makeMMF1Function,
-  "MMF1e" = smoof::makeMMF1eFunction,
-  "MMF1z" = smoof::makeMMF1zFunction,
-  "MMF2" = smoof::makeMMF2Function,
-  "MMF3" = smoof::makeMMF3Function,
-  "MMF4" = smoof::makeMMF4Function,
-  "MMF5" = smoof::makeMMF5Function,
-  "MMF6" = smoof::makeMMF6Function,
-  "MMF7" = smoof::makeMMF7Function,
-  "MMF8" = smoof::makeMMF8Function,
-  "MMF9" = smoof::makeMMF9Function,
-  "MMF10" = smoof::makeMMF10Function,
-  "MMF11" = smoof::makeMMF11Function,
-  "MMF12" = smoof::makeMMF12Function,
-  "MMF13" = smoof::makeMMF13Function,
-  "MMF14" = smoof::makeMMF14Function,
-  "MMF14a" = smoof::makeMMF14aFunction,
-  "MMF15" = smoof::makeMMF15Function,
-  "MMF15a" = smoof::makeMMF15aFunction,
-  "SYMPART-simple" = smoof::makeSYMPARTsimpleFunction,
-  "SYMPART-rotated" = smoof::makeSYMPARTrotatedFunction,
-  "Omni test" = smoof::makeOmniTestFunction
-)
-
-zdt_functions = list(
-  "ZDT1" = smoof::makeZDT1Function,
-  "ZDT2" = smoof::makeZDT2Function,
-  "ZDT3" = smoof::makeZDT3Function,
-  "ZDT4" = smoof::makeZDT4Function,
-  "ZDT6" = smoof::makeZDT6Function
-)
-
-mop_functions = list(
-  "MOP1" = smoof::makeMOP1Function,
-  "MOP2" = smoof::makeMOP2Function,
-  "MOP3" = smoof::makeMOP3Function,
-  "MOP4" = smoof::makeMOP4Function,
-  "MOP5" = smoof::makeMOP5Function,
-  "MOP6" = smoof::makeMOP6Function,
-  "MOP7" = smoof::makeMOP7Function
-)
-
-# MinDist Function ====
-
+#' Multi-Objective MinDist Functions
+#'
+#' Creates a multi-objective MinDist problem. Centers a defined for each
+#' function with the `centers.fi` arguments. Box constraints are created at with
+#' a distance of 1 to the extremal values of the centers.
+#'
+#' Decision space dimensionality is determined by the length of each center
+#' value in the `centers.fi` lists. If `is.null(centers.f3)`, the problem is
+#' bi-objective, otherwise it is tri-objective. For creating bi-objective
+#' problems, you can also use `makeBiObjMinDistFunction()` directly.
+#'
+#' @param centers.f1 [[`list`]]\cr List of centers for the first objective.
+#' @param centers.f2 [[`list`]]\cr List of centers for the second objective.
+#' @param centers.f3 [[`list`]] (optional)\cr List of centers for the third
+#'   objective, if function has three objectives.
+#'
+#' @return A multi-objective smoof function
+#' @export
+#'
+#' @examples
+#' 
 makeMinDistFunction = function(centers.f1 = list(c(-2, -1), c(2, 1)),
                                centers.f2 = list(c(-2, 1), c(2, -1)),
                                centers.f3 = list(c(0, 1), c(0, -1))) {
@@ -104,18 +50,45 @@ makeMinDistFunction = function(centers.f1 = list(c(-2, -1), c(2, 1)),
                                     par.set = ParamHelpers::makeNumericParamSet(len = ncol(all.centers), lower = lower, upper = upper))
 }
 
+#' @rdname makeMinDistFunction
+#' @export
 makeBiObjMinDistFunction = function(centers.f1 = list(c(-2, -1), c(2, 1)),
                                     centers.f2 = list(c(-2, 1), c(2, -1))) {
   makeMinDistFunction(centers.f1, centers.f2, centers.f3 = NULL)
 }
 
-mindist_functions = list(
-  "Bi-objective MinDist" = makeBiObjMinDistFunction,
-  "Tri-objective MinDist" = makeMinDistFunction
-)
-
-# MPM2 functions
-
+#' Multi-Objective MPM2 Functions
+#'
+#' The `makeBiObjMPM2Function()` and `makeTriObjMPM2Function()` functions allow
+#' the creation of multi-objective functions based on the MPM2 generator
+#' implemented in [smoof::makeMPM2Function()].
+#'
+#' @param dimensions [[`numeric`]]\cr
+#' Number of (decision space) dimensions of the MPM2 problems.
+#' @param n.peaks.1 [[`numeric`]]\cr
+#' Number of peaks for the first constituent MPM2 problem.
+#' @param topology.1 `"random" || "funnel"`\cr
+#' Topology of the first constituent MPM2 problem.
+#' @param seed.1 [[`numeric`]]\cr
+#' Random seed of the first constituent MPM2 problem.
+#' @param n.peaks.2 [[`numeric`]]\cr
+#' Number of peaks for the second constituent MPM2 problem.
+#' @param topology.2 `"random" || "funnel"`\cr
+#' Topology of the second constituent MPM2 problem.
+#' @param seed.2 [[`numeric`]]\cr
+#' Random seed of the second constituent MPM2 problem.
+#' @param n.peaks.3 [[`numeric`]]\cr
+#' Number of peaks for the third constituent MPM2 problem.
+#' @param topology.3 `"random" || "funnel"`\cr
+#' Topology of the third constituent MPM2 problem.
+#' @param seed.3 [[`numeric`]]\cr
+#' Random seed of the third constituent MPM2 problem.
+#'
+#' @return Multi-objective smoof function
+#' @export
+#'
+#' @examples
+#' 
 makeBiObjMPM2Function = function(dimensions = 2, n.peaks.1 = 3, topology.1 = "random", seed.1 = 4,
                                  n.peaks.2 = 3, topology.2 = "random", seed.2 = 8) {
   f1 <- smoof::makeMPM2Function(n.peaks.1, dimensions, topology.1, seed.1)
@@ -134,6 +107,8 @@ makeBiObjMPM2Function = function(dimensions = 2, n.peaks.1 = 3, topology.1 = "ra
   # smoof::makeGOMOPFunction(dimensions = dimensions, funs = list(f1, f2))
 }
 
+#' @rdname makeBiObjMPM2Function
+#' @export
 makeTriObjMPM2Function = function(dimensions = 2, n.peaks.1 = 3, topology.1 = "random", seed.1 = 4,
                                   n.peaks.2 = 3, topology.2 = "random", seed.2 = 8,
                                   n.peaks.3 = 3, topology.3 = "random", seed.3 = 12) {
@@ -154,11 +129,6 @@ makeTriObjMPM2Function = function(dimensions = 2, n.peaks.1 = 3, topology.1 = "r
   # smoof::makeGOMOPFunction(dimensions = dimensions, funs = list(f1, f2, f3))
 }
 
-mpm2_functions = list(
-  "Bi-objective MPM2" = makeBiObjMPM2Function,
-  "Tri-objective MPM2" = makeTriObjMPM2Function
-)
-
 # Aspar Function ====
 
 f1_1 = function(x) (x[1]**4 - 2*x[1]**2 + x[2]**2 + 1)
@@ -173,6 +143,18 @@ f3_2 = function(x) ((x[1] + 0.25) ** 4 + 3 * (x[2] - 1) ** 2 + (x[3] - 1) ** 2)
 f_3d2d = function(x) c(f1_2(x), f2_2(x))
 f_3d3d = function(x) c(f1_2(x), f2_2(x), f3_2(x))
 
+#' Multi-Objective Aspar Function
+#'
+#' @param dimensions [[`numeric`]]\cr
+#'   Number of dimensions
+#' @param n.objectives [[`numeric`]]\cr
+#'   Number of objectives
+#'
+#' @return Multi-objective smoof function
+#' @export
+#'
+#' @examples
+#' 
 makeAsparFunction <- function(dimensions = 2, n.objectives = 2) {
   if (dimensions == 2 && n.objectives == 2) {
     smoof::makeMultiObjectiveFunction(name = "Aspar Function: 2D->2D", id = "aspar_2d2d", description = "", fn = f_2d2d,
@@ -191,6 +173,16 @@ makeAsparFunction <- function(dimensions = 2, n.objectives = 2) {
 
 # SGK Function ====
 
+#' Multi-Objective SGK Function
+#'
+#' @param dimensions `c(2, 3)`\cr
+#' Number of (decision space) dimensions.
+#'
+#' @return Multi-objective smoof function
+#' @export
+#'
+#' @examples
+#' 
 makeSGKFunction = function(dimensions = 2) {
   g = function(x, h, center) {
     h / (1 + 4 * (sum((x - center) ** 2)))
@@ -235,6 +227,15 @@ makeSGKFunction = function(dimensions = 2) {
 
 # Bi-Rosenbrock Function ====
 
+#' Bi-Objective Rosenbrock Function
+#' 
+#' Creates one particular parametrization of a bi-objective Rosenbrock function.
+#'
+#' @return Multi-objective smoof function
+#' @export
+#'
+#' @examples
+#' 
 makeBiRosenbrockFunction = function() {
   f1 <- function(x) {
     (1 - x[1]) ** 2 + 1 * (x[2] - x[1] ** 2) ** 2
@@ -253,17 +254,3 @@ makeBiRosenbrockFunction = function() {
     par.set = ParamHelpers::makeNumericParamSet(len = 2, lower = c(-1.5, 0), upper = c(1.5, 3)))
 }
 
-# Summary of "other" functions ====
-
-other_functions = list(
-  "Aspar" = makeAsparFunction,
-  "BiRosenbrock" = makeBiRosenbrockFunction,
-  "BiSphere" = smoof::makeBiSphereFunction, # does not work as expected and is kinda boring
-  "BK1" = smoof::makeBK1Function,
-  "Dent" = smoof::makeDentFunction,
-  "ED1" = smoof::makeED1Function,
-  "ED2" = smoof::makeED2Function,
-  "Kursawe" = smoof::makeKursaweFunction,
-  "SGK" = makeSGKFunction,
-  "Viennet" = smoof::makeViennetFunction
-)

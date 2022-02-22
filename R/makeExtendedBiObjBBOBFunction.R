@@ -33,8 +33,18 @@ iid_exceptions <- matrix(c(
   15L, 31L, 34L
 ), byrow = TRUE, ncol = 3L)
 
-#' Smoof generator function for the extended bi-objective BBOB
-#' with validated (corrected) instance mapping.
+#' Extended Bi-Objective BBOB Functions with Metadata
+#'
+#' Smoof generator function for the extended bi-objective BBOB with validated
+#' (corrected) instance mapping and returning useful metadata.
+#'
+#' @param dimensions `2L:40L`\cr
+#'   Number of (decision space) dimensions
+#' @param fid `1L:92L`\cr
+#'   Function ID of the selected bi-objective BBOB problem.
+#' @param iid `1L:10L`\cr
+#'   Instance ID of the selected bi-objective BBOB problem.
+#'
 #' @export
 makeExtendedBiObjBBOBFunction <- function(dimensions, fid, iid) {
   assert_int(dimensions, lower = 2L, upper = 40L)
