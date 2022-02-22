@@ -1,6 +1,6 @@
 Package: moPLOT
 Title: Visualizing Multi-Objective Optimization Problems
-Version: 0.1
+Version: 0.1.0.9000
 Date: 2020-06-14
 Authors@R: c(
     person("Pascal", "Kerschke", , "pascal.kerschke@tu-dresden.de", role = c("aut", "cre"),
