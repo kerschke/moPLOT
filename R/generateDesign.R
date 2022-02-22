@@ -46,7 +46,7 @@ generateDesign = function(fn, points.total = NULL, points.per.dimension = NULL,
   grid$upper = upper
   
   if (evaluate.points) {
-    grid$obj.space = calculateObjectiveValues(design$dec.space, fn, ...)
+    grid$obj.space = calculateObjectiveValues(grid$dec.space, fn, ...)
   }
   
   return(grid)
