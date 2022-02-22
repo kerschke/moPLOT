@@ -1,5 +1,6 @@
 #' @export
-generateDesign = function(fn, points.total = NULL, points.per.dimension = NULL, upper = NULL, lower = NULL) {
+generateDesign = function(fn, points.total = NULL, points.per.dimension = NULL,
+                          evaluate.points = TRUE, upper = NULL, lower = NULL, ...) {
   if (is.null(upper) && is.null(lower)) {
     upper = smoof::getUpperBoxConstraints(fn)
     lower = smoof::getLowerBoxConstraints(fn)
@@ -43,6 +44,10 @@ generateDesign = function(fn, points.total = NULL, points.per.dimension = NULL, 
   grid$step.sizes = step.sizes
   grid$lower = lower
   grid$upper = upper
+  
+  if (evaluate.points) {
+    grid$obj.space = calculateObjectiveValues(design$dec.space, fn, ...)
+  }
   
   return(grid)
 }
