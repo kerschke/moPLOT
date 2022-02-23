@@ -1000,27 +1000,61 @@ List changeOfBasin(IntegerVector basins, IntegerVector dims, IntegerVector local
   IntegerVector indices;
   IntegerVector neighbourIndices;
   bool basin_change;
+  
   int neighbourID;
 
   for (int id = 1; id <= n; id++) {
     indices = convertCellID2IndicesCPP(id, dims);
     basin_change = false;
-
-    for (int r = 0; r < neighbours_amt; r++) {
-      neighbourIndices = indices + neighbourhood(r, _);
-      if (is_true(any(neighbourIndices < 1)) ||
-          is_true(any(neighbourIndices > dims))) {
-        // invalid neighbour
-        continue;
-      }
-
-      neighbourID = convertIndices2CellIDCPP(neighbourIndices, dims);
-
-      if (basins(id - 1) != basins(neighbourID - 1)) {
-        // some neighbour is in a different basin!
-        basin_change = true;
+    std::set<int> undecided_neighbors;
+    
+    if (basins(id - 1) == -1) {
+      basin_change = true;
+    } else {
+      for (int r = 0; r < neighbours_amt; r++) {
+        neighbourIndices = indices + neighbourhood(r, _);
+        if (is_true(any(neighbourIndices < 1)) ||
+            is_true(any(neighbourIndices > dims))) {
+          // invalid neighbour
+          continue;
+        }
         
-        set_transitions(id - 1) = max(basins(neighbourID - 1), set_transitions(id - 1));
+        neighbourID = convertIndices2CellIDCPP(neighbourIndices, dims);
+        
+        if (basins(neighbourID - 1) == -1) {
+          undecided_neighbors.insert(neighbourID);
+        } else if (basins(id - 1) != basins(neighbourID - 1)) {
+          // some neighbour is in a different basin!
+          basin_change = true;
+          
+          set_transitions(id - 1) = max(basins(neighbourID - 1), set_transitions(id - 1));
+        }
+      }
+      
+      if (!basin_change && undecided_neighbors.size() > 0) {
+        for (int un_id : undecided_neighbors) {
+          IntegerVector unIndices = convertCellID2IndicesCPP(un_id, dims);
+          
+          for (int r = 0; r < neighbours_amt; r++) {
+            neighbourIndices = unIndices + neighbourhood(r, _);
+            if (is_true(any(neighbourIndices < 1)) ||
+                is_true(any(neighbourIndices > dims))) {
+              // invalid neighbour
+              continue;
+            }
+            
+            neighbourID = convertIndices2CellIDCPP(neighbourIndices, dims);
+            
+            if (basins(neighbourID - 1) == -1) {
+              // do nothing
+            } else if (basins(id - 1) != basins(neighbourID - 1)) {
+              // some neighbour is in a different basin!
+              basin_change = true;
+              
+              set_transitions(id - 1) = max(basins(neighbourID - 1), set_transitions(id - 1));
+            }
+          }
+        }
       }
     }
 
