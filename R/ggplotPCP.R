@@ -41,7 +41,8 @@ ggplotLocalPCP <- function(obj.space, basins, scale = "uniminmax",
         "y1" = expression(y[1]),
         "y2" = expression(y[2]),
         "y3" = expression(y[3])
-      )
+      ),
+      expand = expansion(mult = 0.1)
     )
 }
 
@@ -80,6 +81,7 @@ ggplotGlobalPCP <- function(obj.space, scale = "uniminmax",
         "y1" = expression(y[1]),
         "y2" = expression(y[2]),
         "y3" = expression(y[3])
-      )
+      ),
+      expand = expansion(mult = 0.1)
     )
 }
