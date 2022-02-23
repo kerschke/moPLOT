@@ -2,17 +2,19 @@
 #'
 #' @param design [[`list`]] \cr
 #' @param less [[`list`]] \cr
+#' @param node_size `"reachability" || "basin_size` \cr
+#' @template arg_checkdata
 #'
 #' @return A [[ggplot2::ggplot]] object
 #' @export
 #'
 #' @examples
 #' 
-ggplotSetTransitions <- function(design, less) {
+ggplotSetTransitions <- function(design, less, node_size = c("reachability", "basin_size"), check.data = TRUE) {
   if (!requireNamespace("tidygraph", quietly = TRUE) ||
       !requireNamespace("ggraph", quietly = TRUE)) {
     stop(
-      "Package \"tidygraph\" and \"ggraph\" must be installed to use ggplotSetTransitions.",
+      "Packages \"tidygraph\" and \"ggraph\" must be installed to use ggplotSetTransitions().",
       call. = FALSE
     )
   }
@@ -35,11 +37,15 @@ ggplotSetTransitions <- function(design, less) {
     )
   })
 
-  if (length(set_transitions) != 0) {
-    tbl_transitions <- tidygraph::as_tbl_graph(set_transitions)
+  if (length(set_transitions) > 0) {
+    tbl_transitions <- as_tbl_graph(igraph::graph(t(set_transitions), n = max(basins)))
+  } else {
+    tbl_transitions <- as_tbl_graph(igraph::graph(NULL, n = max(basins)))
+  }
+  
+  if (length(set_transitions) != 0 && node_size == "reachability") {
     prop <- compute_reach_proportions(tbl_transitions, n_descent_target)
   } else {
-    tbl_transitions <- NULL
     prop <- n_descent_target / sum(n_descent_target)
   }
   
