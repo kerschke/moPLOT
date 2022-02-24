@@ -1,6 +1,6 @@
 #' @export
 calculateObjectiveValues = function(points, fn, parallelize = FALSE, parallel.cores = (parallel::detectCores() - 1),
-                                    vectorized.evaluation = TRUE) {
+                                    vectorized.evaluation = TRUE, convert.to.minimization = TRUE) {
   n = smoof::getNumberOfObjectives(fn)
   names = paste0("y", 1:n)
   
@@ -23,6 +23,13 @@ calculateObjectiveValues = function(points, fn, parallelize = FALSE, parallel.co
     obj.space = as.matrix(do.call(rbind, r))
   } else {
     obj.space = t(apply(points, 1, fn))
+  }
+  
+  if (convert.to.minimization) {
+    minimize_flag = smoof::shouldBeMinimized(fn)
+    for (i in seq_along(minimize_flag)) {
+      obj.space[,i] <- obj.space[,i] * (if (minimize_flag[i]) 1 else -1)
+    }
   }
   
   colnames(obj.space) = names
