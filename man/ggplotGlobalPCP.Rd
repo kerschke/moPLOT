@@ -5,18 +5,24 @@
 \title{Global Multi-Objective PCP Visualizations}
 \usage{
 ggplotGlobalPCP(
-  obj.space,
+  design,
+  space = c("objective", "decision", "both"),
   scale = "uniminmax",
   alphaLines = 0.2,
+  nondominated_ids = NULL,
   check.data = TRUE
 )
 }
 \arguments{
-\item{obj.space}{[\code{\link{matrix}}]\cr}
+\item{design}{[\code{\link{list}}]\cr}
+
+\item{space}{\code{"objective" || "decision" || "both"}}
 
 \item{scale}{[\code{\link{character}}]\cr}
 
 \item{alphaLines}{[\code{\link{numeric}}]\cr}
+
+\item{nondominated_ids}{\verb{NULL ||}[\code{\link{numeric}}]\cr}
 
 \item{check.data}{[\code{\link{logical}}] \cr
 Should sanity checks be performed? The default is \code{TRUE}. Note that the checks

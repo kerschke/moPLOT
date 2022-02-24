@@ -5,17 +5,20 @@
 \title{Local Multi-Objective PCP Visualizations}
 \usage{
 ggplotLocalPCP(
-  obj.space,
-  basins,
+  design,
+  less,
+  space = c("objective", "decision", "both"),
   scale = "uniminmax",
-  alphaLines = 0.2,
+  alphaLines = 0.1,
   check.data = TRUE
 )
 }
 \arguments{
-\item{obj.space}{[\code{\link{matrix}}]\cr}
+\item{design}{[\code{\link{list}}]\cr}
 
-\item{basins}{[\code{\link{numeric}}]\cr}
+\item{less}{[\code{\link{list}}]\cr}
+
+\item{space}{\code{"objective" || "decision" || "both"}}
 
 \item{scale}{[\code{\link{character}}]\cr}
 
