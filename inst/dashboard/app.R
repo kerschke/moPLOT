@@ -289,13 +289,13 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   plot_data <- reactiveValues()
+  hide("three_d_only")
   
   # outputOptions(output, suspendWhenHidden = FALSE)
   
   reset_plots <- function() {
     # hide("tabset_plots")
     # hide("plot_options")
-    hide("three_d_only")
 
     enable("compute_plot")
     enable("compute_cost_landscape")
@@ -385,7 +385,9 @@ server <- function(input, output, session) {
   })
   
   get_fn <- reactive({
-    if (input$fn_select == "upload_data") {
+    if (length(get_default_args()) != length(get_selected_args())) {
+      plot_data$dummy_fn_upload
+    } else if (input$fn_select == "upload_data") {
       # We just need to return a dummy function that has the
       # correct lower, upper bounds and a suitable name
       plot_data$dummy_fn_upload
