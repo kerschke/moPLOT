@@ -293,8 +293,9 @@ server <- function(input, output, session) {
   # outputOptions(output, suspendWhenHidden = FALSE)
   
   reset_plots <- function() {
-    hide("tabset_plots")
-    hide("plot_options")
+    # hide("tabset_plots")
+    # hide("plot_options")
+    hide("three_d_only")
 
     enable("compute_plot")
     enable("compute_cost_landscape")
@@ -621,8 +622,8 @@ server <- function(input, output, session) {
     
     enable(selector = "button")
     
-    show("tabset_plots")
-    show("plot_options")
+    # show("tabset_plots")
+    # show("plot_options")
     
     disable("evaluate_design")
   })
