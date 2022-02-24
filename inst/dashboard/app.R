@@ -456,17 +456,21 @@ server <- function(input, output, session) {
     
     req(fn)
     
-    hide("evaluate_design_panel")
-    
-    if (smoof::getNumberOfParameters(fn) == 2) {
-      updateSliderInput("grid_size", session = session, value = 500L, min = 50L, max = 600L, step = 50L)
-      hide("three_d_only")
-    } else {
-      updateSliderInput("grid_size", session = session, value = 50L, min = 20L, max = 100L, step = 10L)
-      show("three_d_only")
+    if (is.null(plot_data$previous_dim) || plot_data$previous_dim != smoof::getNumberOfParameters(fn)) {
+      plot_data$previous_dim <<- smoof::getNumberOfParameters(fn)
+      
+      hide("evaluate_design_panel")
+      
+      if (smoof::getNumberOfParameters(fn) == 2L) {
+        updateSliderInput("grid_size", session = session, value = 500L, min = 50L, max = 600L, step = 50L)
+        hide("three_d_only")
+      } else {
+        updateSliderInput("grid_size", session = session, value = 50L, min = 20L, max = 100L, step = 10L)
+        show("three_d_only")
+      }
+      
+      show("evaluate_design_panel")
     }
-    
-    show("evaluate_design_panel")
   })
   
   observe({
