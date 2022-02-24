@@ -3,6 +3,8 @@ library(shinyjs)
 library(fields)
 library(smoof)
 library(moPLOT)
+library(tidygraph)
+library(ggraph)
 
 # ==== Setup Function Sets ====
 
