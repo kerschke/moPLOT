@@ -4,12 +4,27 @@
 \alias{ggplotSetTransitions}
 \title{Set Transition Visualization in ggplot2}
 \usage{
-ggplotSetTransitions(design, less)
+ggplotSetTransitions(
+  design,
+  less,
+  node_size = c("reachability", "basin_size"),
+  layout = NULL,
+  check.data = TRUE
+)
 }
 \arguments{
 \item{design}{[\code{\link{list}}] \cr}
 
 \item{less}{[\code{\link{list}}] \cr}
+
+\item{node_size}{\verb{"reachability" || "basin_size} \cr}
+
+\item{layout}{\verb{NULL || "first_dimensions" || "stress} \cr}
+
+\item{check.data}{[\code{\link{logical}}] \cr
+Should sanity checks be performed? The default is \code{TRUE}. Note that the checks
+should only be turned off (e.g., for a slight speed up), if you are sure that you
+provide the input data in the correct format.}
 }
 \value{
 A [\link[ggplot2:ggplot]{ggplot2::ggplot}] object
