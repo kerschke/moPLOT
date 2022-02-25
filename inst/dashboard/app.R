@@ -733,7 +733,7 @@ server <- function(input, output, session) {
   
   output$plot = plotly::renderPlotly({
     reactive({
-      req(plot_data$design)
+      req(plot_data$design, input$space, input$three_d_approach)
       
       isolate({
         withProgress({
@@ -757,7 +757,7 @@ server <- function(input, output, session) {
   
   output$heatmap = plotly::renderPlotly({
     reactive({
-      req(plot_data$design)
+      req(plot_data$design, input$space, input$three_d_approach)
       
       isolate({
         withProgress({
@@ -801,7 +801,7 @@ server <- function(input, output, session) {
   
   output$local_dominance = plotly::renderPlotly({
     reactive({
-      req(plot_data$design)
+      req(plot_data$design, input$space, input$three_d_approach)
       
       isolate({
         withProgress({
@@ -826,7 +826,7 @@ server <- function(input, output, session) {
   
   output$cost_landscape = plotly::renderPlotly({
     reactive({
-      req(plot_data$design)
+      req(plot_data$design, input$space, input$three_d_approach)
       
       isolate({
         withProgress({
@@ -874,7 +874,7 @@ server <- function(input, output, session) {
   
   output$local_pcp = renderPlot({
     reactive({
-      req(plot_data$design)
+      req(plot_data$design, input$space)
       
       isolate({
         withProgress({
@@ -905,7 +905,7 @@ server <- function(input, output, session) {
   
   output$global_pcp = renderPlot({
     reactive({
-      req(plot_data$design)
+      req(plot_data$design, input$space)
       
       withProgress({
         design <- plot_data$design
