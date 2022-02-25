@@ -86,7 +86,18 @@ ggplotSetTransitions <- function(design, less, node_size = c("reachability", "ba
   } else {
     node_pos <- t(sapply(sets, function(set) {
       dec_space <- set$dec_space
-      dec_space[ceiling(nrow(dec_space) / 2),]
+      # dec_space[ceiling(nrow(dec_space) / 2),]
+      
+      max_points <- 2000
+      if (nrow(dec_space) > max_points) {
+        have_points <- nrow(dec_space)
+        subsample_ids <- floor((have_points / max_points) * 1L:max_points)
+        dec_space <- dec_space[subsample_ids, ]
+      }
+
+      dists <- colSums(as.matrix(dist(dec_space)))
+
+      dec_space[which.min(dists), ]
     }))
     
     lower <- design$lower
