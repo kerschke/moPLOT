@@ -614,13 +614,16 @@ server <- function(input, output, session) {
     
     disable(selector = "button")
     
-    if (is.null(plot_data$design)) {
-      # generate design and evaluate objective space
-      
-      design <- moPLOT::generateDesign(fn, points.per.dimension = input$grid_size)
-
-      plot_data$design <<- design
-    }
+    withProgress({
+      setProgress(value = 0.0, message = "Evaluating grid on function ...")
+      if (is.null(plot_data$design)) {
+        # generate design and evaluate objective space
+        
+        design <- moPLOT::generateDesign(fn, points.per.dimension = input$grid_size)
+        
+        plot_data$design <<- design
+      }
+    })
     
     enable(selector = "button")
     
@@ -733,16 +736,20 @@ server <- function(input, output, session) {
       req(plot_data$design)
       
       isolate({
-        disable("plot")
-        
-        if (is.null(plot_data$less) && input$compute_plot) {
-          plot_data$less <<- compute_plot_data()
-        }
-        
-        print("Updating PLOT")
-        
-        p <- get_plot("PLOT", input$space, input$three_d_approach)
-        enable("plot")
+        withProgress({
+          disable("plot")
+          
+          if (is.null(plot_data$less) && input$compute_plot) {
+            setProgress(value = 0.5, message = "Computing visualization data ...")
+            plot_data$less <<- compute_plot_data()
+          }
+          
+          setProgress(value = 1.0, message = "Updating visualization ...")
+          
+          p <- get_plot("PLOT", input$space, input$three_d_approach)
+          p <- plotly::partial_bundle(p)
+          enable("plot")
+        })
         return(p)
       })
     }, quoted = TRUE)()
@@ -753,16 +760,21 @@ server <- function(input, output, session) {
       req(plot_data$design)
       
       isolate({
-        disable("heatmap")
-        
-        if (is.null(plot_data$less) && input$compute_plot) {
-          plot_data$less <<- compute_plot_data()
-        }
-        
-        print("Updating Heatmap")
-        
-        p <- get_plot("heatmap", input$space, input$three_d_approach)
-        enable("heatmap")
+        withProgress({
+          disable("heatmap")
+          
+          if (is.null(plot_data$less) && input$compute_plot) {
+            setProgress(value = 0.5, message = "Computing visualization data ...")
+            plot_data$less <<- compute_plot_data()
+          }
+          
+          setProgress(value = 1.0, message = "Updating visualization ...")
+          
+          p <- get_plot("heatmap", input$space, input$three_d_approach)
+          p <- plotly::partial_bundle(p)
+          
+          enable("heatmap")
+        })
         return(p)
       })
     }, quoted = TRUE)()
@@ -772,12 +784,17 @@ server <- function(input, output, session) {
     reactive({
       req(plot_data$design)
       
-      disable("contours")
-      print("Updating Contours")
-      
-      p <- plotly2DContours(plot_data$design,
-                            show.nondominated = input$show_nondominated == "TRUE")
-      enable("contours")
+      withProgress({
+        disable("contours")
+
+        setProgress(value = 1.0, message = "Updating visualization ...")
+        
+        p <- plotly2DContours(plot_data$design,
+                              show.nondominated = input$show_nondominated == "TRUE")
+        p <- plotly::partial_bundle(p)
+        
+        enable("contours")
+      })
       return(p)
     }, quoted = TRUE)()
   })
@@ -787,16 +804,21 @@ server <- function(input, output, session) {
       req(plot_data$design)
       
       isolate({
-        disable("local_dominance")
-        
-        if (is.null(plot_data$ld_height) && input$compute_local_dominance) {
-          plot_data$ld_height <<- compute_ld_height()
-        }
-        
-        print("Updating Local Dominance")
-        
-        p <- get_plot("local_dominance", input$space, input$three_d_approach)
-        enable("local_dominance")
+        withProgress({
+          disable("local_dominance")
+          
+          if (is.null(plot_data$ld_height) && input$compute_local_dominance) {
+            setProgress(value = 0.5, message = "Computing visualization data ...")
+            plot_data$ld_height <<- compute_ld_height()
+          }
+          
+          setProgress(value = 1.0, message = "Updating visualization ...")
+          
+          p <- get_plot("local_dominance", input$space, input$three_d_approach)
+          p <- plotly::partial_bundle(p)
+          
+          enable("local_dominance")
+        })
         return(p)
       })
     }, quoted = TRUE)()
@@ -807,16 +829,21 @@ server <- function(input, output, session) {
       req(plot_data$design)
       
       isolate({
-        disable("cost_landscape")
-        
-        if (is.null(plot_data$domination_counts) && input$compute_cost_landscape) {
-          plot_data$domination_counts <<- compute_dominance_counts()
-        }
-        
-        print("Updating Cost Landscape")
-        
-        p <- get_plot("cost_landscape", input$space, input$three_d_approach)
-        enable("cost_landscape")
+        withProgress({
+          disable("cost_landscape")
+          
+          if (is.null(plot_data$domination_counts) && input$compute_cost_landscape) {
+            setProgress(value = 0.5, message = "Computing visualization data ...")
+            plot_data$domination_counts <<- compute_dominance_counts()
+          }
+          
+          setProgress(value = 1.0, message = "Updating visualization ...")
+          
+          p <- get_plot("cost_landscape", input$space, input$three_d_approach)
+          p <- plotly::partial_bundle(p)
+          
+          enable("cost_landscape")
+        })
         return(p)
       })
     }, quoted = TRUE)()
@@ -827,14 +854,20 @@ server <- function(input, output, session) {
       req(plot_data$design)
       
       isolate({
-        if (is.null(plot_data$less) && input$compute_plot) {
-          plot_data$less <<- compute_plot_data()
-        }
-        
-        less <- plot_data$less
-        design <- plot_data$design
-        
-        return(ggplotSetTransitions(design, less))
+        withProgress({
+          if (is.null(plot_data$less) && input$compute_plot) {
+            setProgress(value = 0.5, message = "Computing visualization data ...")
+            plot_data$less <<- compute_plot_data()
+          }
+          
+          setProgress(value = 1.0, message = "Updating visualization ...")
+          
+          less <- plot_data$less
+          design <- plot_data$design
+          
+          p <- ggplotSetTransitions(design, less)
+        })
+        return(p)
       })
     }, quoted = TRUE)()
   })
@@ -844,23 +877,28 @@ server <- function(input, output, session) {
       req(plot_data$design)
       
       isolate({
-        if (is.null(plot_data$less) && input$compute_plot) {
-          plot_data$less <<- compute_plot_data()
-        }
-        
-        design <- plot_data$design
-        less <- plot_data$less
-        
-        space <- switch(input$space,
-                        "objective.space" = "objective",
-                        "decision.space" = "decision",
-                        "both" = "both"
-        )
-        
-        g <- ggplotLocalPCP(design, less, space = space) +
-          theme(legend.position = "none")
-        
-        return(g)
+        withProgress({
+          if (is.null(plot_data$less) && input$compute_plot) {
+            setProgress(value = 0.5, message = "Computing visualization data ...")
+            plot_data$less <<- compute_plot_data()
+          }
+          
+          setProgress(value = 1.0, message = "Updating visualization ...")
+          
+          design <- plot_data$design
+          less <- plot_data$less
+          
+          space <- switch(input$space,
+                          "objective.space" = "objective",
+                          "decision.space" = "decision",
+                          "both" = "both"
+          )
+          
+          p <- ggplotLocalPCP(design, less, space = space) +
+            theme(legend.position = "none")
+          
+        })
+        return(p)
       })
     }, quoted = TRUE)()
   })
@@ -869,17 +907,21 @@ server <- function(input, output, session) {
     reactive({
       req(plot_data$design)
       
-      design <- plot_data$design
+      withProgress({
+        design <- plot_data$design
+        
+        space <- switch(input$space,
+                        "objective.space" = "objective",
+                        "decision.space" = "decision",
+                        "both" = "both"
+        )
+        
+        setProgress(value = 1.0, message = "Updating visualization ...")
+        
+        p <- ggplotGlobalPCP(design, space = space)
+      })
       
-      space <- switch(input$space,
-        "objective.space" = "objective",
-        "decision.space" = "decision",
-        "both" = "both"
-      )
-      
-      g <- ggplotGlobalPCP(design, space = space)
-      
-      return(g)
+      return(p)
     }, quoted = TRUE)()
   })
   
