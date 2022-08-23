@@ -106,6 +106,7 @@ other_functions = list(
   "ED1" = smoof::makeED1Function,
   "ED2" = smoof::makeED2Function,
   "Kursawe" = smoof::makeKursaweFunction,
+  "Rudolph 9-to-9" = makeRudolph9to9Function,
   "SGK" = makeSGKFunction,
   "Viennet" = smoof::makeViennetFunction
 )
