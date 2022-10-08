@@ -529,6 +529,17 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
     gradMat[i] = as<NumericMatrix>(gradMatList(i));
   }
   
+  // ID/Index helpers
+  
+  std::unordered_map<int, std::vector<int>> id_to_index;
+  // std::unordered_map<std::vector<int>, int> index_to_id;
+  
+  for (int id = 1; id <= n; id++) {
+    std::vector<int> index = as<std::vector<int>>(convertCellID2IndicesCPP(id, dims));
+    id_to_index[id] = index;
+    // index_to_id[index] = id;
+  }
+  
   // IDs of locally non-dominated points
 
   std::set<int> locally_nondmominated(locallyNondominated.begin(), locallyNondominated.end());
@@ -562,11 +573,11 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
   for (int anchor_id = 1; anchor_id <= n; anchor_id++) {
     // Loop over cell indices
     // Each anchor index refers to the hypercube defined by itself and +1 into each dimension
-    if (verbose && anchor_id % 1000 == 0) {
+    if (verbose && (anchor_id % 1000 == 0)) {
       Rcout << anchor_id << '\r';
     }
 
-    anchor_index = convertCellID2IndicesCPP(anchor_id, dims);
+    anchor_index = id_to_index[anchor_id];
     
     if (is_true(any(anchor_index == dims))) {
       // Hypercube is not valid, as some points would be out-of-bounds
@@ -1077,11 +1088,16 @@ NumericMatrix gridBasedGradientCPP(NumericVector fnVec, IntegerVector dims, Nume
   // helper variables
   double diff;
   IntegerVector indices;
-  IntegerVector iPlus;
-  IntegerVector iMinus;
   double f;
   double fPlus;
   double fMinus;
+  
+  // For fast index computation
+  std::vector<int> cumcells(d);
+  cumcells[0] = 1;
+  for (int j = 1; j < d; j++) {
+    cumcells[j] = cumcells[j - 1] * dims[j - 1];
+  }
 
   for (int id = 1; id <= n; id++) {
     indices = convertCellID2IndicesCPP(id, dims);
@@ -1089,29 +1105,18 @@ NumericMatrix gridBasedGradientCPP(NumericVector fnVec, IntegerVector dims, Nume
     for (int dim = 0; dim < d; dim++) {
       // vector access is zero-indexed!
       if (indices(dim) == 1) {
-        iPlus = clone(indices);
-        iPlus(dim)++;
-
-        fPlus = fnVec[convertIndices2CellIDCPP(iPlus, dims) - 1];
-        f = fnVec[convertIndices2CellIDCPP(indices, dims) - 1];
+        fPlus = fnVec[id + cumcells[dim] - 1];
+        f = fnVec[id - 1];
 
         diff = fPlus - f;
       } else if (indices(dim) == dims(dim)) {
-        iMinus = clone(indices);
-        iMinus(dim)--;
-
-        fMinus = fnVec[convertIndices2CellIDCPP(iMinus, dims) - 1];
-        f = fnVec[convertIndices2CellIDCPP(indices, dims) - 1];
+        fMinus = fnVec[id - cumcells[dim] - 1];
+        f = fnVec[id - 1];
 
         diff = f - fMinus;
       } else {
-        iPlus = clone(indices);
-        iPlus(dim)++;
-        iMinus = clone(indices);
-        iMinus(dim)--;
-
-        fPlus = fnVec[convertIndices2CellIDCPP(iPlus, dims) - 1];
-        fMinus = fnVec[convertIndices2CellIDCPP(iMinus, dims) - 1];
+        fPlus = fnVec[id + cumcells[dim] - 1];
+        fMinus = fnVec[id - cumcells[dim] - 1];
 
         diff = (fPlus - fMinus) / 2;
       }
