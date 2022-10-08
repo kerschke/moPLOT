@@ -526,6 +526,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
   }
   
   // For fast index computation
+  
   IntegerVector dim_steps = computeDimSteps(dims);
   
   // IDs of locally non-dominated points
@@ -719,7 +720,10 @@ IntegerVector connectedComponentsGrid(IntegerVector ids, IntegerVector dims) {
   IntegerVector ccs(ids.length(), 0);
   std::unordered_set<int> ids_set(ids.begin(), ids.end());
   std::unordered_map<int,int> id_to_index;
-
+  
+  // For fast index computation
+  IntegerVector dim_steps = computeDimSteps(dims);
+  
   int d = dims.length();
 
   for (int i = 0; i < ids.length(); i++) {
@@ -761,7 +765,7 @@ IntegerVector connectedComponentsGrid(IntegerVector ids, IntegerVector dims) {
             continue;
           }
 
-          int neighbour_id = convertIndices2CellIDCPP(gridIndex, dims);
+          int neighbour_id = 1 + sum((gridIndex - 1) * dim_steps);
 
           if ((ids_set.find(neighbour_id) != ids_set.end()) && (seen.find(neighbour_id) == seen.end())) {
             to_evaluate.push_back(neighbour_id);
@@ -995,7 +999,10 @@ List changeOfBasin(IntegerVector basins, IntegerVector dims, IntegerVector local
   IntegerVector set_transitions(n, -1);
   
   IntegerMatrix neighbourhood = getNeighbourhood(d, true);
-
+  
+  // For fast index computation
+  IntegerVector dim_steps = computeDimSteps(dims);
+  
   int neighbours_amt = neighbourhood.nrow();
 
   // helper
@@ -1021,7 +1028,7 @@ List changeOfBasin(IntegerVector basins, IntegerVector dims, IntegerVector local
           continue;
         }
         
-        neighbourID = convertIndices2CellIDCPP(neighbourIndices, dims);
+        neighbourID = 1 + sum((neighbourIndices - 1) * dim_steps);
         
         if (basins(neighbourID - 1) == -1) {
           undecided_neighbors.insert(neighbourID);
@@ -1045,7 +1052,7 @@ List changeOfBasin(IntegerVector basins, IntegerVector dims, IntegerVector local
               continue;
             }
             
-            neighbourID = convertIndices2CellIDCPP(neighbourIndices, dims);
+            neighbourID = 1 + sum((neighbourIndices - 1) * dim_steps);
             
             if (basins(neighbourID - 1) == -1) {
               // do nothing
