@@ -11,7 +11,7 @@ design = generateDesign(fn, 500**2)
 # Calculate single-objective and multi-objective gradients
 gradients = computeGradientField(design$dec.space, fn, impute.boundary = F, parallelize = T)
 
-paths = computeCumulatedPathLengths(design$dec.space, gradients$multi.objective)
+paths = computeCumulatedPathLengths(design$dec.space, gradients$multi.objective, dims = design$dims)
 
 # Plot the results
 ggplotHeatmap(cbind.data.frame(design$dec.space, height=paths$height))

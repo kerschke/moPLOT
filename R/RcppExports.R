@@ -25,14 +25,6 @@ findNextCellCPP <- function(gradient) {
     .Call(`_moPLOT_findNextCellCPP`, gradient)
 }
 
-convertIndices2CellIDCPP <- function(indices, dims) {
-    .Call(`_moPLOT_convertIndices2CellIDCPP`, indices, dims)
-}
-
-convertCellID2IndicesCPP <- function(cellID, dims) {
-    .Call(`_moPLOT_convertCellID2IndicesCPP`, cellID, dims)
-}
-
 getNeighbourhood <- function(d, include_diagonals) {
     .Call(`_moPLOT_getNeighbourhood`, d, include_diagonals)
 }
@@ -69,8 +61,8 @@ gridBasedGradientCPP <- function(fnVec, dims, stepSizes, precNorm, precAngle) {
     .Call(`_moPLOT_gridBasedGradientCPP`, fnVec, dims, stepSizes, precNorm, precAngle)
 }
 
-cumulateGradientsCPP <- function(centers, gradients, stopCells, precVectorLength, precNorm, fixDiagonals, cumulateGradientLength) {
-    .Call(`_moPLOT_cumulateGradientsCPP`, centers, gradients, stopCells, precVectorLength, precNorm, fixDiagonals, cumulateGradientLength)
+cumulateGradientsCPP <- function(centers, gradients, dims, stopCells, precVectorLength, precNorm, fixDiagonals, cumulateGradientLength) {
+    .Call(`_moPLOT_cumulateGradientsCPP`, centers, gradients, dims, stopCells, precVectorLength, precNorm, fixDiagonals, cumulateGradientLength)
 }
 
 getBiObjGradientCPP <- function(g1, g2, precNorm, precAngle, normalized_scale = TRUE) {

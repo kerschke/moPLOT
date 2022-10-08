@@ -7,14 +7,14 @@ localEfficientSetSkeleton = function(
   if (verbose) cat('Finding critical points ...\n')
   
   lnd = locallyNondominatedCPP(design$obj.space, design$dims, TRUE)
-  critical = getCriticalPointsCellCPP(gradients$multi.objective, gradients$single.objective, divergence, lnd, design$dims, sinks_only = TRUE)
+  critical = getCriticalPointsCellCPP(gradients$multi.objective, gradients$single.objective, divergence, lnd, design$dims, sinks_only = TRUE, verbose = verbose)
 
   sinks = critical$sinks
 
   if (verbose) cat('Integrating vector field ...\n')
   
   if (integration == "fast") {
-    integrated = computeCumulatedPathLengths(design$dec.space, gradients$multi.objective, sinks, fix.diagonals = T, prec.vector.length = 0, prec.norm = 0)
+    integrated = computeCumulatedPathLengths(design$dec.space, gradients$multi.objective, design$dims, sinks, fix.diagonals = T, prec.vector.length = 0, prec.norm = 0)
   } else {
     integrated = integrateVectorField(gradients$multi.objective, design$dims, sinks)
     dim(integrated$height) = c(length(integrated$height), 1)

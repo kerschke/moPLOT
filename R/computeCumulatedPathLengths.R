@@ -29,7 +29,7 @@
 #' 
 #' @export
 computeCumulatedPathLengths = function(
-    centers, gradients, local.efficient.ids = numeric(0), prec.vector.length = 1e-3,
+    centers, gradients, dims, local.efficient.ids = numeric(0), prec.vector.length = 1e-3,
     prec.norm = 1e-6, cumulate.gradient.length = TRUE, fix.diagonals = FALSE, check.data = TRUE) {
 
   if (check.data) {
@@ -54,7 +54,7 @@ computeCumulatedPathLengths = function(
     assertNumber(prec.vector.length, lower = 0, finite = TRUE, null.ok = FALSE)
     assertNumber(prec.norm, lower = 0, finite = TRUE, null.ok = FALSE)
   }
-  integrated = cumulateGradientsCPP(centers, gradients, local.efficient.ids, prec.vector.length, prec.norm, fix.diagonals, cumulate.gradient.length)
+  integrated = cumulateGradientsCPP(centers, gradients, dims, local.efficient.ids, prec.vector.length, prec.norm, fix.diagonals, cumulate.gradient.length)
   dim(integrated$height) = c(length(integrated$height), 1)
   colnames(integrated$height) = c("height")
   

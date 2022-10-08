@@ -19,7 +19,7 @@ NumericVector compute3DcrossProductCPP(NumericVector y, NumericVector z) {
 // [[Rcpp::export]]
 double computeVectorLengthCPP(NumericVector vec) {
   // computes length of the vector
-  return sqrt(sum(vec * vec)) ;
+  return sqrt(sum(vec * vec));
 }
 
 double dot(NumericVector a, NumericVector b) {
@@ -98,30 +98,26 @@ IntegerVector findNextCellCPP(NumericVector gradient) {
   return direction;
 }
 
-// [[Rcpp::export]]
-int convertIndices2CellIDCPP(IntegerVector indices, IntegerVector dims) {
-  // convert index per dimension [(1, ..., rows), (1, ..., columns), ...] to cell ID (1, ..., prod(dims))
-  int cellID = -1;
-  if (is_true(any(indices > dims)) | is_true(any(indices < 1))) {
-    // if either the row- or columnIndex are located outside the boundaries, return -1 as ID
-    cellID = -1;
-  } else {
-    int d = dims.size();
-    std::vector<int> cumcells(d);
-    cumcells[0] = 1;
-    for (int j = 1; j < d; j++) {
-      cumcells[j] = cumcells[j - 1] * dims[j - 1];
-    }
-    cellID = 1;
-    for (int j = 0; j < d; j++) {
-      cellID += (indices[j] - 1) * cumcells[j];
-    }
+IntegerVector computeDimSteps(IntegerVector dims) {
+  int d = dims.length();
+  
+  IntegerVector dim_steps(d);
+  dim_steps[0] = 1;
+  for (int j = 1; j < d; j++) {
+    dim_steps[j] = dim_steps[j - 1] * dims[j - 1];
   }
-  return cellID;
+  
+  return dim_steps;
 }
 
-// [[Rcpp::export]]
-IntegerVector convertCellID2IndicesCPP(int cellID, IntegerVector dims) {
+inline int convertIndices2CellIDCPP(IntegerVector indices, IntegerVector dims) {
+  // convert index per dimension [(1, ..., rows), (1, ..., columns), ...] to cell ID (1, ..., prod(dims))
+  IntegerVector dim_steps = computeDimSteps(dims);
+  
+  return 1 + sum((indices - 1) * dim_steps);
+}
+
+inline IntegerVector convertCellID2IndicesCPP(int cellID, IntegerVector dims) {
   // convert cellID (1, ..., prod(dims)) to index per dimension [(1, ..., rows), (1, ..., columns), ...]
   int d = dims.size();
   IntegerVector indexVector(d, -1);
@@ -529,16 +525,8 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
     gradMat[i] = as<NumericMatrix>(gradMatList(i));
   }
   
-  // ID/Index helpers
-  
-  std::unordered_map<int, std::vector<int>> id_to_index;
-  // std::unordered_map<std::vector<int>, int> index_to_id;
-  
-  for (int id = 1; id <= n; id++) {
-    std::vector<int> index = as<std::vector<int>>(convertCellID2IndicesCPP(id, dims));
-    id_to_index[id] = index;
-    // index_to_id[index] = id;
-  }
+  // For fast index computation
+  IntegerVector dim_steps = computeDimSteps(dims);
   
   // IDs of locally non-dominated points
 
@@ -577,7 +565,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
       Rcout << anchor_id << '\r';
     }
 
-    anchor_index = id_to_index[anchor_id];
+    anchor_index = convertCellID2IndicesCPP(anchor_id, dims);
     
     if (is_true(any(anchor_index == dims))) {
       // Hypercube is not valid, as some points would be out-of-bounds
@@ -595,7 +583,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
     
     for (int i = 0; i < cube_corners.size(); i++) {
       cube_indices[i] = anchor_index + cube_corners[i];
-      cube_ids[i] = convertIndices2CellIDCPP(cube_indices[i], dims);
+      cube_ids[i] = 1 + sum((cube_indices[i] - 1) * dim_steps);
       
       if (div(cube_ids[i] - 1) > 0) {
         not_sink_count++;
@@ -914,6 +902,9 @@ IntegerVector locallyNondominatedCPP(NumericMatrix fnMat, IntegerVector dims, bo
   IntegerVector neighbourIndices;
   bool dominated;
   int neighbourID;
+  
+  // For fast index computation
+  IntegerVector dim_steps = computeDimSteps(dims);
 
   for (int id = 1; id <= n; id++) {
     indices = convertCellID2IndicesCPP(id, dims);
@@ -927,7 +918,7 @@ IntegerVector locallyNondominatedCPP(NumericMatrix fnMat, IntegerVector dims, bo
         continue;
       }
 
-      neighbourID = convertIndices2CellIDCPP(neighbourIndices, dims);
+      neighbourID = 1 + sum((neighbourIndices - 1) * dim_steps);
 
       if (is_true(any(fnMat(neighbourID - 1, _) < fnMat(id - 1, _))) &&
           is_true(all(fnMat(neighbourID - 1, _) <= fnMat(id - 1, _)))) {
@@ -1093,11 +1084,7 @@ NumericMatrix gridBasedGradientCPP(NumericVector fnVec, IntegerVector dims, Nume
   double fMinus;
   
   // For fast index computation
-  std::vector<int> cumcells(d);
-  cumcells[0] = 1;
-  for (int j = 1; j < d; j++) {
-    cumcells[j] = cumcells[j - 1] * dims[j - 1];
-  }
+  IntegerVector dim_steps = computeDimSteps(dims);
 
   for (int id = 1; id <= n; id++) {
     indices = convertCellID2IndicesCPP(id, dims);
@@ -1105,18 +1092,18 @@ NumericMatrix gridBasedGradientCPP(NumericVector fnVec, IntegerVector dims, Nume
     for (int dim = 0; dim < d; dim++) {
       // vector access is zero-indexed!
       if (indices(dim) == 1) {
-        fPlus = fnVec[id + cumcells[dim] - 1];
+        fPlus = fnVec[id + dim_steps[dim] - 1];
         f = fnVec[id - 1];
 
         diff = fPlus - f;
       } else if (indices(dim) == dims(dim)) {
-        fMinus = fnVec[id - cumcells[dim] - 1];
+        fMinus = fnVec[id - dim_steps[dim] - 1];
         f = fnVec[id - 1];
 
         diff = f - fMinus;
       } else {
-        fPlus = fnVec[id + cumcells[dim] - 1];
-        fMinus = fnVec[id - cumcells[dim] - 1];
+        fPlus = fnVec[id + dim_steps[dim] - 1];
+        fMinus = fnVec[id - dim_steps[dim] - 1];
 
         diff = (fPlus - fMinus) / 2;
       }
@@ -1125,7 +1112,7 @@ NumericMatrix gridBasedGradientCPP(NumericVector fnVec, IntegerVector dims, Nume
         diff = diff / stepSizes(dim);
       }
 
-      gradMat(id-1, dim) = diff;
+      gradMat(id - 1, dim) = diff;
     }
   }
 
@@ -1133,24 +1120,20 @@ NumericMatrix gridBasedGradientCPP(NumericVector fnVec, IntegerVector dims, Nume
 }
 
 // [[Rcpp::export]]
-List cumulateGradientsCPP(NumericMatrix centers, NumericMatrix gradients, IntegerVector stopCells, double precVectorLength, double precNorm, bool fixDiagonals, bool cumulateGradientLength) {
+List cumulateGradientsCPP(NumericMatrix centers, NumericMatrix gradients, IntegerVector dims, IntegerVector stopCells,
+                          double precVectorLength, double precNorm, bool fixDiagonals, bool cumulateGradientLength) {
   int d = centers.ncol();                   // dimensionality of search space
   int n = centers.nrow();                   // number of grid points
-
-  // number of grid points per (search space) dimension
-  IntegerVector dims(d, 0);
-  for (int j = 0; j < d; j++) {
-    NumericVector ctr = centers(_,j);
-    ctr = unique(ctr);
-    dims[j] = ctr.size();
-  }
 
   NumericVector gradientLengths(n);         // length vector for the multi-objective gradients
   IntegerVector cellPointer(n, -999);       // vector, which indicates per cell the successor cell
   NumericVector gradFieldVector(n, -999.0); // the "final" result vector containing the cell height
   IntegerVector last_visited(n, -1);        // vector containing the cell that integration was stopped at
   LogicalVector visited = rep(false, n);    // which cells have already been "visited" / "processed"
-
+  
+  // For fast index computation
+  IntegerVector dim_steps = computeDimSteps(dims);
+  
   // helper variables
   double vectorLength = -1.0;
   NumericVector currentGradients;
@@ -1171,8 +1154,6 @@ List cumulateGradientsCPP(NumericMatrix centers, NumericMatrix gradients, Intege
       visitCounter++;
       gradFieldVector[i] = vectorLength;
     } else {
-      // nextCell = findNextCellHighDimensionCPP(currentGradients);
-      // currentCell = convertHighDimensionalCellID2IndicesCPP(i + 1, dims);
       nextCell = findNextCellCPP(currentGradients);
       currentCell = convertCellID2IndicesCPP(i + 1, dims);
       nextCell += currentCell;
@@ -1186,8 +1167,7 @@ List cumulateGradientsCPP(NumericMatrix centers, NumericMatrix gradients, Intege
         last_visited[i] = i+1; // id = i+1 here
       } else {
         // otherwise, store the successor cell
-        // nextCellID = convertHighDimensionalIndices2CellIDCPP(nextCell, dims);
-        nextCellID = convertIndices2CellIDCPP(nextCell, dims);
+        nextCellID = 1 + sum((nextCell - 1) * dim_steps);
         cellPointer[i] = nextCellID - 1;
       }
     }

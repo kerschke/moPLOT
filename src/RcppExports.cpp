@@ -81,30 +81,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// convertIndices2CellIDCPP
-int convertIndices2CellIDCPP(IntegerVector indices, IntegerVector dims);
-RcppExport SEXP _moPLOT_convertIndices2CellIDCPP(SEXP indicesSEXP, SEXP dimsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerVector >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
-    rcpp_result_gen = Rcpp::wrap(convertIndices2CellIDCPP(indices, dims));
-    return rcpp_result_gen;
-END_RCPP
-}
-// convertCellID2IndicesCPP
-IntegerVector convertCellID2IndicesCPP(int cellID, IntegerVector dims);
-RcppExport SEXP _moPLOT_convertCellID2IndicesCPP(SEXP cellIDSEXP, SEXP dimsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type cellID(cellIDSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
-    rcpp_result_gen = Rcpp::wrap(convertCellID2IndicesCPP(cellID, dims));
-    return rcpp_result_gen;
-END_RCPP
-}
 // getNeighbourhood
 IntegerMatrix getNeighbourhood(int d, bool include_diagonals);
 RcppExport SEXP _moPLOT_getNeighbourhood(SEXP dSEXP, SEXP include_diagonalsSEXP) {
@@ -228,19 +204,20 @@ BEGIN_RCPP
 END_RCPP
 }
 // cumulateGradientsCPP
-List cumulateGradientsCPP(NumericMatrix centers, NumericMatrix gradients, IntegerVector stopCells, double precVectorLength, double precNorm, bool fixDiagonals, bool cumulateGradientLength);
-RcppExport SEXP _moPLOT_cumulateGradientsCPP(SEXP centersSEXP, SEXP gradientsSEXP, SEXP stopCellsSEXP, SEXP precVectorLengthSEXP, SEXP precNormSEXP, SEXP fixDiagonalsSEXP, SEXP cumulateGradientLengthSEXP) {
+List cumulateGradientsCPP(NumericMatrix centers, NumericMatrix gradients, IntegerVector dims, IntegerVector stopCells, double precVectorLength, double precNorm, bool fixDiagonals, bool cumulateGradientLength);
+RcppExport SEXP _moPLOT_cumulateGradientsCPP(SEXP centersSEXP, SEXP gradientsSEXP, SEXP dimsSEXP, SEXP stopCellsSEXP, SEXP precVectorLengthSEXP, SEXP precNormSEXP, SEXP fixDiagonalsSEXP, SEXP cumulateGradientLengthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type centers(centersSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type gradients(gradientsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type stopCells(stopCellsSEXP);
     Rcpp::traits::input_parameter< double >::type precVectorLength(precVectorLengthSEXP);
     Rcpp::traits::input_parameter< double >::type precNorm(precNormSEXP);
     Rcpp::traits::input_parameter< bool >::type fixDiagonals(fixDiagonalsSEXP);
     Rcpp::traits::input_parameter< bool >::type cumulateGradientLength(cumulateGradientLengthSEXP);
-    rcpp_result_gen = Rcpp::wrap(cumulateGradientsCPP(centers, gradients, stopCells, precVectorLength, precNorm, fixDiagonals, cumulateGradientLength));
+    rcpp_result_gen = Rcpp::wrap(cumulateGradientsCPP(centers, gradients, dims, stopCells, precVectorLength, precNorm, fixDiagonals, cumulateGradientLength));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -337,8 +314,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_moPLOT_normalizeMatrixRowsCPP", (DL_FUNC) &_moPLOT_normalizeMatrixRowsCPP, 2},
     {"_moPLOT_computeAngleCPP", (DL_FUNC) &_moPLOT_computeAngleCPP, 3},
     {"_moPLOT_findNextCellCPP", (DL_FUNC) &_moPLOT_findNextCellCPP, 1},
-    {"_moPLOT_convertIndices2CellIDCPP", (DL_FUNC) &_moPLOT_convertIndices2CellIDCPP, 2},
-    {"_moPLOT_convertCellID2IndicesCPP", (DL_FUNC) &_moPLOT_convertCellID2IndicesCPP, 2},
     {"_moPLOT_getNeighbourhood", (DL_FUNC) &_moPLOT_getNeighbourhood, 2},
     {"_moPLOT_imputeBoundary", (DL_FUNC) &_moPLOT_imputeBoundary, 4},
     {"_moPLOT_getCriticalPointsCellCPP", (DL_FUNC) &_moPLOT_getCriticalPointsCellCPP, 7},
@@ -348,7 +323,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_moPLOT_changeOfSignCPP", (DL_FUNC) &_moPLOT_changeOfSignCPP, 3},
     {"_moPLOT_changeOfBasin", (DL_FUNC) &_moPLOT_changeOfBasin, 3},
     {"_moPLOT_gridBasedGradientCPP", (DL_FUNC) &_moPLOT_gridBasedGradientCPP, 5},
-    {"_moPLOT_cumulateGradientsCPP", (DL_FUNC) &_moPLOT_cumulateGradientsCPP, 7},
+    {"_moPLOT_cumulateGradientsCPP", (DL_FUNC) &_moPLOT_cumulateGradientsCPP, 8},
     {"_moPLOT_getBiObjGradientCPP", (DL_FUNC) &_moPLOT_getBiObjGradientCPP, 5},
     {"_moPLOT_getTriObjGradientCPP", (DL_FUNC) &_moPLOT_getTriObjGradientCPP, 5},
     {"_moPLOT_getBiObjGradientGridCPP", (DL_FUNC) &_moPLOT_getBiObjGradientGridCPP, 5},
