@@ -15,7 +15,7 @@
 #' @template arg_checkdata
 #'
 #' @export
-ggplotPLOT = function(dec.space, obj.space, sinks, height, check.data = TRUE) {
+ggplotPLOT = function(dec.space, obj.space, sinks, height, colorscale.efficient = NULL, check.data = TRUE) {
   if (check.data) {
     assertMatrix(dec.space, ncols = 2, col.names = "unique") # 2D only
     assertMatrix(obj.space, min.cols = 2, nrows = nrow(dec.space)) # at least 2-objective
@@ -40,7 +40,7 @@ ggplotPLOT = function(dec.space, obj.space, sinks, height, check.data = TRUE) {
   var1 = colnames(dec.space)[1]
   var2 = colnames(dec.space)[2]
   
-  colorscale.efficient = fields::tim.colors(500L)
+  if (is.null(colorscale.efficient)) colorscale.efficient = fields::tim.colors(500L)
   colorscale.heatmap = gray.colors(500L, start = 0, end = 1, gamma = 0.5)
   
   if (all(sinks.df$rank == sinks.df$rank[1])) {

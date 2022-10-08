@@ -132,8 +132,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // getCriticalPointsCellCPP
-List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, NumericVector div, IntegerVector locallyNondominated, IntegerVector dims, bool sinks_only);
-RcppExport SEXP _moPLOT_getCriticalPointsCellCPP(SEXP moGradMatSEXP, SEXP gradMatListSEXP, SEXP divSEXP, SEXP locallyNondominatedSEXP, SEXP dimsSEXP, SEXP sinks_onlySEXP) {
+List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, NumericVector div, IntegerVector locallyNondominated, IntegerVector dims, bool sinks_only, bool verbose);
+RcppExport SEXP _moPLOT_getCriticalPointsCellCPP(SEXP moGradMatSEXP, SEXP gradMatListSEXP, SEXP divSEXP, SEXP locallyNondominatedSEXP, SEXP dimsSEXP, SEXP sinks_onlySEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -143,7 +143,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type locallyNondominated(locallyNondominatedSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type dims(dimsSEXP);
     Rcpp::traits::input_parameter< bool >::type sinks_only(sinks_onlySEXP);
-    rcpp_result_gen = Rcpp::wrap(getCriticalPointsCellCPP(moGradMat, gradMatList, div, locallyNondominated, dims, sinks_only));
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(getCriticalPointsCellCPP(moGradMat, gradMatList, div, locallyNondominated, dims, sinks_only, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -340,7 +341,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_moPLOT_convertCellID2IndicesCPP", (DL_FUNC) &_moPLOT_convertCellID2IndicesCPP, 2},
     {"_moPLOT_getNeighbourhood", (DL_FUNC) &_moPLOT_getNeighbourhood, 2},
     {"_moPLOT_imputeBoundary", (DL_FUNC) &_moPLOT_imputeBoundary, 4},
-    {"_moPLOT_getCriticalPointsCellCPP", (DL_FUNC) &_moPLOT_getCriticalPointsCellCPP, 6},
+    {"_moPLOT_getCriticalPointsCellCPP", (DL_FUNC) &_moPLOT_getCriticalPointsCellCPP, 7},
     {"_moPLOT_connectedComponentsGrid", (DL_FUNC) &_moPLOT_connectedComponentsGrid, 2},
     {"_moPLOT_integrateVectorField", (DL_FUNC) &_moPLOT_integrateVectorField, 3},
     {"_moPLOT_locallyNondominatedCPP", (DL_FUNC) &_moPLOT_locallyNondominatedCPP, 3},

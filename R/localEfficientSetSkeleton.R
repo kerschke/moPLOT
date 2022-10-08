@@ -1,15 +1,18 @@
 #' @export
-localEfficientSetSkeleton = function(design, gradients, divergence, integration = "fast", with.basins = FALSE, use.integration.sinks = FALSE) {
+localEfficientSetSkeleton = function(
+    design, gradients, divergence, integration = "fast", with.basins = FALSE,
+    use.integration.sinks = FALSE, verbose = TRUE) {
   less = list()
   
-  cat('Finding critical points ...\n')
+  if (verbose) cat('Finding critical points ...\n')
   
   lnd = locallyNondominatedCPP(design$obj.space, design$dims, TRUE)
   critical = getCriticalPointsCellCPP(gradients$multi.objective, gradients$single.objective, divergence, lnd, design$dims, sinks_only = TRUE)
 
   sinks = critical$sinks
 
-  cat('Integrating vector field ...\n')
+  if (verbose) cat('Integrating vector field ...\n')
+  
   if (integration == "fast") {
     integrated = computeCumulatedPathLengths(design$dec.space, gradients$multi.objective, sinks, fix.diagonals = T, prec.vector.length = 0, prec.norm = 0)
   } else {
@@ -38,7 +41,7 @@ localEfficientSetSkeleton = function(design, gradients, divergence, integration 
 
     less$sinks = valid.sinks
 
-    cat('Calculating basins of attraction ...\n')
+    if (verbose) cat('Calculating basins of attraction ...\n')
     sink.to.basin = rep(-1, prod(design$dims))
     sink.to.basin[valid.sinks] = valid.ccs
 

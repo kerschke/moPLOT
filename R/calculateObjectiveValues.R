@@ -1,10 +1,11 @@
 #' @export
-calculateObjectiveValues = function(points, fn, parallelize = FALSE, parallel.cores = (parallel::detectCores() - 1),
-                                    vectorized.evaluation = TRUE, convert.to.minimization = TRUE) {
+calculateObjectiveValues = function(
+    points, fn, parallelize = FALSE, parallel.cores = (parallel::detectCores() - 1),
+    vectorized.evaluation = TRUE, convert.to.minimization = TRUE, verbose = TRUE) {
   n = smoof::getNumberOfObjectives(fn)
   names = paste0("y", 1:n)
   
-  cat("Evaluating grid of objective values ...\n")
+  if (verbose) cat("Evaluating grid of objective values ...\n")
   
   if (vectorized.evaluation && smoof::isVectorized(fn)) {
     # Experimental feature!

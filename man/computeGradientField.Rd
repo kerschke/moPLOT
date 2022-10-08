@@ -13,7 +13,8 @@ computeGradientField(
   parallelize = FALSE,
   impute.boundary = TRUE,
   lower = NULL,
-  upper = NULL
+  upper = NULL,
+  verbose = TRUE
 )
 }
 \arguments{

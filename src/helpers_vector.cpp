@@ -516,7 +516,7 @@ std::vector<IntegerVector> getCubeCorners(int dimension) {
 }
 
 // [[Rcpp::export]]
-List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, NumericVector div, IntegerVector locallyNondominated, IntegerVector dims, bool sinks_only) {
+List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, NumericVector div, IntegerVector locallyNondominated, IntegerVector dims, bool sinks_only, bool verbose = false) {
   int p = gradMatList.length();
   int d = dims.size();
   int n = div.length();
@@ -562,7 +562,7 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
   for (int anchor_id = 1; anchor_id <= n; anchor_id++) {
     // Loop over cell indices
     // Each anchor index refers to the hypercube defined by itself and +1 into each dimension
-    if (anchor_id % 1000 == 0) {
+    if (verbose && anchor_id % 1000 == 0) {
       Rcout << anchor_id << '\r';
     }
 

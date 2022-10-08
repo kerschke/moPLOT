@@ -28,9 +28,10 @@
 #' 
 #' @export
 computeGradientField = function(points, fn, prec.grad = 1e-6,
-  prec.norm = 1e-6, prec.angle = 1e-4, parallelize = FALSE, impute.boundary = TRUE, lower = NULL, upper = NULL) {
+  prec.norm = 1e-6, prec.angle = 1e-4, parallelize = FALSE,
+  impute.boundary = TRUE, lower = NULL, upper = NULL, verbose = TRUE) {
 
-  cat("Estimating single-objective gradients ...\n")
+  if (verbose) cat("Estimating single-objective gradients ...\n")
 
   if (smoof::isSmoofFunction(fn)) {
     lower = smoof::getLowerBoxConstraints(fn)
@@ -59,19 +60,19 @@ computeGradientField = function(points, fn, prec.grad = 1e-6,
 
   obj = length(single.objective)
 
-  cat("Estimating multi-objective gradients ...\n")
+  if (verbose) cat("Estimating multi-objective gradients ...\n")
   if (obj == 2L) {
     multi.objective = getBiObjGradientGridCPP(gradMat1 = single.objective[[1L]], gradMat2 = single.objective[[2L]], precNorm = prec.norm, precAngle = prec.angle)
   } else if (obj == 3L) {
     multi.objective = getTriObjGradientGridCPP(gradMat1 = single.objective[[1L]], gradMat2 = single.objective[[2L]], gradMat3 = single.objective[[3]], precNorm = prec.norm, precAngle = prec.angle)
   } else {
-    stop("Cannot cannot handle more than 3 objectives.")
+    if (verbose) stop("Cannot cannot handle more than 3 objectives.")
   }
 
-  cat("Finished multi-objective gradients\n")
+  if (verbose) cat("Finished multi-objective gradients\n")
 
   if (impute.boundary) {
-    cat("Imputing multi-objective gradient at boundary\n")
+    if (verbose) cat("Imputing multi-objective gradient at boundary\n")
     dims = apply(points, 2L, function(x) length(unique(x)))
     multi.objective = imputeBoundary(multi.objective, single.objective, dims)
   }
@@ -83,7 +84,9 @@ computeGradientField = function(points, fn, prec.grad = 1e-6,
 }
 
 #' @export
-computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, impute.boundary = TRUE, normalized.scale = TRUE) {
+computeGradientFieldGrid = function(
+    grid, prec.norm = 1e-6, prec.angle = 1e-4, impute.boundary = TRUE,
+    normalized.scale = TRUE, verbose = TRUE) {
 
   obj = ncol(grid$obj.space)
   
@@ -92,14 +95,14 @@ computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, i
   # currently need normalization, if number of objectives != 2
   assertTRUE(normalized.scale || obj == 2)
   
-  cat("Estimating single-objective gradients ...\n")
+  if (verbose) cat("Estimating single-objective gradients ...\n")
 
   single.objective = lapply(seq_len(obj), function(i) {
-    cat(paste("Differentiating objective", i, "\n"))
+    if (verbose) cat(paste("Differentiating objective", i, "\n"))
     -gridBasedGradientCPP(grid$obj.space[,i], grid$dims, grid$step.sizes, prec.norm, prec.angle)
   })
   
-  cat("Estimating multi-objective gradients ...\n")
+  if (verbose) cat("Estimating multi-objective gradients ...\n")
   
   if (obj == 2L) {
     multi.objective = getBiObjGradientGridCPP(gradMat1 = single.objective[[1L]], gradMat2 = single.objective[[2L]], precNorm = prec.norm, precAngle = prec.angle, normalized_scale = normalized.scale)
@@ -109,10 +112,10 @@ computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, i
     stop("Cannot cannot handle more than 3 objectives.")
   }
 
-  cat("Finished multi-objective gradients\n")
+  if (verbose) cat("Finished multi-objective gradients\n")
   
   if (impute.boundary) {
-    cat("Imputing multi-objective gradient at boundary\n")
+    if (verbose) cat("Imputing multi-objective gradient at boundary\n")
     
     multi.objective = imputeBoundary(multi.objective, single.objective, grid$dims, normalized_scale = normalized.scale)
   }
@@ -124,7 +127,8 @@ computeGradientFieldGrid = function(grid, prec.norm = 1e-6, prec.angle = 1e-4, i
 }
 
 #' @export
-computeDivergenceGrid = function(gradients, dims, step.sizes, prec.norm = 1e-6, prec.angle = 1e-4, normalize = FALSE) {
+computeDivergenceGrid = function(gradients, dims, step.sizes, prec.norm = 1e-6,
+                                 prec.angle = 1e-4, normalize = FALSE) {
   if (normalize) {
     gradients = normalizeMatrixRowsCPP(gradients, prec.norm)
   }
@@ -213,7 +217,9 @@ computeDivergenceGrid = function(gradients, dims, step.sizes, prec.norm = 1e-6, 
 }
 
 #' @export
-computeSecondOrderGrid = function(gradients, dims, step.sizes, prec.norm = 1e-6, prec.angle = 1e-4, normalize = FALSE, epsilon=1e-2, get.matrix = TRUE) {
+computeSecondOrderGrid = function(
+    gradients, dims, step.sizes, prec.norm = 1e-6, prec.angle = 1e-4,
+    normalize = FALSE, epsilon=1e-2, get.matrix = TRUE) {
   if (normalize) {
     gradients = normalizeMatrixRowsCPP(gradients, prec.norm)
   }
