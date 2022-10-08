@@ -64,6 +64,3 @@ Use the coloring of the cumulated path lengths (see
 \code{\link[=computeCumulatedPathLengths]{computeCumulatedPathLengths()}}) and visualize the
 corresponding points in the objective space.
 }
-\examples{
-
-}

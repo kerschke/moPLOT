@@ -4,7 +4,14 @@
 \alias{ggplotPLOT}
 \title{Create a PLOT Visualization}
 \usage{
-ggplotPLOT(dec.space, obj.space, sinks, height, check.data = TRUE)
+ggplotPLOT(
+  dec.space,
+  obj.space,
+  sinks,
+  height,
+  colorscale.efficient = NULL,
+  check.data = TRUE
+)
 }
 \arguments{
 \item{dec.space}{Numeric \link[base:matrix]{base::matrix} that defines the evaluated points in decision space.

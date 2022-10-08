@@ -12,6 +12,3 @@ Multi-objective smoof function
 \description{
 Creates one particular parametrization of a bi-objective Rosenbrock function.
 }
-\examples{
-
-}

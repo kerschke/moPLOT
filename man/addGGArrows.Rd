@@ -49,6 +49,3 @@ A \code{ggplot} object displaying the multi-objective gradient landscape.
 Add vectors indicating the gradient field to the heatmap of the
 cumulated path lengths.
 }
-\examples{
-
-}

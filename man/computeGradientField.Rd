@@ -62,6 +62,3 @@ of the input matrix \code{points}.
 \description{
 Computes the multi-objective gradients for a matrix of \code{points}.
 }
-\examples{
-
-}

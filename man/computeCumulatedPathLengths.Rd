@@ -62,6 +62,3 @@ efficient point.
 ATTENTION: Only turn off the sanity checks (\code{check.data = FALSE}),
 if you can ensure that all input parameters are provided in the correct format.
 }
-\examples{
-
-}

@@ -32,6 +32,3 @@ A [\link[ggplot2:ggplot]{ggplot2::ggplot}] object
 \description{
 Set Transition Visualization in ggplot2
 }
-\examples{
-
-}

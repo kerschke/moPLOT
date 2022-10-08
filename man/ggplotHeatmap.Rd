@@ -61,6 +61,3 @@ A \code{ggplot} object displaying the multi-objective gradient landscape.
 Visualization of the multi-objective gradient landscape by means of
 a heatmap and on the basis of the \code{ggplot2}-package.
 }
-\examples{
-
-}

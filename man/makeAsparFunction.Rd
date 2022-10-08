@@ -19,6 +19,3 @@ Multi-objective smoof function
 \description{
 Multi-Objective Aspar Function
 }
-\examples{
-
-}

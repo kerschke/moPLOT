@@ -42,6 +42,3 @@ A \code{ggplot} object displaying the multi-objective gradient landscape.
 If the underlying single-objective functions are \code{smoof}-functions,
 extract their local optima and add them to the gradient field heatmap.
 }
-\examples{
-
-}

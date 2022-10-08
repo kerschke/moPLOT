@@ -64,6 +64,3 @@ A \code{ggplot} object displaying the multi-objective gradient landscape.
 Add contour lines of the separate objectives to the heatmap of the
 cumulated path lengths.
 }
-\examples{
-
-}

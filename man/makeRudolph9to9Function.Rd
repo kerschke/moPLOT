@@ -12,6 +12,3 @@ Multi-objective smoof function
 \description{
 Creates the Rudolph 9-to-9 test function
 }
-\examples{
-
-}

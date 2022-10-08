@@ -38,6 +38,3 @@ value in the \code{centers.fi} lists. If \code{is.null(centers.f3)}, the problem
 bi-objective, otherwise it is tri-objective. For creating bi-objective
 problems, you can also use \code{makeBiObjMinDistFunction()} directly.
 }
-\examples{
-
-}

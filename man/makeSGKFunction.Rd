@@ -16,6 +16,3 @@ Multi-objective smoof function
 \description{
 Multi-Objective SGK Function
 }
-\examples{
-
-}

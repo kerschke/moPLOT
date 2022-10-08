@@ -67,6 +67,3 @@ The \code{makeBiObjMPM2Function()} and \code{makeTriObjMPM2Function()} functions
 the creation of multi-objective functions based on the MPM2 generator
 implemented in \code{\link[smoof:makeMPM2Function]{smoof::makeMPM2Function()}}.
 }
-\examples{
-
-}
