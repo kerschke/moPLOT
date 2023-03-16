@@ -40,8 +40,11 @@ ggplotPLOT = function(dec.space, obj.space, sinks, height, colorscale.efficient 
   var1 = colnames(dec.space)[1]
   var2 = colnames(dec.space)[2]
   
-  if (is.null(colorscale.efficient)) colorscale.efficient = fields::tim.colors(500L)
-  colorscale.heatmap = gray.colors(500L, start = 0, end = 1, gamma = 0.5)
+  if (missing(colorscale.efficient)) {
+    colorscale.efficient = viridisLite::turbo(500L, alpha = 1, begin = 0.05, end = 0.95, direction = 1)
+  }
+  
+  colorscale.heatmap = gray.colors(500L, start = 0, end = 1, gamma = 0.5, alpha = 1)
   
   if (all(sinks.df$rank == sinks.df$rank[1])) {
     # If all "rank" values are identical, they are all globally efficient.

@@ -54,18 +54,7 @@ ggplotHeatmap = function(df, var1 = "x1", var2 = "x2", log.scale = TRUE, impute.
   }
 
   if (missing(color.palette)) {
-    ## if no information on the color palette is provided, this
-    ## function tries to sequentially tries to use tim.colors,
-    ## viridis or at last the terrain.colors
-    inst.pkgs = rownames(installed.packages())
-    if ("fields" %in% inst.pkgs) {
-      color.palette = fields::tim.colors(500L)
-    } else if ("viridisLite" %in% inst.pkgs) {
-      color.palette = viridisLite::viridis(500L,
-        alpha = 1, begin = 0, end = 1, direction = 1, option = "D")
-    } else {
-      color.palette = terrain.colors(500L)
-    }
+    color.palette = viridisLite::turbo(500L, alpha = 1, begin = 0.05, end = 0.95, direction = 1)
   }
   
   ## create the heatmap (colored tiles)
