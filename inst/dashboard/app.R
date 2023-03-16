@@ -1,8 +1,8 @@
 library(shiny)
 library(shinyjs)
-library(fields)
 library(smoof)
 library(moPLOT)
+library(gridExtra)
 library(tidygraph)
 library(ggraph)
 
@@ -148,12 +148,12 @@ ui <- fluidPage(
            selectInput(
              "benchmark_set",
              "Benchmark set",
-             c("Select a benchmark set"="", benchmark_sets)
+             c("Select a benchmark set" = "", benchmark_sets)
            ),
            selectInput(
              "fn_name",
              "Function",
-             c("Select a benchmark set first"="")
+             c("Select a benchmark set first" = "")
            ),
            uiOutput("fn_args"),
            div(
@@ -193,6 +193,7 @@ ui <- fluidPage(
          checkboxInput("compute_plot", "Enable PLOT and heatmap", TRUE),
          checkboxInput("compute_local_dominance", "Enable local dominance", TRUE),
          checkboxInput("compute_cost_landscape", "Enable cost landscape", FALSE),
+         checkboxInput("use_interactive", "Always use plotly", FALSE),
        ),
        id = "viz_options_panel"
       )
@@ -205,12 +206,14 @@ ui <- fluidPage(
        selected = "tab_plot",
        tabPanel(
          "PLOT",
-         plotly::plotlyOutput("plot", height = "500px"),
+         plotly::plotlyOutput("plot_plotly", height = "500px"),
+         plotOutput("plot_ggplot", height = "500px"),
          value = "tab_plot"
        ),
        tabPanel(
          "Gradient Field Heatmap",
-         plotly::plotlyOutput("heatmap", height = "500px"),
+         plotly::plotlyOutput("heatmap_plotly", height = "500px"),
+         plotOutput("heatmap_ggplot", height = "500px"),
          value = "tab_heatmap"
        ),
        tabPanel(
@@ -419,7 +422,7 @@ server <- function(input, output, session) {
     divergence <- computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
     
     # Calculate locally efficient points
-    localEfficientSetSkeleton(design, gradients, divergence, integration="fast", with.basins = TRUE)
+    localEfficientSetSkeleton(design, gradients, divergence, integration = "fast", with.basins = TRUE)
   })
   
   # Compute Local Dominance Data ====
@@ -468,7 +471,7 @@ server <- function(input, output, session) {
       hide("evaluate_design_panel")
       
       if (smoof::getNumberOfParameters(fn) == 2L) {
-        updateSliderInput("grid_size", session = session, value = 500L, min = 50L, max = 600L, step = 50L)
+        updateSliderInput("grid_size", session = session, value = 300L, min = 50L, max = 600L, step = 50L)
         hide("three_d_only")
       } else {
         updateSliderInput("grid_size", session = session, value = 50L, min = 20L, max = 100L, step = 10L)
@@ -542,7 +545,7 @@ server <- function(input, output, session) {
       if (length(arg_char) > 0) {
         if (is.symbol(args[[argument_name]])) {
           value <- arg_char
-        } else if (is.numeric(args[[argument_name]])){
+        } else if (is.numeric(args[[argument_name]])) {
           value <- args[[argument_name]]
         } else {
           value <- deparse(args[[argument_name]])
@@ -621,6 +624,7 @@ server <- function(input, output, session) {
         # generate design and evaluate objective space
         
         design <- moPLOT::generateDesign(fn, points.per.dimension = input$grid_size)
+        print(design$dims)
         
         plot_data$design <<- design
       }
@@ -644,7 +648,7 @@ server <- function(input, output, session) {
     
     grid <- plot_data$design
     
-    grid$height <- switch (
+    grid$height <- switch(
       plot_type,
       heatmap = {
         req(plot_data$less)
@@ -679,7 +683,7 @@ server <- function(input, output, session) {
     d = smoof::getNumberOfParameters(fn)
     
     if (d == 2) {
-      switch (plot_type,
+      switch(plot_type,
               heatmap = plotly2DHeatmap(
                 grid,
                 fn,
@@ -717,28 +721,33 @@ server <- function(input, output, session) {
         colorscale.heatmap = moPLOT:::plotlyColorscale(moPLOT:::gray.colorscale)
       }
       
-      switch (three_d_approach,
-              pareto = plotly3DPareto(grid, fn, mode = space),
-              layers = plotly3DLayers(grid, fn, sinks, mode = space,
-                                      colorscale.sinks = colorscale.sinks,
-                                      colorscale.heatmap = colorscale.heatmap),
-              scan = plotly3DScan(grid, fn, sinks, mode = space, frame = input$scan_direction,
-                                  colorscale.sinks = colorscale.sinks,
-                                  colorscale.heatmap = colorscale.heatmap),
-              NULL # if plot_type is invalid
+      print(three_d_approach)
+      print(smoof::getNumberOfParameters(fn))
+      
+      switch(three_d_approach,
+             pareto = plotly3DPareto(grid, fn, mode = space),
+             layers = plotly3DLayers(grid, fn, sinks, mode = space,
+                                     colorscale.sinks = colorscale.sinks,
+                                     colorscale.heatmap = colorscale.heatmap),
+             scan = plotly3DScan(grid, fn, sinks, mode = space, frame = input$scan_direction,
+                                 colorscale.sinks = colorscale.sinks,
+                                 colorscale.heatmap = colorscale.heatmap),
+             NULL # if plot_type is invalid
       )
     } else {
       NULL
     }
   }
   
-  output$plot = plotly::renderPlotly({
+  # ==== PLOT ====
+  
+  output$plot_plotly = plotly::renderPlotly({
     reactive({
       req(plot_data$design, input$space, input$three_d_approach)
       
       isolate({
         withProgress({
-          disable("plot")
+          disable("plot_plotly")
           
           if (is.null(plot_data$less) && input$compute_plot) {
             setProgress(value = 0.5, message = "Computing visualization data ...")
@@ -748,21 +757,72 @@ server <- function(input, output, session) {
           setProgress(value = 1.0, message = "Updating visualization ...")
           
           p <- get_plot("PLOT", input$space, input$three_d_approach)
-          p <- plotly::partial_bundle(p)
-          enable("plot")
+          enable("plot_plotly")
         })
         return(p)
       })
     }, quoted = TRUE)()
   })
   
-  output$heatmap = plotly::renderPlotly({
+  output$plot_ggplot = renderPlot({
+    reactive({
+      fn <- get_fn()
+      
+      req(fn)
+      
+      req(plot_data$design, input$space)
+      
+      isolate({
+        withProgress({
+          disable("plot_ggplot")
+          
+          if (is.null(plot_data$less) && input$compute_plot) {
+            setProgress(value = 0.5, message = "Computing visualization data ...")
+            plot_data$less <<- compute_plot_data()
+          }
+          
+          setProgress(value = 1.0, message = "Updating visualization ...")
+          
+          design <- plot_data$design
+          less <- plot_data$less
+          
+          space <- switch(input$space,
+                          "objective.space" = "objective",
+                          "decision.space" = "decision",
+                          "both" = "both"
+          )
+          
+          if (space %in% c("decision", "both")) {
+            p_dec <- ggplotPLOT(design$dec.space, design$obj.space, less$sinks, less$height) +
+              coord_fixed(ratio = diff(range(design$dec.space[,1])) / diff(range(design$dec.space[,2])))
+          }
+          if (space %in% c("objective", "both")) {
+            p_obj <- ggplotPLOTObjSpace(design$obj.space, less$sinks, less$height) +
+              coord_fixed(ratio = diff(range(design$obj.space[,1])) / diff(range(design$obj.space[,2])))
+          }
+          
+          p <- switch(space,
+                      "decision" = p_dec,
+                      "objective" = p_obj,
+                      "both" = gridExtra::grid.arrange(p_dec, p_obj, nrow = 1)
+          )
+          
+          enable("plot_ggplot")
+        })
+        return(p)
+      })
+    }, quoted = TRUE)()
+  })
+  
+  # ==== HEATMAP ====
+  
+  output$heatmap_plotly = plotly::renderPlotly({
     reactive({
       req(plot_data$design, input$space, input$three_d_approach)
       
       isolate({
         withProgress({
-          disable("heatmap")
+          disable("heatmap_plotly")
           
           if (is.null(plot_data$less) && input$compute_plot) {
             setProgress(value = 0.5, message = "Computing visualization data ...")
@@ -772,14 +832,67 @@ server <- function(input, output, session) {
           setProgress(value = 1.0, message = "Updating visualization ...")
           
           p <- get_plot("heatmap", input$space, input$three_d_approach)
-          p <- plotly::partial_bundle(p)
-          
-          enable("heatmap")
+
+          enable("heatmap_plotly")
         })
         return(p)
       })
     }, quoted = TRUE)()
   })
+  
+  output$heatmap_ggplot = renderPlot({
+    reactive({
+      fn <- get_fn()
+      
+      req(fn)
+      
+      req(plot_data$design, input$space)
+      
+      isolate({
+        withProgress({
+          disable("heatmap_ggplot")
+          
+          if (is.null(plot_data$less) && input$compute_plot) {
+            setProgress(value = 0.5, message = "Computing visualization data ...")
+            plot_data$less <<- compute_plot_data()
+          }
+          
+          setProgress(value = 1.0, message = "Updating visualization ...")
+          
+          design <- plot_data$design
+          less <- plot_data$less
+          
+          space <- switch(input$space,
+                          "objective.space" = "objective",
+                          "decision.space" = "decision",
+                          "both" = "both"
+          )
+          
+          if (space %in% c("decision", "both")) {
+            p_dec <- ggplotHeatmap(cbind.data.frame(design$dec.space, height=less$height)) +
+              coord_fixed(ratio = diff(range(design$dec.space[,1])) / diff(range(design$dec.space[,2]))) +
+              theme(legend.position = "none")
+          }
+          if (space %in% c("objective", "both")) {
+            p_obj <- ggplotObjectiveSpace(cbind.data.frame(design$obj.space, height=less$height)) +
+              coord_fixed(ratio = diff(range(design$obj.space[,1])) / diff(range(design$obj.space[,2]))) +
+              theme(legend.position = "none")
+          }
+          
+          p <- switch(space,
+                      "decision" = p_dec,
+                      "objective" = p_obj,
+                      "both" = gridExtra::grid.arrange(p_dec, p_obj, nrow = 1)
+          )
+          
+          enable("heatmap_ggplot")
+        })
+        return(p)
+      })
+    }, quoted = TRUE)()
+  })
+  
+  # ==== CONTOURS ====
   
   output$contours = plotly::renderPlotly({
     reactive({
@@ -792,13 +905,14 @@ server <- function(input, output, session) {
         
         p <- plotly2DContours(plot_data$design,
                               show.nondominated = input$show_nondominated == "TRUE")
-        p <- plotly::partial_bundle(p)
-        
+
         enable("contours")
       })
       return(p)
     }, quoted = TRUE)()
   })
+  
+  # ==== LOCAL DOMINANCE ====
   
   output$local_dominance = plotly::renderPlotly({
     reactive({
@@ -816,14 +930,15 @@ server <- function(input, output, session) {
           setProgress(value = 1.0, message = "Updating visualization ...")
           
           p <- get_plot("local_dominance", input$space, input$three_d_approach)
-          p <- plotly::partial_bundle(p)
-          
+
           enable("local_dominance")
         })
         return(p)
       })
     }, quoted = TRUE)()
   })
+  
+  # ==== COST LANDSCAPE ====
   
   output$cost_landscape = plotly::renderPlotly({
     reactive({
@@ -841,14 +956,15 @@ server <- function(input, output, session) {
           setProgress(value = 1.0, message = "Updating visualization ...")
           
           p <- get_plot("cost_landscape", input$space, input$three_d_approach)
-          p <- plotly::partial_bundle(p)
-          
+
           enable("cost_landscape")
         })
         return(p)
       })
     }, quoted = TRUE)()
   })
+  
+  # ==== SET TRANSITION GRAPH ====
   
   output$set_transitions = renderPlot({
     reactive({
@@ -872,6 +988,8 @@ server <- function(input, output, session) {
       })
     }, quoted = TRUE)()
   })
+  
+  # ==== LOCAL PCP ====
   
   output$local_pcp = renderPlot({
     reactive({
@@ -904,6 +1022,8 @@ server <- function(input, output, session) {
     }, quoted = TRUE)()
   })
   
+  # ==== GLOBAL PCP ====
+  
   output$global_pcp = renderPlot({
     reactive({
       req(plot_data$design, input$space)
@@ -926,6 +1046,8 @@ server <- function(input, output, session) {
     }, quoted = TRUE)()
   })
   
+  # ==== EVENTS ====
+  
   observeEvent(input$tabset_plots, {
     if (input$tabset_plots == "tab_contours") {
       hide("space")
@@ -933,6 +1055,23 @@ server <- function(input, output, session) {
     } else {
       show("space")
       hide("show_nondominated")
+    }
+  })
+  
+  observeEvent(c(input$use_interactive, get_fn()), {
+    fn <- get_fn()
+    req(fn)
+    
+    if (input$use_interactive || smoof::getNumberOfParameters(fn) == 3) {
+      show("plot_plotly")
+      show("heatmap_plotly")
+      hide("plot_ggplot")
+      hide("heatmap_ggplot")
+    } else {
+      show("plot_ggplot")
+      show("heatmap_ggplot")
+      hide("plot_plotly")
+      hide("heatmap_plotly")
     }
   })
   
