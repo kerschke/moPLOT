@@ -266,7 +266,7 @@ int isCritical(std::vector<NumericVector> vectors, IntegerVector on_boundary) {
   
   if (is_true(any(on_boundary != 0))) {
     for (int i = 0; i < on_boundary.size(); i++) {
-      NumericVector new_vector(d);
+      NumericVector new_vector(d, 0.0);
       if (on_boundary[i] < 0) {
         // lower bound --> one vector showing into positive direction here
         new_vector[i] = 1;
@@ -275,7 +275,9 @@ int isCritical(std::vector<NumericVector> vectors, IntegerVector on_boundary) {
         new_vector[i] = -1;
       }
       
-      vectors.push_back(new_vector);
+      if (sum(new_vector) != 0) {
+        vectors.push_back(new_vector);
+      }
     }
   }
   
@@ -612,11 +614,15 @@ List getCriticalPointsCellCPP(NumericMatrix moGradMat, List gradMatList, Numeric
     // For each simplex contained in cube ...
     for (std::vector<int> simplex : simplices) {
       bool not_sink = false;
-      
+      on_boundary = rep(0, d);
+
       // Collect all ids for the nodes in simplex
       
       for (int i = 0; i < simplex.size(); i++) {
         simplex_ids[i] = cube_ids[simplex[i]];
+        
+        on_boundary[cube_indices[simplex[i]] == dims] = 1;
+        on_boundary[cube_indices[simplex[i]] == 1] = -1;
         
         if (div(simplex_ids[i] - 1) > 0) {
           not_sink = true;
