@@ -10,7 +10,7 @@ gradients = computeGradientFieldGrid(design, prec.angle = 0, normalized.scale = 
 divergence = computeDivergenceGrid(gradients$multi.objective, design$dims, design$step.sizes)
 
 # Calculate locally efficient points
-less = localEfficientSetSkeleton(design, gradients, divergence, integration="fast", with.basins = TRUE, use.integration.sinks = FALSE)
+less = localEfficientSetSkeleton(design, gradients, divergence, integration = "fast", with.basins = TRUE, use.integration.sinks = FALSE)
 
 ggplotSetTransitions(design, less)
 
@@ -39,7 +39,7 @@ transition_sinks <- intersect(which(less$set_transitions != -1), less$sinks)
 set_transitions <- t(sapply(transition_sinks, function(s) {
   c(from = basins[s], to = less$set_transitions[s])
 }))
-set_transitions <- set_transitions[!duplicated(set_transitions),,drop=FALSE]
+set_transitions <- set_transitions[!duplicated(set_transitions),,drop = FALSE]
 
 sets <- lapply(sort(unique(basins[basins != -1])), function(b) {
   set_ids <- intersect(which(basins == b), less$sinks)

@@ -48,7 +48,7 @@ ggplotSetTransitions <- function(design, less, node_size = c("reachability", "ba
   set_transitions <- t(sapply(transition_sinks, function(s) {
     c(from = basins[s], to = less$set_transitions[s])
   }))
-  set_transitions <- set_transitions[!duplicated(set_transitions),,drop=FALSE]
+  set_transitions <- set_transitions[!duplicated(set_transitions),,drop = FALSE]
   
   sets <- lapply(sort(unique(basins[basins != -1])), function(b) {
     set_ids <- intersect(which(basins == b), less$sinks)
