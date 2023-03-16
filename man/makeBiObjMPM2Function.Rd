@@ -10,9 +10,13 @@ makeBiObjMPM2Function(
   n.peaks.1 = 3,
   topology.1 = "random",
   seed.1 = 4,
+  rotated.1 = TRUE,
+  peak.shape.1 = "ellipse",
   n.peaks.2 = 3,
   topology.2 = "random",
-  seed.2 = 8
+  seed.2 = 8,
+  rotated.2 = TRUE,
+  peak.shape.2 = "ellipse"
 )
 
 makeTriObjMPM2Function(
@@ -20,12 +24,18 @@ makeTriObjMPM2Function(
   n.peaks.1 = 3,
   topology.1 = "random",
   seed.1 = 4,
+  rotated.1 = TRUE,
+  peak.shape.1 = "ellipse",
   n.peaks.2 = 3,
   topology.2 = "random",
   seed.2 = 8,
+  rotated.2 = TRUE,
+  peak.shape.2 = "ellipse",
   n.peaks.3 = 3,
   topology.3 = "random",
-  seed.3 = 12
+  seed.3 = 12,
+  rotated.3 = TRUE,
+  peak.shape.3 = "ellipse"
 )
 }
 \arguments{
@@ -41,6 +51,12 @@ Topology of the first constituent MPM2 problem.}
 \item{seed.1}{[\code{\link{numeric}}]\cr
 Random seed of the first constituent MPM2 problem.}
 
+\item{rotated.1}{[\code{\link{logical}}]\cr
+Should peaks be rotated in the first constituent MPM2 problem?}
+
+\item{peak.shape.1}{\code{"ellipse" || "sphere"}\cr
+The peak shape (sphere or ellipse) for the first constituent MPM2 problem}
+
 \item{n.peaks.2}{[\code{\link{numeric}}]\cr
 Number of peaks for the second constituent MPM2 problem.}
 
@@ -50,6 +66,12 @@ Topology of the second constituent MPM2 problem.}
 \item{seed.2}{[\code{\link{numeric}}]\cr
 Random seed of the second constituent MPM2 problem.}
 
+\item{rotated.2}{[\code{\link{logical}}]\cr
+Should peaks be rotated in the second constituent MPM2 problem?}
+
+\item{peak.shape.2}{\code{"ellipse" || "sphere"}\cr
+The peak shape (sphere or ellipse) for the second constituent MPM2 problem}
+
 \item{n.peaks.3}{[\code{\link{numeric}}]\cr
 Number of peaks for the third constituent MPM2 problem.}
 
@@ -58,6 +80,12 @@ Topology of the third constituent MPM2 problem.}
 
 \item{seed.3}{[\code{\link{numeric}}]\cr
 Random seed of the third constituent MPM2 problem.}
+
+\item{rotated.3}{[\code{\link{logical}}]\cr
+Should peaks be rotated in the third constituent MPM2 problem?}
+
+\item{peak.shape.3}{\code{"ellipse" || "sphere"}\cr
+The peak shape (sphere or ellipse) for the third constituent MPM2 problem}
 }
 \value{
 Multi-objective smoof function
