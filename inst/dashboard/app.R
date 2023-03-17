@@ -282,8 +282,8 @@ ui <- fluidPage(
          selectInput("show_nondominated",
                      "Contour mode",
                      c("Show nondominated points" = "TRUE",
-                       "Contours only" = "FALSE"),
-                     selected = "TRUE")
+                       "Show contours only" = "FALSE"),
+                     selected = "FALSE")
        ),
        id = "plot_options"
       )
@@ -294,7 +294,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   plot_data <- reactiveValues()
   hide("three_d_only")
-  
+
   # outputOptions(output, suspendWhenHidden = FALSE)
   
   reset_plots <- function() {
@@ -624,8 +624,7 @@ server <- function(input, output, session) {
         # generate design and evaluate objective space
         
         design <- moPLOT::generateDesign(fn, points.per.dimension = input$grid_size)
-        print(design$dims)
-        
+
         plot_data$design <<- design
       }
     })
@@ -641,6 +640,7 @@ server <- function(input, output, session) {
   # Plotting-related functions
   
   get_plot = function(plot_type, space, three_d_approach) {
+    gc()
     fn <- get_fn()
     
     req(fn)
@@ -669,10 +669,8 @@ server <- function(input, output, session) {
       NULL # if plot_type is invalid
     )
     
-    less <- plot_data$less
-    
     if (plot_type == "PLOT") {
-      sinks <- less$sinks
+      sinks <- plot_data$less$sinks
     } else if (plot_type == "local_dominance") {
       ld_data <- plot_data$ld_data
       sinks <- ld_data$locally_efficient_ids
@@ -697,8 +695,8 @@ server <- function(input, output, session) {
               PLOT = plotly2DPLOT(
                 grid$dec.space,
                 grid$obj.space,
-                less$sinks,
-                less$height,
+                plot_data$less$sinks,
+                plot_data$less$height,
                 fn,
                 mode = space
               ),
@@ -720,9 +718,6 @@ server <- function(input, output, session) {
         colorscale.sinks = moPLOT:::plotlyColorscale()
         colorscale.heatmap = moPLOT:::plotlyColorscale(moPLOT:::gray.colorscale)
       }
-      
-      print(three_d_approach)
-      print(smoof::getNumberOfParameters(fn))
       
       switch(three_d_approach,
              pareto = plotly3DPareto(grid, fn, mode = space),
@@ -783,9 +778,6 @@ server <- function(input, output, session) {
           
           setProgress(value = 1.0, message = "Updating visualization ...")
           
-          design <- plot_data$design
-          less <- plot_data$less
-          
           space <- switch(input$space,
                           "objective.space" = "objective",
                           "decision.space" = "decision",
@@ -793,12 +785,12 @@ server <- function(input, output, session) {
           )
           
           if (space %in% c("decision", "both")) {
-            p_dec <- ggplotPLOT(design$dec.space, design$obj.space, less$sinks, less$height) +
-              coord_fixed(ratio = diff(range(design$dec.space[,1])) / diff(range(design$dec.space[,2])))
+            p_dec <- ggplotPLOT(plot_data$design$dec.space, plot_data$design$obj.space, plot_data$less$sinks, plot_data$less$height) +
+              coord_fixed(ratio = diff(range(plot_data$design$dec.space[,1])) / diff(range(plot_data$design$dec.space[,2])))
           }
           if (space %in% c("objective", "both")) {
-            p_obj <- ggplotPLOTObjSpace(design$obj.space, less$sinks, less$height) +
-              coord_fixed(ratio = diff(range(design$obj.space[,1])) / diff(range(design$obj.space[,2])))
+            p_obj <- ggplotPLOTObjSpace(plot_data$design$obj.space, plot_data$less$sinks, plot_data$less$height) +
+              coord_fixed(ratio = diff(range(plot_data$design$obj.space[,1])) / diff(range(plot_data$design$obj.space[,2])))
           }
           
           p <- switch(space,
@@ -859,9 +851,6 @@ server <- function(input, output, session) {
           
           setProgress(value = 1.0, message = "Updating visualization ...")
           
-          design <- plot_data$design
-          less <- plot_data$less
-          
           space <- switch(input$space,
                           "objective.space" = "objective",
                           "decision.space" = "decision",
@@ -869,13 +858,13 @@ server <- function(input, output, session) {
           )
           
           if (space %in% c("decision", "both")) {
-            p_dec <- ggplotHeatmap(cbind.data.frame(design$dec.space, height=less$height)) +
-              coord_fixed(ratio = diff(range(design$dec.space[,1])) / diff(range(design$dec.space[,2]))) +
+            p_dec <- ggplotHeatmap(cbind.data.frame(plot_data$design$dec.space, height = plot_data$less$height)) +
+              coord_fixed(ratio = diff(range(plot_data$design$dec.space[,1])) / diff(range(plot_data$design$dec.space[,2]))) +
               theme(legend.position = "none")
           }
           if (space %in% c("objective", "both")) {
-            p_obj <- ggplotObjectiveSpace(cbind.data.frame(design$obj.space, height=less$height)) +
-              coord_fixed(ratio = diff(range(design$obj.space[,1])) / diff(range(design$obj.space[,2]))) +
+            p_obj <- ggplotObjectiveSpace(cbind.data.frame(plot_data$design$obj.space, height = plot_data$less$height)) +
+              coord_fixed(ratio = diff(range(plot_data$design$obj.space[,1])) / diff(range(plot_data$design$obj.space[,2]))) +
               theme(legend.position = "none")
           }
           
@@ -979,10 +968,7 @@ server <- function(input, output, session) {
           
           setProgress(value = 1.0, message = "Updating visualization ...")
           
-          less <- plot_data$less
-          design <- plot_data$design
-          
-          p <- ggplotSetTransitions(design, less)
+          p <- ggplotSetTransitions(plot_data$design, plot_data$less)
         })
         return(p)
       })
@@ -1005,15 +991,14 @@ server <- function(input, output, session) {
           setProgress(value = 1.0, message = "Updating visualization ...")
           
           design <- plot_data$design
-          less <- plot_data$less
-          
+
           space <- switch(input$space,
                           "objective.space" = "objective",
                           "decision.space" = "decision",
                           "both" = "both"
           )
           
-          p <- ggplotLocalPCP(design, less, space = space) +
+          p <- ggplotLocalPCP(design, plot_data$less, space = space) +
             theme(legend.position = "none")
           
         })
@@ -1029,8 +1014,6 @@ server <- function(input, output, session) {
       req(plot_data$design, input$space)
       
       withProgress({
-        design <- plot_data$design
-        
         space <- switch(input$space,
                         "objective.space" = "objective",
                         "decision.space" = "decision",
@@ -1039,7 +1022,7 @@ server <- function(input, output, session) {
         
         setProgress(value = 1.0, message = "Updating visualization ...")
         
-        p <- ggplotGlobalPCP(design, space = space)
+        p <- ggplotGlobalPCP(plot_data$design, space = space)
       })
       
       return(p)

@@ -32,7 +32,8 @@ Suggests:
     pracma,
     reticulate,
     shiny,
-    tidygraph
+    tidygraph,
+    gridExtra
 LinkingTo: 
     Rcpp
 ByteCompile: yes

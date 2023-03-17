@@ -35,8 +35,8 @@ plotly2DContours <- function(design, show.nondominated = TRUE) {
   }
   
   if (show.nondominated) {
-    nondom <- nondominated(design$obj.space, design$dims)
-    # nondom <- which(ecr::nondominated(t(design$obj.space)))
+    # nondom <- nondominated(design$obj.space, design$dims)
+    nondom <- which(ecr::nondominated(t(design$obj.space)))
     
     z.nondom <- rep(NA, nrow(design$dec.space))
     z.nondom[nondom] <- 1
