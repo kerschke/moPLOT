@@ -49,12 +49,28 @@ runDashboard()
 
 ## Citation
 
-If you use our package to visualize your multi-objective problems using
-* our gradient-field heatmaps (see our [EMO 2017 paper](http://link.springer.com/chapter/10.1007/978-3-319-54157-0_23) for details),
-* our multi-objective PLOTs (see our [PPSN 2020 paper](https://link.springer.com/chapter/10.1007%2F978-3-030-58115-2_11) ([arXiv](https://arxiv.org/abs/2006.11547)) for details), or
-* the `moPLOT` dashboard and the 3D-visualizations (see our [EMO 2021 paper](https://link.springer.com/chapter/10.1007/978-3-030-72062-9_50) ([arXiv](https://arxiv.org/abs/2011.14395)) for details),
+The most comprehensive article including the dashboard and all implemented visualizations is the TEVC journal article [Plotting Impossible? Surveying Visualization Methods for Continuous Multi-Objective Benchmark Problems](https://ieeexplore.ieee.org/abstract/document/9920231):
 
-please cite the respective publications.
+```bibtex
+@article{schaepermeier2022plotting,
+  author={Schäpermeier, Lennart and Grimme, Christian and Kerschke, Pascal},
+  journal={IEEE Transactions on Evolutionary Computation}, 
+  title={Plotting Impossible? Surveying Visualization Methods for Continuous Multi-Objective Benchmark Problems}, 
+  year={2022},
+  volume={26},
+  number={6},
+  pages={1306-1320},
+  doi={10.1109/TEVC.2022.3214894}
+}
+```
+
+If you use our package to visualize your multi-objective problems using
+
+* our **gradient-field heatmaps** (see our [EMO 2017 paper](http://link.springer.com/chapter/10.1007/978-3-319-54157-0_23) for details),
+* our **multi-objective PLOTs** (see our [PPSN 2020 paper](https://link.springer.com/chapter/10.1007%2F978-3-030-58115-2_11) ([arXiv](https://arxiv.org/abs/2006.11547)) for details), or
+* the **`moPLOT` dashboard and the 3D-visualizations** (see our [EMO 2021 paper](https://link.springer.com/chapter/10.1007/978-3-030-72062-9_50) ([arXiv](https://arxiv.org/abs/2011.14395)) for details),
+
+please also cite the respective publications.
 
 ```bibtex
 @inproceedings{KerschkeGrimme2017Expedition,
